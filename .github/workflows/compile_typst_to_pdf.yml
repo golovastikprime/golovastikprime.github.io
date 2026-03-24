@@ -1,0 +1,62 @@
+name: Compile Typst PDF
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Typst
+        run: |
+          curl -LO https://github.com/typst/typst/releases/latest/download/typst-linux
+          chmod +x typst-linux
+          sudo mv typst-linux /usr/local/bin/typst
+
+      - name: Config git
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+      - name: Pull latest changes
+        run: git pull --ff-only origin ${{ github.ref_name }}
+
+      - name: Compile Typst files
+        run: |
+          ROOT=$(pwd)
+
+          for file in $(find conspecta -type f -name "*.typ"); do
+              base_file=$(basename "$file")
+
+              if [[ "$base_file" != "title.typ" && "$base_file" != "preambule.typ" && ! "$base_file" =~ ^lecture-[0-9]+\.typ$ ]]; then
+                  
+                  rel_path="${file#./}"
+                  module_dir=$(echo "$rel_path" | cut -d'/' -f2)
+                  filename=$(basename "$file" .typ)
+
+                  target_dir="conspecta/$module_dir/pdfs"
+                  target_file="$target_dir/$filename.pdf"
+
+                  mkdir -p "$target_dir"
+                  typst compile "$file" -o "$target_file"
+
+                  git add "$target_file"
+              fi
+          done
+
+      - name: Commit changes
+        run: git commit -m "auto compile typst" || exit 0
+
+      - name: Push
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,5 @@
+# IDE
+.vscode
+
+# Test Stuff
+test_compile.sh
