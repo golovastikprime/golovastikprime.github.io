@@ -50,7 +50,7 @@ jobs:
                   target_file="$target_dir/$filename.pdf"
 
                   mkdir -p "$target_dir"
-                  typst compile "$file" -o "$target_file"
+                  typst compile "$file" "$target_file"
 
                   git add "$target_file"
               fi
