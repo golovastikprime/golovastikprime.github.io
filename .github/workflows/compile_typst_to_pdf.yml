@@ -18,9 +18,11 @@ jobs:
 
       - name: Install Typst
         run: |
-          curl -LO https://github.com/typst/typst/releases/latest/download/typst-linux
-          chmod +x typst-linux
-          sudo mv typst-linux /usr/local/bin/typst
+            curl -fsSL https://typst.app/install.sh | sh
+            echo "$HOME/.typst/bin" >> $GITHUB_PATH
+
+      - name: Check Typst
+        run: typst --version
 
       - name: Config git
         run: |
