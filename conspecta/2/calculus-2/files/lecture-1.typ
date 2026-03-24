@@ -112,8 +112,69 @@ $ forall x, y in Delta_i |x-y| <= |Delta_i| <= tau < delta => |f(x) - f(y)) < ep
 
 #corollary[$f, g in cal(R)[a, b]$]
 
-$ &alpha, beta in RR => alpha f + beta g in cal(R)[a,b] and integral_a^b  (alpha f(x) + beta g(x)) d x = \
-  alpha integral_a^b f(x) dif x + beta integral_a^b g(x) dif x
+$ &alpha, beta in RR => alpha f + beta g in cal(R)[a,b] and &integral_a^b  (alpha f(x) + beta g(x)) d x = \
+ alpha integral_a^b f(x) dif x + &beta integral_a^b g(x) dif x
 $
+
+#proof[$ Let epsilon > 0 => exists delta > 0 : forall tau, xi space |tau| < delta =>
+
+
+cases(|sigma(f, tau, xi) - I_f| < hat(epsilon), |sigma(g, tau, I_g)-I_g| < hat(epsilon)) $
+#let al = $alpha f + beta g$
+#let tl = $tau, xi$
+$ |sigma(al, tau, xi) - (al)| = | alpha sigma(f, tl)+beta sigma(g, tl) - (alpha I_f + beta I_g)| \ <= |alpha| |sigma(f, tl) - I_f| + |beta| |sigma(g,tl)-I_g| <= (|alpha| + |beta|)hat(epsilon)$
+
+$ forall epsilon > 0 exists delta > 0 : frl tau, xi space |tau| < delta => |sigma(al, tl)- (alpha I_f + beta I_g)| < epsilon,quad hat(epsilon) = epsilon / 2 (|alpha| + |beta)  $
+]
+
+
+#theorem[$f, g in cal(R) => f dot g in cal(R)$]
+#proof[
+  $f, g in B => |f| <= C_f, |g| <= C_g, C_f = sup f and C_g = sup g$
+
+  $ omega(f g, H) <= C_f omega(g, H) + C_g omega(f, H) \
+  forall x, y in H : |f(x)g(x) - f(y)g(y)| <= |(f(x)-f(y))g(x)| + |f(y)(g(x)-g(y))| <= omega(f, H) C_g + C_f omega(g, H) 
+  $
+
+  пусть $tau$ - дробление $[a,b] $
+
+  $ omega(f g, tau) = sum_i omega(f g, Delta_i) mu(Delta_i) <=sum_i omega(f, Delta_i) C_g mu(Delta_i) + sum_i omega(g, Delta_i) C_f mu(Delta_i) = C_g omega(f, tau) + C_f omega(g, tau) $
+
+  По критерию инегрирования в терминах $omega$
+
+  $ exists tau : omega(f g, tau) < epsilon \
+  f,g in cal(R) => exists tau_f : omega(f, tau_f) < epsilon/2(C_f+C_g) and exists tau_g : omega(g, tau_g) < epsilon/2(C_f + C_g)\ 
+  tau := tau_f union tau_g and tau_f (tau_g) prec tau => omega(f, tau) (omega(g, tau)) <= omega(f, tau_f) < epsilon/2(C_f+C_g) \ => omega(f g, tau) <= C_g  epsilon/2(C_f+C_g) + C_f  epsilon/2(C_f+C_g) = epsilon/2 <  epsilon 
+  $
+]
+
+#corollary[$f in cal(R), |f| >= C > 0 => dfrac(1, f) in cal(R)$]
+#proof[$omega(dfrac(1, f), H) <= ?$
+#let df = $dfrac(1, f)$
+$ frl x,y in H | df(x) - df(y)| = dfrac(|f(x) -f(y)|, |f(x)f(y)|) <= dfrac(omega(f, H), C^2)$
+
+Пусть $tau$ - дробление $[a, b]$
+
+$ omega(df, tau) <= 1/c^2 omega(f, tau), quad
+Let epsilon >0 => exists tau : omega(f, tau) <( epsilon c^2)/2 $
+]
+#let ingr = $display(integral_a^b)$
+#corollary[$ f, g in cal(R), f <= g => ingr f(x) d x <= ingr g(x) d x $]
+
+#proof[$ingr(g -f )(x) d x >= 0$  
+
+$Let h:= g-f >= 0$
+
+$ I(g) >= 0, h>=0  space I(h) =I_*(h) = sup_tau s(h,tau), s(h,tau) >= 0 $
+]
+
+#corollary[$f in cal(R) => |f| in cal(R) and |ingr f(x) d x | <= ingr|f(x)| d x $]
+#proof[
+  $omega(|f|, H) <= omega(f, H)$
+
+  $ frl x, y in H : | |f(x)| - |f(y)| | <= |f(x) - f(y)| => omega(|f|, tau) <= omega(f, tau) space frl tau $
+
+  $Let epsilon >0 => exists tau : omega(f, tau) < epsilon => omega(|f|, tau) < epsilon$
+]
 
 ]

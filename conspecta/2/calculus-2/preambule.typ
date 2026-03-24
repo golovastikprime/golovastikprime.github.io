@@ -6,6 +6,9 @@
 
 #let dfrac(a, b) = $display(frac(#a, #b))$
 #let dsum = $display(sum)$
+
+#let frl = $forall$
+#let ing = $display(integral_a^b)$
 #let Let = "Пусть"
 #let undertext(a, b) = $op(#a, limits: #true)_(#b)$
 
