@@ -37,7 +37,11 @@
   thm-numbering: thm-numbering-heading.with(max-heading-level: 2),
   //thm-styling: my-theorem-style
 )
- 
+ #let theme(txt) = align(center)[
+  ==#txt
+#v(2em)
+]
+
 #let lecture(body) = {
   set enum(indent: 2em)
   show math.equation: set pad(left: 2em)

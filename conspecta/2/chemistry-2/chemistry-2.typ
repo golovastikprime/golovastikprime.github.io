@@ -8,3 +8,6 @@
 
 #include "files/lecture-1.typ"
 #include "files/lecture-2.typ"
+#include "files/lecture-3.typ"
+#include "files/lecture-4.typ"
+#include "files/lecture-5.typ"
