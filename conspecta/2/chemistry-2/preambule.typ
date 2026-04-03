@@ -1,6 +1,11 @@
 #import "@preview/lemmify:0.1.8": *
+#import "@preview/chemformula:0.1.2": *
 
 #set heading(numbering: "1.1")
+
+#let theme(txt) = align(center)[== #txt
+#v(2em)
+]
 
 #let lecture-counter = counter("lecture")
 
@@ -37,11 +42,7 @@
   thm-numbering: thm-numbering-heading.with(max-heading-level: 2),
   //thm-styling: my-theorem-style
 )
- #let theme(txt) = align(center)[
-  ==#txt
-#v(2em)
-]
-
+ 
 #let lecture(body) = {
   set enum(indent: 2em)
   show math.equation: set pad(left: 2em)
@@ -58,3 +59,28 @@
   body
   pagebreak()
 }
+
+#let Be = "Be"
+#let Ga = "Ga"
+#let Ge = "Ge"
+#let As = "As"
+#let Se = "Se"
+#let Br = "Br"
+#let Kr = "Kr"
+#let Tl = "Tl"
+#let Pb = "Pb"
+#let Bi = "Bi"
+#let Po = "Po"
+#let At = "At"
+#let Rn = "Rt"
+#let Zn = "Zn"
+#let Zr = "Zr"
+#let Hf = "Hf"
+#let Sn = "Sn"
+#let ns = "ns"
+#let np = "np"
+#let Cl = "Cl"
+#let NH = "NH"
+#let BF = "BF"
+#let sp = "sp"
+#let dsp = "dsp"
