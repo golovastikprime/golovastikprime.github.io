@@ -12,6 +12,11 @@
 #let Let = "Пусть"
 #let undertext(a, b) = $op(#a, limits: #true)_(#b)$
 
+#let dx = $dif x$
+#let dt = $dif t$
+#let CR = $cal(R)$
+#let int(a,b) = $display(integral_#a^#b)$
+#let evaluated(expr, size: 100%) = $lr(#expr|, size: #size)$
 #box()
 #let (
   theorem, lemma, corollary,
@@ -23,7 +28,12 @@
   thm-numbering: thm-numbering-heading.with(max-heading-level: 2),
   //thm-styling: my-theorem-style
 )
- 
+
+#let theme(txt) = align(center)[== #txt
+
+ #v(3em)
+]
+
 #let lecture(body) = {
   set enum(indent: 2em)
   show math.equation: set pad(left: 2em)

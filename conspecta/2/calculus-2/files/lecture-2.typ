@@ -1,109 +1,201 @@
 #import "../preambule.typ": *
 
+#let tba = $tau_(a b)$
+#let tab = $tau_(alpha beta)$
+  
 #lecture[
-  #corollary[
-    $ f,g : [a,b]->RR, f in cal(R) and g = f|_([a,y]\/Y) , Y={y_i}_(i=1)^m \ => exists ing g(x) d x = ing f(x) d x $
+  // ------------------------------------------------------------------
+  // Следствие: изменение функции в конечном числе точек не влияет на интеграл
+  // ------------------------------------------------------------------
+  #proposition[
+    $ f,g : [a,b] -> RR, f in cal(R) and g = f|_([a,y] \/ Y) , Y = {y_i}_(i=1)^m \ => exists ing g(x) d x = ing f(x) d x $
   ]
   #let tl = $tau, xi$
   #proof[
+    // Пусть τ — разбиение [a,b], ξ — выборка из τ.
     $tau$ - дробление $[a,b]$, $xi$ - замещение $tau$
 
-    $ sigma(g, tl) - sigma(f, tl) = sum_(i=1)^m (g(xi_i) - f(xi_i))mu(Delta_i) + sum_(i:Delta_i inter Y != emptyset) + sum_(i : Delta_i inter Y = emptyset ) $
-
-    $ f in cal(R) => |f| <= C_f => |g|<= dfrac(
-      max(C_f, |g(Y)|), C_g
-    )\
-    |sigma(g, tl) - sigma(f, tl)| <+ sum (|g(xi_i)| + |f(xi_i)|) mu(Delta_i) <= (C_f + C_g) |tau| sum_(i : Delta_i inter Y = emptyset ) <= 2m (C_f + C_g)|tau| + epsilon/2 \
-
-    frl epsilon > 0 exists delta > 0 : frl tau, xi |tau| < delta => |sigma(f, tl) - I| < epsilon/2 \
-    2m(C_f + C_g)|tau| < epsilon/2
-    $
-
-    Как только $|tau| < dfrac(epsilon, 4m(C_f + C_g))=>$
-    В качестве $delta$ берем $delta' = min(delta, dfrac(epsilon, 4m(C_f+C_g)))$
-  ]
-
-  #corollary[$f in cal(R)[a,b], [alpha, beta] subset [a,b] => f in cal(R)[alpha, beta] $]
-  #proof[$ f in B[a,b] and f in cal(R)[a,b] <=> frl epsilon exists tau: omega(f, tau) < epsilon and omega(f, tau) = sum_i^n omega(f, Delta_i)  mu(Delta_i) $
-  #let tba = $tau_(a b)$
-  #let tab = $tau_(alpha beta)$
-  
-  $ frl epsilon >0 : quad &exists tau_(a b) : omega(f, tba) < epsilon\
-              &exists tab : omega(f, tab) < epsilon $
-
-  Построим $tba' = tba union {alpha, beta} => omega(f, tba') <= omega(f, tba) < epsilon$
-
-  $ tba' : a = x_0' < x_1' < ... < x_n' = b $
-
-  Найдутся такие $k, m$, что выполнено условие $alpha = x'_k, beta = x'_m$
-
-  $ tab : alpha = x'_k < ... < x'_m = beta \ 
-    omega(f, tab) = sum_(i=k)^m omega(f, Delta_i) mu(Delta_i) <= sum_(i=1)^n omega(f, Delta_i) mu(Delta_i) < epsilon
-  $]
-
-#pagebreak()
-
-  
-  #align(
-  box([
-    Давайте введем соглашение
+    Разность интегральных сумм для $g$ и $f$:
 
     
-    - $a, b in RR$
-    - $[a,b] = {x in RR : min(a,b) <= x <= max(a,b)}$
-    - $f in cal(R) [2,1] <=> f in cal(R)[1,2]$
-    - $f in cal(R)[a,a]$
-    - $ ing f(x) d x = cases(ing f ", "a<b,0 ", a=b" , -ing  "if" b<a, ) $
-    - $ integral.dash_a^b f(x) d x = integral_min(a,b)^max(a,b) f(x) d x, space integral.dash_a^a f(x)d x = 0 $
-  ], stroke: black, inset: 1em), center)
-  #align(center)[
-  #pagebreak()
-  #text(size: 1.8em)[Аддитивность интеграла по отрезку]
+    $ sigma(g, tl) - sigma(f, tl) = sum_(i=1)^m (g(xi_i) - f(xi_i)) mu(Delta_i) + sum_(i: Delta_i inter Y != emptyset) (g(xi_i) - f(xi_i)) mu(Delta_i) + sum_(i : Delta_i inter Y = emptyset ) (g(xi_i) - f(xi_i)) mu(Delta_i) $
+    Второе слагаемое: отрезки, содержащие точки из $Y$. Третье слагаемое: отрезки, не содержащие $Y$.
+    На $Y$ значения $g$ могут отличаться от $f$, но на остальных отрезках $g = f$.
 
-  #corollary[$ Let c in RR, f in cal(R)[a,b] and f cal(R)[b, c] => f in cal(R)[a,c] and ing + integral_b^c = integral_a^c $]
-  #proof[
-    #let tab = $tau_(a b)$
-    #let tbc = $tau_(b c)$
-    $ f in B[a, b] and f in B[b, c] => f in B[a, c] $
-    $ f in cal(R)[a,c] <=> I^*(a,c) = I_*(a,c) $
-    $ frl epsilon >0space &exists tau_(a b) : s (f, tab) > I_*(a,b) - epsilon/2 \ 
-    &exists tbc : s(f, tbc) > I_*(b,c) - epsilon/2 $
+    Так как $f$ интегрируема, она ограничена: $|f| ≤ C_f$. Функция $g$ также ограничена: $|g| ≤ C_g$.
+    
+    Оценим разность интегральных сумм. Для отрезков, содержащих точки $Y$, используем ограниченность.
+    
+    $ |sigma(g, tl) - sigma(f, tl)| <= sum_{i: Delta_i inter Y != emptyset} (|g(xi_i)| + |f(xi_i)|) mu(Delta_i) $
+     Количество отрезков, пересекающих $Y$, не превосходит $2m$ (каждая точка Y может принадлежать не более чем двум отрезкам разбиения).
+    $ <= (C_f + C_g) dot (2m) dot |tau|, quad |tau| = max_i mu(Delta_i) $
+    аким образом, для любого $epsilon > 0$ можно выбрать разбиение настолько мелкое, чтобы эта оценка была меньше $epsilon\\2$.
 
-    Давайте рассмотрим следующие разбиение $tau_(a c) := tab union tbc$
-  #let tac = $tau_(a c)$
-    $ s(f, tac ) = s(f, tab) + s(f, tbc) > I(a,b) + I(b,c) - epsilon 
-    \ => I_*(a, c) = sup_tau s(f, tau) >= s(f, tac) 
-    \ => I_*(a, c) >= I(a, b) + I(b, c) $
-
-    Аналогично для $I* => I_*(a, c) >= I(a,b) + I(b,c) >= I^*(a,c)$
-
-    Но $I^* >= I_* => I(a,c) = I(a,b)+I(b,c)$
+    По определению интеграла Римана:
+    $ forall epsilon > 0 exists delta > 0 : forall tau, xi, |tau| < delta => |sigma(f, tl) - I| < epsilon/2 $
+     Выберем $δ' = min(δ, ε/(4m(C_f+C_g)))$. Тогда при $|τ| < δ'$ получим
+    $ 2m(C_f + C_g)|tau| < epsilon/2 $
+     Следовательно, $|σ(g,τ,ξ) - I| ≤ |σ(g,τ,ξ)-σ(f,τ,ξ)| + |σ(f,τ,ξ)-I| < ε$, что доказывает интегрируемость g и равенство интегралов.
   ]
 
-  #theorem(name: "О среднем")[
-    $f,g in cal(R)[a,b], g >=0 =>$
+  // ------------------------------------------------------------------
+  // Следствие: сужение интегрируемой функции на подотрезок интегрируемо
+  // ------------------------------------------------------------------
+  #pagebreak()
+  #proposition(name: [сужение интегрируемой функции на подотрезок интегрируемо])[
+    
+    $f in cal(R)[a,b], [alpha, beta] subset [a,b] => f in cal(R)[alpha, beta] $]
+  #proof[
+     Интегрируемость по Риману эквивалентна условию: для любого $ε>0$ существует разбиение, на котором сумма колебаний меньше $ε$.
+    $ f in B[a,b] and f in cal(R)[a,b] <=> forall epsilon exists tau: omega(f, tau) < epsilon $
+     где$ ω(f, τ) = ∑ ω(f, Δ_i) μ(Δ_i)$ — взвешенная сумма колебаний. 
+     
+     Возьмём произвольное $ε>0$. Существует разбиение $τ_(a b)$ всего отрезка $[a,b]$ с $ω(f, τ_(a b)) < ε$.
+    $ forall epsilon >0 : quad &exists tau_(a b) : omega(f, tba) < epsilon $
+     
+    Добавим точки $α$ и $β$ в разбиение (измельчение не увеличивает $ω$).
 
+     
+    Построим $tba' = tba union {alpha, beta} => omega(f, tba') <= omega(f, tba) < epsilon$
+
+    $ tba' : a = x_0' < x_1' < ... < x_n' = b $ Найдутся такие $k, m$, что выполнено условие $alpha = x'_k, beta = x'_m$
+
+    // Разбиение τ_αβ = {x'_k, ..., x'_m} является разбиением отрезка [α,β]. Его колебание:
+    $ tab : alpha = x'_k < ... < x'_m = beta \ 
+    omega(f, tab) = sum_(i=k)^m omega(f, Delta_i) mu(Delta_i) <= sum_(i=1)^n omega(f, Delta_i) mu(Delta_i) < epsilon $
+    Таким образом, условие интегрируемости выполнено для $[α,β]$.
+  ]
+
+
+// ------------------------------------------------------------------
+// Соглашение об интеграле для любых пределов (в том числе a>b и a=b)
+// ------------------------------------------------------------------
+#pagebreak()
+#theme[Аддитивность интеграла по отрезку]
+
+// ------------------------------------------------------------------
+// Следствие: аддитивность интеграла при стыковке отрезков
+// ------------------------------------------------------------------
+#proposition(name: [аддитивность интеграла при стыковке отрезков])[$ Let c in RR, f in cal(R)[a,b] and f in cal(R)[b, c] => f in cal(R)[a,c] and ing_a^b + integral_b^c = integral_a^c $]
+#proof[
+    Функция, интегрируемая на каждом из отрезков, ограничена на каждом, а значит ограничена и на объединении.
+    $ f in B[a, b] and f in B[b, c] => f in B[a, c] $
+   Для доказательства интегрируемости на $[a,c]$ покажем равенство верхнего и нижнего интегралов Дарбу.
+    $ f in cal(R)[a,c] <=> I^*(a,c) = I_*(a,c) $
+    По определению нижнего интеграла Дарбу:
+     #let tab = $tau_(a b)$
+    #let tbc = $tau_(b c)$
+    #let tac = $tau_(a c)$
+    $ forall epsilon >0 space &exists tau_(a b) : s (f, tab) > I_*(a,b) - epsilon/2 \ 
+    &exists tbc : s(f, tbc) > I_*(b,c) - epsilon/2 $
+     Рассмотрим разбиение $τ_(a c) = τ_"ab" ∪ τ_"bc"$ (объединение узлов). Нижняя сумма Дарбу на нём:
+    Давайте рассмотрим следующие разбиение $tau_(a c) := tab union tbc$
+    $ s(f, tac ) = s(f, tab) + s(f, tbc) > I_*(a,b) + I_*(b,c) - epsilon $
+    // Следовательно, точная верхняя грань нижних сумм не меньше этой суммы:
+    $ => I_*(a, c) = sup_tau s(f, tau) >= s(f, tac) => I_*(a, c) >= I_*(a,b) + I_*(b,c) $
+    // Аналогично для верхнего интеграла получаем противоположное неравенство, откуда следует равенство.
+    $ => I_*(a, c) >= I_*(a,b) + I_*(b,c) >= I^*(a,c) $
+    // Но всегда I^* ≥ I_*, значит все неравенства обращаются в равенства и интеграл аддитивен.
+    $ I^* >= I_* => I(a,c) = I(a,b)+I(b,c) $
+  ]
+
+// ------------------------------------------------------------------
+// Теорема о среднем (для произведения двух функций)
+// ------------------------------------------------------------------
+#theorem(name: "О среднем")[
+    $f,g in cal(R)[a,b], g >=0 =>$
     $ exists mu in [m_f, M_f] : ing f(x)g(x) d x = mu ing g(x) d x $
   ]
-  #proof[
+#proof[
+    // Из определения точных граней: m_f ≤ f(x) ≤ M_f. Умножая на неотрицательную g, сохраняем неравенства.
     $m_f <= f(x) <= M_f => m_f g(x) <= f(x) g(x) <= M_f g(x)$
-
-    $ ing m_f g <= ing f g ing M_f g $
-    
-    $ "if" I_g != 0 =>  mu = dfrac(ing f g, I_g)," otherwise all good" $
+    // Интегрируя (монотонность интеграла), получаем:
+    $ ing m_f g <= ing f g <= ing M_f g $
+    // Если ∫ g = 0, то утверждение тривиально (любое μ подходит). Если ∫ g > 0, то
+    $ "if" I_g != 0 =>  mu = dfrac(ing f g, I_g) in [m_f, M_f] $
   ]
-  
-]
 
 #pagebreak()
 
 #align([#text("Интеграл с верхним и нижним пределом", size: 19pt)], center)
 
-
-
-
+// ------------------------------------------------------------------
+// Теорема о непрерывности и дифференцируемости интеграла с переменным верхним пределом
+// ------------------------------------------------------------------
+#theorem[$a<b, f in cal(R)[a,b]$
+  $ F(t):= int(a,t) f(x)dx, quad x in [a,b] $ Тогда выполнено следующее:
+  + $F$ - непрерывно на $[a,b]$
+  + Если $f$ непрерывна на $[a,b]$, то $ exists F'(t)=f(t)$ для всех t∈[a,b].
 ]
 
+// ------------------------------------------------------------------
+// Формула Ньютона-Лейбница
+// ------------------------------------------------------------------
+#theme[Формула Ньютона-Лейбница]
 
+#theorem(name: [Формула Ньютона-Лейбница ])[
+  $F$ - дифференцируема на $[a,b]$, $F' in cal(R)[a,b]$
+  $ int(a,b)F'(t)dt = F(b) - F(a) $
+]
+#proof[
+     Рассмотрим равномерное разбиение отрезка [a,b] на n частей.
+    $Let n in NN; space TT : x_i := a + i dfrac(b-a,n), i=0,...,n$
+     На каждом частичном отрезке$ I_i = [x_(i-1), x_i]$ по теореме Лагранжа найдётся точка $ξ_i ∈ I_i$ такая, что
+    $ xi_i in I_i : F'(xi_i) mu(I_i) = F(x_i) - F(x_(i-1)) $
+     Составим интегральную сумму для $F′$:
+    $ sigma(f, TT, xi) = sum_(i=1)^n F'(xi_i) mu(I_i) = sum_(i=1)^n (F(x_i) - F(x_(i-1))) = F(b) - F(a) $
+     При $n→∞ $ (мелкость разбиения $→0$) интегральные суммы стремятся к интегралу, поэтому
+    $ ∫_a^b F′(t) dt = F(b) − F(a) $.
+  ]
 
+// ------------------------------------------------------------------
+// Интегрирование по частям
+// ------------------------------------------------------------------
+#theorem(name: "Интегрирование по частям")[$f,g$ дифференцируемы на $[a,b]$, $f',g' in cal(R)[a,b] => $ $ exists int(a,b)f(x) d g(x)= evaluated(f dot g, size: #200%)_a^b - int(a,b)g(x) d f(x)  $]
+// Здесь d g(x) = g'(x) dx и т.д.
+#proof[
+    // Произведение f·g дифференцируемо, и его производная равна f'g + fg'.
+    $ f - "диф" => f in C => f in cal(R) => f dot g' in cal(R)$
+    $ F(x) = f(x)g(x) => F'(x)=f'(x)g(x) + f(x)g'(x) => F' in cal(R) $
+     Интегрируя обе части и применяя формулу Ньютона-Лейбница:
+    $ int(a,b)(f'g + f g') dx = evaluated(f g, size: #200%)_a^b $
+     Отсюда получаем искомое равенство.
+  ]
 
+// ------------------------------------------------------------------
+// Замена переменной в интеграле Римана
+// ------------------------------------------------------------------
+#theorem(name: [о замене переменных])[
+  $f in C[a,b], space phi[alpha, beta] -> [a,b ]$ - дифференцируема,
+  $ phi' in cal(R)[alpha,beta] => exists int(alpha, beta)f(phi(t)) d phi(t) = int(phi(alpha), phi(beta))f(x)dx $
+]
+#proof[
+     Так как $f$ непрерывна, у неё существует первообразная $F (F' = f)$.
+    $ f in C => exists F' = f => int(phi(alpha), phi(beta)) f(x) dx = F(phi(beta)) - F(phi(alpha)) =: G(beta) - G(alpha) $
+     Вычислим производную $G(t) = F(φ(t))$:
+    $ G'(t)=F'(phi(t))phi'(t)=f(phi(t))phi'(t) $
+     Поскольку $G'$ непрерывна (как произведение непрерывных функций), применим формулу Ньютона-Лейбница:
+    $ G(beta) - G(alpha) = int(alpha, beta) f(phi(t)) phi'(t) dt = int(alpha, beta) f(phi(t)) d phi(t) $
+  ]
+
+// ------------------------------------------------------------------
+// Формула Тейлора с остатком в интегральной форме
+// ------------------------------------------------------------------
+#theme[Формула тейлора с остаточным членом в интегральной форме]
+#theorem(name: [Формула тейлора с остаточным членом в интегральной форме])[
+  
+  $f "- "(n+1)$ раз дифференцируема на $[a,b]; quad x, x_0 in [a,b] => $ 
+  
+  $ f(x) = sum_(k=0)^(n) dfrac(f^((k))(x_0), k!)(x-x_0)^k + 1/ n! int(x_0, x) f^((n+1))(t)(x-t)^n dt $
+]
+
+#proof[
+     Доказательство по индукции. База $n=0$: формула сводится к $f(x)=f(x_0)+∫_{x_0}^x f'(t) dt$ — верно по Ньютону-Лейбницу.
+     Шаг индукции: предполагаем формулу для $n$, доказываем для $n+1$.
+    Заметим, что $(x−t)^(n+1)$ производная по $t$ даёт $-(n+1)(x−t)^n$. Поэтому
+    $ (x-t)^n = -1/(n+1) frac{d}{dt} (x-t)^{n+1} $
+     Подставим в остаточный член и проинтегрируем по частям:
+    $ 1/n! int(x_0, x) f^((n+1))(t) (x-t)^n dt = -1/((n+1)n!) int(x_0, x) f^((n+1))(t) d((x-t)^{n+1}) $
+    /Интегрирование по частям даёт выражение, которое после приведения приводит к формуле для $n+1$.
+  ]
+]
