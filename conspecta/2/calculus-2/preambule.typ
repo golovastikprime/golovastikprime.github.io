@@ -20,29 +20,41 @@
 #box()
 #let (
   theorem, lemma, corollary,
-  remark, proposition, example,
-  definition,
-  proof, rules: thm-rules
+  remark, example,
+  rules: thm-rules
 ) = default-theorems(
   "thm-group",
   thm-numbering: thm-numbering-heading.with(max-heading-level: 2),
+  lang: "ru"
   //thm-styling: my-theorem-style
 )
 
+#let (
+  proof,
+  definition,proposition,
+  rules: my-rules
+) = new-theorems(
+  "my-group",
+  (
+    proposition : "Утв",
+    proof: "Док-во:",
+    definition: "Опр"
+  ),
+)
+#let proof = proof.with(numbering: none)
+
 #let theme(txt) = align(center)[== #txt
 
- #v(3em)
+ #v(1.5em)
 ]
 
 #let lecture(body) = {
-  set enum(indent: 2em)
-  show math.equation: set pad(left: 2em)
-  set math.equation(number-align: left)
+  set page(
+  paper: "a4",
+  margin: (x: 1.7cm, y: 1.5cm))
+  set text( size: 11pt)
   show: thm-rules
-  show thm-selector("thm-group", subgroup: "theorem"): it => box(
-    it,
-    inset: 1em
-  )
+  show: my-rules
   
   lecture-counter.step()
   let lecture-heading = heading(level: 1, numbering: "1")[Лекция]
