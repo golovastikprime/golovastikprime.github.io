@@ -1,3 +1,141 @@
+<!doctype html>
 <html lang="ru">
-<a href="https://golovastikprime.github.io/conspecta">МКН. Математика. 2022-2026. Конспекты лекций.</a>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Конспекты лекций ПМФ СПбАУ: математика, алгоритмы, алгебра и естественные науки.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Конспекты — ПМФ СПбАУ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="#library">Библиотека</a>
+      <a href="#about">О проекте</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="eyebrow"><span></span> 2025—2026 учебный год</div>
+      <h1 id="hero-title">Нужный конспект.<br><em>Без долгих поисков.</em></h1>
+      <p class="hero-copy">Лекции и практические материалы по математике, алгоритмам и естественным наукам — в одном аккуратном архиве.</p>
+
+      <form class="search" role="search" id="search-form">
+        <label class="sr-only" for="search-input">Поиск по конспектам</label>
+        <span class="search-icon" aria-hidden="true"></span>
+        <input id="search-input" type="search" autocomplete="off" placeholder="Название, преподаватель или предмет…">
+        <kbd><span>⌘</span>K</kbd>
+      </form>
+      <p class="search-hint">Например: <button type="button" data-query="алгоритмы">алгоритмы</button>, <button type="button" data-query="Вавилов">Вавилов</button> или <button type="button" data-query="практика">практика</button></p>
+
+      <div class="hero-meta" aria-label="Сведения об архиве">
+        <span><strong>15</strong> подборок</span>
+        <span><strong>3</strong> семестра</span>
+        <span><strong>PDF</strong> открываются сразу</span>
+      </div>
+    </section>
+
+    <section class="library" id="library" aria-labelledby="library-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Архив материалов</p>
+          <h2 id="library-title">Все конспекты</h2>
+        </div>
+        <p id="result-count" aria-live="polite">15 материалов</p>
+      </div>
+
+      <div class="filters" aria-label="Фильтр по семестру">
+        <button class="filter active" type="button" data-filter="all" aria-pressed="true">Все</button>
+        <button class="filter" type="button" data-filter="1" aria-pressed="false">I семестр</button>
+        <button class="filter" type="button" data-filter="2" aria-pressed="false">II семестр</button>
+        <button class="filter" type="button" data-filter="7" aria-pressed="false">VII семестр</button>
+      </div>
+
+      <div class="notes-grid" id="notes-grid">
+        <a class="note-card featured" data-semester="7" data-search="теория групп павел антоненко валиневич алгебра vii 7" href="/conspecta/7/pdfs/group-theory.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-indigo">Алгебра</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Теория групп</h3><p>Павел Антоненко Валиневич</p><div class="card-meta"><span>VII семестр</span><span>Конспект</span></div>
+        </a>
+        <a class="note-card" data-semester="2" data-search="алгебра николай александрович вавилов ii 2" href="/conspecta/2/pdfs/algebra-2.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-indigo">Алгебра</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Алгебра</h3><p>Николай Александрович Вавилов</p><div class="card-meta"><span>II семестр</span><span>Конспект</span></div>
+        </a>
+        <a class="note-card" data-semester="2" data-search="математический анализ максим николаевич демченко матан ii 2" href="/conspecta/2/pdfs/combined_conspects_single_title_clickable_toc.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-coral">Анализ</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Математический анализ</h3><p>Максим Николаевич Демченко</p><div class="card-meta"><span>II семестр</span><span>Лекции</span></div>
+        </a>
+        <a class="note-card" data-semester="2" data-search="современная линейная алгебра степанов алексей владимирович ii 2" href="/conspecta/2/pdfs/combined_modern_linear_algebra_conspect.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-indigo">Алгебра</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Линейная алгебра</h3><p>Алексей Владимирович Степанов</p><div class="card-meta"><span>II семестр</span><span>Конспект</span></div>
+        </a>
+        <a class="note-card" data-semester="2" data-search="математический анализ практика максим николаевич демченко матан ii 2" href="/conspecta/2/pdfs/Calculus-2-prac.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-coral">Анализ</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Математический анализ</h3><p>Максим Николаевич Демченко</p><div class="card-meta"><span>II семестр</span><span>Практика</span></div>
+        </a>
+        <a class="note-card" data-semester="2" data-search="общая химия вязьмин химия ii 2" href="/conspecta/2/pdfs/chemistry-2.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-green">Химия</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Общая химия</h3><p>Вязьмин</p><div class="card-meta"><span>II семестр</span><span>Лекции</span></div>
+        </a>
+        <a class="note-card" data-semester="2" data-search="алгоритмы степанов илья даниилович ii 2" href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-blue">Алгоритмы</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Алгоритмы</h3><p>Илья Даниилович Степанов</p><div class="card-meta"><span>II семестр</span><span>Лекции</span></div>
+        </a>
+        <a class="note-card" data-semester="2" data-search="алгоритмы практика семинары листки степанов илья даниилович ii 2" href="/conspecta/2/algosi/" target="_blank">
+          <div class="card-top"><span class="subject subject-blue">Алгоритмы</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Алгоритмы</h3><p>Илья Даниилович Степанов</p><div class="card-meta"><span>II семестр</span><span>Практика · 11 листков</span></div>
+        </a>
+        <a class="note-card" data-semester="2" data-search="математические основы алгоритмов тискин александр владимирович моа ii 2 экзамен" href="/conspecta/2/pdfs/mfa_exam_conspect_2026.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-blue">Алгоритмы</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Математические основы алгоритмов</h3><p>Александр Владимирович Тискин</p><div class="card-meta"><span>II семестр</span><span>Экзамен</span></div>
+        </a>
+        <a class="note-card" data-semester="1" data-search="алгебра николай александрович вавилов i 1" href="/conspecta/1/pdfs/algebra-1.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-indigo">Алгебра</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Алгебра</h3><p>Николай Александрович Вавилов</p><div class="card-meta"><span>I семестр</span><span>Конспект</span></div>
+        </a>
+        <a class="note-card" data-semester="1" data-search="математический анализ фкн вшэ матан i 1" href="/conspecta/1/pdfs/calculus-1.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-coral">Анализ</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Математический анализ</h3><p>ФКН ВШЭ</p><div class="card-meta"><span>I семестр</span><span>Конспект</span></div>
+        </a>
+        <a class="note-card" data-semester="1" data-search="алгоритмы степанов илья даниилович mit самостоятельное изучение i 1" href="/conspecta/2/pdfs/mit_algorithms_selfstudy_en_complete.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-blue">Алгоритмы</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Алгоритмы</h3><p>Материалы для самостоятельного изучения</p><div class="card-meta"><span>I семестр</span><span>MIT · English</span></div>
+        </a>
+        <a class="note-card" data-semester="1" data-search="математические основы алгоритмов охотин александр сергеевич моа i 1 экзамен" href="/conspecta/2/pdfs/okhotin_exam_conspect_2025.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-blue">Алгоритмы</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Математические основы алгоритмов</h3><p>Александр Сергеевич Охотин</p><div class="card-meta"><span>I семестр</span><span>Экзамен</span></div>
+        </a>
+        <a class="note-card" data-semester="2" data-search="обобщенные функции фильтры математический анализ топология задачи ii 2" href="/conspecta/2/pdfs/combined_generalized_and_filter_analysis_conspects.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-coral">Анализ</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Обобщённые функции и фильтры</h3><p>Дополнительные материалы</p><div class="card-meta"><span>II семестр</span><span>Конспект</span></div>
+        </a>
+        <a class="note-card" data-semester="2" data-search="анализ фильтры топология задачи математический ii 2" href="/conspecta/2/pdfs/analysis_filter_topology_notes_with_problems.pdf" target="_blank">
+          <div class="card-top"><span class="subject subject-coral">Анализ</span><span class="arrow" aria-hidden="true">↗</span></div>
+          <h3>Анализ, фильтры и топология</h3><p>Конспект с задачами</p><div class="card-meta"><span>II семестр</span><span>Задачи</span></div>
+        </a>
+      </div>
+
+      <div class="empty-state" id="empty-state" hidden>
+        <span aria-hidden="true">∅</span><h3>Ничего не нашлось</h3><p>Попробуйте другое название, фамилию или семестр.</p><button type="button" id="reset-search">Сбросить поиск</button>
+      </div>
+    </section>
+
+    <section class="about" id="about">
+      <div><p class="section-kicker">О проекте</p><h2>Знания становятся полезнее,<br>когда ими делятся.</h2></div>
+      <div class="about-copy"><p>Это открытый архив конспектов по мотивам лекций бакалавриата ПМФ СПбАУ. Материалы можно читать, скачивать и использовать при подготовке.</p><p>Нашли опечатку или неточность? Исправления приветствуются в репозитории проекта.</p><a href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank" rel="noreferrer">Предложить исправление <span aria-hidden="true">→</span></a></div>
+    </section>
+  </main>
+
+  <footer><a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a><p>Собрано студентами для студентов.</p><p>2025—2026</p></footer>
+</body>
 </html>
