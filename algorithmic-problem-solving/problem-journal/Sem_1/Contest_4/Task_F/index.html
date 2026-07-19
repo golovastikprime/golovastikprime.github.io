@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи Sem_1 / Contest_4 / Task_F: подсчёт пар вложенных отрезков сортировкой, сжатием координат и деревом отрезков.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Task_F — Counting Nested Segments — Журнал задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/#library">Библиотека</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решение задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <nav class="study-nav" aria-label="Разделы Algorithmic Problem Solving">
+    <a href="/algorithmic-problem-solving/">Обзор</a>
+    <a href="/algorithmic-problem-solving/patterns/">Паттерны</a>
+    <a href="/algorithmic-problem-solving/problem-journal/" aria-current="location">Журнал задач</a>
+    <a href="/algorithmic-problem-solving/mistake-log/">Журнал ошибок</a>
+    <a href="/algorithmic-problem-solving/review-queue/">Очередь повторения</a>
+  </nav>
+
+  <main class="study-main content-page">
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+      <a href="/algorithmic-problem-solving/">Обзор</a><span aria-hidden="true">/</span>
+      <a href="/algorithmic-problem-solving/problem-journal/">Журнал задач</a><span aria-hidden="true">/</span>
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/">Sem_1</a><span aria-hidden="true">/</span>
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_4/">Contest_4</a><span
+        aria-hidden="true">/</span>
+      <span aria-current="page">Task_F</span>
+    </nav>
+
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Accepted · 2026-07-20</p>
+      <h1>Sem_1 / Contest_4 / Task_F — Counting Nested Segments</h1>
+      <p class="study-lead">В этой задаче сортировка обеспечивает <code>L′ ≤ L</code>, а дерево отрезков проверяет
+        <code>R′ ≥ R</code>.</p>
+    </header>
+
+    <div class="entry-layout">
+      <article class="entry-main">
+        <section class="entry-section" aria-labelledby="statement-title">
+          <p class="section-kicker">Условие</p>
+          <h2 id="statement-title">Задача</h2>
+          <p>Дан набор из <var>n</var> отрезков на прямой. Два отрезка называются вложенными, если они не равны и
+            один из них содержит другой. Требуется найти число пар вложенных отрезков.</p>
+          <p>Неравенство отрезков здесь означает, что пары их границ не совпадают полностью:</p>
+          <p><code>(L<sub>i</sub>, R<sub>i</sub>) ≠ (L<sub>j</sub>, R<sub>j</sub>)</code>.</p>
+          <p>Совпадение только левой или только правой границы не исключает вложенность.</p>
+
+          <h3>Формат ввода</h3>
+          <p>В первой строке дано целое число <var>n</var>:</p>
+          <p><code>1 ≤ n ≤ 3 · 10<sup>5</sup></code>.</p>
+          <p>В следующих <var>n</var> строках даны пары целых чисел <var>l<sub>i</sub></var>, <var>r<sub>i</sub></var>,
+            задающие границы отрезков:</p>
+          <p><code>0 ≤ l<sub>i</sub> ≤ r<sub>i</sub> ≤ 10<sup>9</sup></code>.</p>
+
+          <h3>Формат вывода</h3>
+          <p>Вывести число пар вложенных отрезков.</p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="observation-title">
+          <p class="section-kicker">Подход</p>
+          <h2 id="observation-title">Ключевое наблюдение</h2>
+          <p>Отрезок <code>[L′, R′]</code> содержит <code>[L, R]</code> тогда и только тогда, когда</p>
+          <p><code>L′ ≤ L, R′ ≥ R</code>.</p>
+          <p>Здесь есть два монотонных условия по двум координатам. Отсортируем отрезки по <var>L</var> по
+            возрастанию, а при равных <var>L</var> — по <var>R</var> по убыванию. Тогда для текущего отрезка условие
+            <code>L′ ≤ L</code> уже обеспечено порядком обработки. Среди ранее обработанных отрезков остаётся
+            посчитать только те, для которых <code>R′ ≥ R</code>.</p>
+          <p>Правые границы сжимаются в массив</p>
+          <p><code>rights = [r<sub>0</sub> &lt; r<sub>1</sub> &lt; … &lt; r<sub>k−1</sub>]</code>.</p>
+          <p>Если <code>p = pos(R)</code>, то условие <code>R′ ≥ R</code> эквивалентно попаданию сжатой координаты
+            <var>R′</var> в суффикс <code>[p, k)</code>. Количество таких ранее обработанных отрезков поддерживает
+            дерево отрезков.</p>
+          <p>Полностью одинаковые пары <code>(L, R)</code> объединяются в класс мощности <var>c</var>. Для класса
+            сначала выполняется запрос, а только затем все <var>c</var> его элементов добавляются в дерево. Поэтому
+            одинаковые отрезки не учитывают друг друга.</p>
+          <p>Для текущего класса:</p>
+          <p><code>q = Query(p, k)</code>,</p>
+          <p><code>answer += q · c</code>,</p>
+          <p>после чего выполняется <code>Add(p, c)</code>.</p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="invariant-title">
+          <p class="section-kicker">Структура данных</p>
+          <h2 id="invariant-title">Инвариант структуры данных</h2>
+          <p>Перед обработкой очередного класса в листе с индексом <var>j</var> хранится количество уже обработанных
+            отрезков, правая граница которых имеет сжатый индекс <var>j</var>. Во внутренней вершине хранится сумма по
+            соответствующему диапазону.</p>
+          <p>Следовательно, запрос суммы на <code>[p, k)</code> возвращает число уже обработанных отрезков с правой
+            границей не меньше <var>R</var>.</p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="proof-title">
+          <p class="section-kicker">Почему это работает</p>
+          <h2 id="proof-title">Доказательство корректности</h2>
+
+          <h3>Лемма 1. Каждая посчитанная пара допустима</h3>
+          <p>Пусть при обработке класса <code>[L, R]</code> запрос учёл ранее обработанный отрезок
+            <code>[L′, R′]</code>.</p>
+          <p>Из порядка сортировки следует <code>L′ ≤ L</code>. Поскольку сжатая координата <var>R′</var> попала в
+            суффикс <code>[p, k)</code>, имеем <code>R′ ≥ R</code>. Поэтому</p>
+          <p><code>[L, R] ⊆ [L′, R′]</code>.</p>
+          <p>Полное равенство невозможно: весь класс одинаковых отрезков <code>(L, R)</code> добавляется в дерево
+            только после запроса.</p>
+
+          <h3>Лемма 2. Каждая допустимая пара будет посчитана</h3>
+          <p>Пусть отличный от текущего отрезок <code>[L′, R′]</code> содержит <code>[L, R]</code>. Тогда</p>
+          <p><code>L′ ≤ L, R′ ≥ R</code>.</p>
+          <p>Если <code>L′ &lt; L</code>, то <code>[L′, R′]</code> обработан раньше из-за сортировки по левой границе.
+            Если <code>L′ = L</code>, то из отличия отрезков и вложенности следует <code>R′ &gt; R</code>; при равных
+            левых границах больший правый конец также расположен раньше.</p>
+          <p>Таким образом, содержащий отрезок уже находится в дереве. Из <code>R′ ≥ R</code> следует
+            <code>pos(R′) ≥ p</code>, поэтому запрос <code>[p, k)</code> обязательно его учтёт.</p>
+
+          <h3>Теорема</h3>
+          <p>По лемме 1 алгоритм не считает недопустимые пары, а по лемме 2 считает каждую допустимую пару. Элементы
+            одного класса не считаются между собой благодаря порядку <code>Query</code> → <code>Add</code>. Каждая
+            допустимая пара учитывается ровно один раз — при обработке внутреннего отрезка. Следовательно, полученный
+            ответ точен.</p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="complexity-title">
+          <p class="section-kicker">Оценка ресурсов</p>
+          <h2 id="complexity-title">Сложность</h2>
+          <p>Сортировка отрезков и правых границ занимает <code>O(n log n)</code>. Каждый класс выполняет один запрос и
+            одно обновление за <code>O(log k) ⊆ O(log n)</code>. Поэтому</p>
+          <p><code>T(n) = O(n log n), S(n) = O(n)</code>.</p>
+          <p>Ответ может иметь порядок <code>C(n, 2)</code>, поэтому для ответа и произведения <code>q · c</code>
+            нужен тип <code>long long</code>.</p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="dead-end-title">
+          <p class="section-kicker">История поиска</p>
+          <h2 id="dead-end-title">Главный тупик</h2>
+          <p>Было понятно, как сортировкой контролировать левые границы, но не было ясно, как эффективно учитывать
+            правые границы.</p>
+          <p>Переход состоял в разделении двух условий:</p>
+          <ul>
+            <li>сортировка фиксирует условие по одной координате;</li>
+            <li>структура данных поддерживает условие по второй координате.</li>
+          </ul>
+          <p>Отдельного внимания потребовали равенства: одинаковые левые границы, одинаковые правые границы и
+            полностью совпадающие отрезки.</p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="signals-title">
+          <p class="section-kicker">Перенос идеи</p>
+          <h2 id="signals-title">Признаки похожих задач</h2>
+          <p>Стоит проверять сочетание сортировки и структуры данных, когда:</p>
+          <ul>
+            <li>объект задаётся несколькими координатами;</li>
+            <li>подходящая пара определяется несколькими неравенствами или другими монотонными условиями;</li>
+            <li>сортировка по одной координате автоматически обеспечивает одно условие для ранее обработанных
+              объектов;</li>
+            <li>оставшееся условие сводится к запросу количества, суммы, минимума или максимума на префиксе либо
+              суффиксе;</li>
+            <li>значения координат велики, но важен лишь их относительный порядок, поэтому применимо координатное
+              сжатие;</li>
+            <li>равные координаты требуют специального tie-breaking или групповой обработки.</li>
+          </ul>
+          <p>В этой задаче сортировка обеспечивает <code>L′ ≤ L</code>, а дерево отрезков проверяет
+            <code>R′ ≥ R</code>.</p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="corrections-title">
+          <p class="section-kicker">Post-Accepted</p>
+          <h2 id="corrections-title">Явно отмеченные содержательные исправления</h2>
+          <p>Ниже сохранены исправления, зафиксированные в post-Accepted разборе. Каждое из них меняет исходное
+            утверждение или необходимое условие реализации.</p>
+          <ul>
+            <li><strong>CORRECTION:</strong> условие на правую границу нестрогое: <code>R′ ≥ R</code>, а не
+              <code>R′ &gt; R</code>.</li>
+            <li><strong>CORRECTION:</strong> при одинаковых левых границах правые границы сортируются по убыванию.</li>
+            <li><strong>CORRECTION:</strong> полностью одинаковые отрезки объединяются в классы.</li>
+            <li><strong>CORRECTION:</strong> для каждого класса соблюдается порядок <code>Query</code> →
+              <code>Add</code>.</li>
+            <li><strong>CORRECTION:</strong> дерево хранит количества уже обработанных отрезков, а не сами значения
+              правых границ.</li>
+            <li><strong>CORRECTION:</strong> поиск позиции и дерево используют один и тот же массив сжатых координат.
+            </li>
+            <li><strong>CORRECTION:</strong> произведение размера класса на результат запроса вычисляется в
+              <code>long long</code>.</li>
+          </ul>
+        </section>
+
+        <section class="entry-section" aria-labelledby="links-title">
+          <p class="section-kicker">Источники</p>
+          <h2 id="links-title">Ссылки</h2>
+          <ul>
+            <li>Условие задачи: <strong>TODO — добавить URL</strong>.</li>
+            <li>Accepted-код: <a
+                href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_4/Task_F/F.cpp" download><code>F.cpp</code>
+                — локальная копия</a>.</li>
+          </ul>
+        </section>
+      </article>
+
+      <aside class="entry-sidebar" aria-label="Метаданные и перекрёстные ссылки">
+        <section class="entry-section">
+          <p class="section-kicker">Метаданные</p>
+          <dl class="field-list">
+            <div><dt>Идентификатор</dt><dd><code>Sem_1/Contest_4/Task_F</code></dd></div>
+            <div><dt>Семестр</dt><dd>Sem_1</dd></div>
+            <div><dt>Контест</dt><dd>Contest_4</dd></div>
+            <div><dt>Задача</dt><dd>Task_F</dd></div>
+            <div><dt>Дата решения</dt><dd><time datetime="2026-07-20">2026-07-20</time></dd></div>
+            <div><dt>Статус</dt><dd>accepted</dd></div>
+            <div><dt>Язык</dt><dd>C++</dd></div>
+            <div><dt>Темы</dt><dd>sorting · coordinate-compression · segment-tree · sweep-line</dd></div>
+          </dl>
+        </section>
+
+        <section class="entry-section">
+          <p class="section-kicker">Паттерны</p>
+          <p><strong>TODO — оформить паттерн:</strong> сортировка по одной координате и запрос структуры данных по
+            второй.</p>
+          <div class="link-list">
+            <a href="/algorithmic-problem-solving/patterns/">Индекс паттернов</a>
+          </div>
+        </section>
+
+        <section class="entry-section">
+          <p class="section-kicker">Теория</p>
+          <p>Координатное сжатие и дерево отрезков.</p>
+          <div class="link-list">
+            <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank">Алгоритмы и структуры данных II (PDF) ↗</a>
+          </div>
+        </section>
+
+        <section class="entry-section">
+          <p class="section-kicker">Ошибки</p>
+          <p><strong>TODO — связать запись,</strong> если одна из отмеченных коррекций окажется повторяющейся ошибкой.
+          </p>
+          <div class="link-list">
+            <a href="/algorithmic-problem-solving/mistake-log/">Журнал ошибок</a>
+          </div>
+        </section>
+
+        <section class="entry-section">
+          <p class="section-kicker">Повторение</p>
+          <p><strong>TODO — добавить элемент и дату,</strong> если задача будет поставлена на повторение.</p>
+          <div class="link-list">
+            <a href="/algorithmic-problem-solving/review-queue/">Очередь повторения</a>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
