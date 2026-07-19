@@ -5,9 +5,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description"
-    content="Разбор задачи Sem_1 / Contest_4 / Task_F: подсчёт пар вложенных отрезков сортировкой, сжатием координат и деревом отрезков.">
+    content="Разбор задачи F из контеста 4 первого семестра: подсчёт пар вложенных отрезков сортировкой, сжатием координат и деревом отрезков.">
   <meta name="theme-color" content="#f4f1ea">
-  <title>Task_F — Counting Nested Segments — Журнал задач</title>
+  <title>Задача F — Counting Nested Segments — Журнал задач</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -42,17 +42,18 @@
     <nav class="breadcrumbs" aria-label="Хлебные крошки">
       <a href="/algorithmic-problem-solving/">Обзор</a><span aria-hidden="true">/</span>
       <a href="/algorithmic-problem-solving/problem-journal/">Журнал задач</a><span aria-hidden="true">/</span>
-      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/">Sem_1</a><span aria-hidden="true">/</span>
-      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_4/">Contest_4</a><span
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/">Семестр 1</a><span aria-hidden="true">/</span>
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_4/">Контест 4</a><span
         aria-hidden="true">/</span>
-      <span aria-current="page">Task_F</span>
+      <span aria-current="page">Задача F</span>
     </nav>
 
     <header class="page-intro">
       <p class="eyebrow"><span></span> Accepted · 2026-07-20</p>
-      <h1>Sem_1 / Contest_4 / Task_F — Counting Nested Segments</h1>
-      <p class="study-lead">В этой задаче сортировка обеспечивает <code>L′ ≤ L</code>, а дерево отрезков проверяет
-        <code>R′ ≥ R</code>.</p>
+      <h1>Семестр 1 / Контест 4 / Задача F — Counting Nested Segments</h1>
+      <p class="study-lead">В этой задаче сортировка обеспечивает <span class="math-inline"><var>L′</var> ≤
+          <var>L</var></span>, а дерево отрезков проверяет <span class="math-inline"><var>R′</var> ≥
+          <var>R</var></span>.</p>
     </header>
 
     <div class="entry-layout">
@@ -63,15 +64,16 @@
           <p>Дан набор из <var>n</var> отрезков на прямой. Два отрезка называются вложенными, если они не равны и
             один из них содержит другой. Требуется найти число пар вложенных отрезков.</p>
           <p>Неравенство отрезков здесь означает, что пары их границ не совпадают полностью:</p>
-          <p><code>(L<sub>i</sub>, R<sub>i</sub>) ≠ (L<sub>j</sub>, R<sub>j</sub>)</code>.</p>
+          <p class="math-display">(<var>L</var><sub>i</sub>, <var>R</var><sub>i</sub>) ≠
+            (<var>L</var><sub>j</sub>, <var>R</var><sub>j</sub>).</p>
           <p>Совпадение только левой или только правой границы не исключает вложенность.</p>
 
           <h3>Формат ввода</h3>
           <p>В первой строке дано целое число <var>n</var>:</p>
-          <p><code>1 ≤ n ≤ 3 · 10<sup>5</sup></code>.</p>
+          <p class="math-display">1 ≤ <var>n</var> ≤ 3 · 10<sup>5</sup>.</p>
           <p>В следующих <var>n</var> строках даны пары целых чисел <var>l<sub>i</sub></var>, <var>r<sub>i</sub></var>,
             задающие границы отрезков:</p>
-          <p><code>0 ≤ l<sub>i</sub> ≤ r<sub>i</sub> ≤ 10<sup>9</sup></code>.</p>
+          <p class="math-display">0 ≤ <var>l</var><sub>i</sub> ≤ <var>r</var><sub>i</sub> ≤ 10<sup>9</sup>.</p>
 
           <h3>Формат вывода</h3>
           <p>Вывести число пар вложенных отрезков.</p>
@@ -80,18 +82,23 @@
         <section class="entry-section" aria-labelledby="observation-title">
           <p class="section-kicker">Подход</p>
           <h2 id="observation-title">Ключевое наблюдение</h2>
-          <p>Отрезок <code>[L′, R′]</code> содержит <code>[L, R]</code> тогда и только тогда, когда</p>
-          <p><code>L′ ≤ L, R′ ≥ R</code>.</p>
+          <p>Отрезок <span class="math-inline">[<var>L′</var>, <var>R′</var>]</span> содержит <span
+              class="math-inline">[<var>L</var>, <var>R</var>]</span> тогда и только тогда, когда</p>
+          <p class="math-display"><var>L′</var> ≤ <var>L</var>, <var>R′</var> ≥ <var>R</var>.</p>
           <p>Здесь есть два монотонных условия по двум координатам. Отсортируем отрезки по <var>L</var> по
             возрастанию, а при равных <var>L</var> — по <var>R</var> по убыванию. Тогда для текущего отрезка условие
-            <code>L′ ≤ L</code> уже обеспечено порядком обработки. Среди ранее обработанных отрезков остаётся
-            посчитать только те, для которых <code>R′ ≥ R</code>.</p>
+            <span class="math-inline"><var>L′</var> ≤ <var>L</var></span> уже обеспечено порядком обработки. Среди
+            ранее обработанных отрезков остаётся посчитать только те, для которых <span
+              class="math-inline"><var>R′</var> ≥ <var>R</var></span>.</p>
           <p>Правые границы сжимаются в массив</p>
-          <p><code>rights = [r<sub>0</sub> &lt; r<sub>1</sub> &lt; … &lt; r<sub>k−1</sub>]</code>.</p>
-          <p>Если <code>p = pos(R)</code>, то условие <code>R′ ≥ R</code> эквивалентно попаданию сжатой координаты
-            <var>R′</var> в суффикс <code>[p, k)</code>. Количество таких ранее обработанных отрезков поддерживает
-            дерево отрезков.</p>
-          <p>Полностью одинаковые пары <code>(L, R)</code> объединяются в класс мощности <var>c</var>. Для класса
+          <p class="math-display">rights = [<var>r</var><sub>0</sub> &lt; <var>r</var><sub>1</sub> &lt; … &lt;
+            <var>r</var><sub>k−1</sub>].</p>
+          <p>Если <span class="math-inline"><var>p</var> = pos(<var>R</var>)</span>, то условие <span
+              class="math-inline"><var>R′</var> ≥ <var>R</var></span> эквивалентно попаданию сжатой координаты
+            <var>R′</var> в суффикс <span class="math-inline">[<var>p</var>, <var>k</var>)</span>. Количество таких
+            ранее обработанных отрезков поддерживает дерево отрезков.</p>
+          <p>Полностью одинаковые пары <span class="math-inline">(<var>L</var>, <var>R</var>)</span> объединяются в
+            класс мощности <var>c</var>. Для класса
             сначала выполняется запрос, а только затем все <var>c</var> его элементов добавляются в дерево. Поэтому
             одинаковые отрезки не учитывают друг друга.</p>
           <p>Для текущего класса:</p>
@@ -106,8 +113,8 @@
           <p>Перед обработкой очередного класса в листе с индексом <var>j</var> хранится количество уже обработанных
             отрезков, правая граница которых имеет сжатый индекс <var>j</var>. Во внутренней вершине хранится сумма по
             соответствующему диапазону.</p>
-          <p>Следовательно, запрос суммы на <code>[p, k)</code> возвращает число уже обработанных отрезков с правой
-            границей не меньше <var>R</var>.</p>
+          <p>Следовательно, запрос суммы на <span class="math-inline">[<var>p</var>, <var>k</var>)</span> возвращает
+            число уже обработанных отрезков с правой границей не меньше <var>R</var>.</p>
         </section>
 
         <section class="entry-section" aria-labelledby="proof-title">
@@ -115,22 +122,28 @@
           <h2 id="proof-title">Доказательство корректности</h2>
 
           <h3>Лемма 1. Каждая посчитанная пара допустима</h3>
-          <p>Пусть при обработке класса <code>[L, R]</code> запрос учёл ранее обработанный отрезок
-            <code>[L′, R′]</code>.</p>
-          <p>Из порядка сортировки следует <code>L′ ≤ L</code>. Поскольку сжатая координата <var>R′</var> попала в
-            суффикс <code>[p, k)</code>, имеем <code>R′ ≥ R</code>. Поэтому</p>
-          <p><code>[L, R] ⊆ [L′, R′]</code>.</p>
-          <p>Полное равенство невозможно: весь класс одинаковых отрезков <code>(L, R)</code> добавляется в дерево
-            только после запроса.</p>
+          <p>Пусть при обработке класса <span class="math-inline">[<var>L</var>, <var>R</var>]</span> запрос учёл
+            ранее обработанный отрезок <span class="math-inline">[<var>L′</var>, <var>R′</var>]</span>.</p>
+          <p>Из порядка сортировки следует <span class="math-inline"><var>L′</var> ≤ <var>L</var></span>. Поскольку
+            сжатая координата <var>R′</var> попала в суффикс <span class="math-inline">[<var>p</var>,
+              <var>k</var>)</span>, имеем <span class="math-inline"><var>R′</var> ≥ <var>R</var></span>. Поэтому</p>
+          <p class="math-display">[<var>L</var>, <var>R</var>] ⊆ [<var>L′</var>, <var>R′</var>].</p>
+          <p>Полное равенство невозможно: весь класс одинаковых отрезков <span class="math-inline">(<var>L</var>,
+              <var>R</var>)</span> добавляется в дерево только после запроса.</p>
 
           <h3>Лемма 2. Каждая допустимая пара будет посчитана</h3>
-          <p>Пусть отличный от текущего отрезок <code>[L′, R′]</code> содержит <code>[L, R]</code>. Тогда</p>
-          <p><code>L′ ≤ L, R′ ≥ R</code>.</p>
-          <p>Если <code>L′ &lt; L</code>, то <code>[L′, R′]</code> обработан раньше из-за сортировки по левой границе.
-            Если <code>L′ = L</code>, то из отличия отрезков и вложенности следует <code>R′ &gt; R</code>; при равных
-            левых границах больший правый конец также расположен раньше.</p>
-          <p>Таким образом, содержащий отрезок уже находится в дереве. Из <code>R′ ≥ R</code> следует
-            <code>pos(R′) ≥ p</code>, поэтому запрос <code>[p, k)</code> обязательно его учтёт.</p>
+          <p>Пусть отличный от текущего отрезок <span class="math-inline">[<var>L′</var>, <var>R′</var>]</span>
+            содержит <span class="math-inline">[<var>L</var>, <var>R</var>]</span>. Тогда</p>
+          <p class="math-display"><var>L′</var> ≤ <var>L</var>, <var>R′</var> ≥ <var>R</var>.</p>
+          <p>Если <span class="math-inline"><var>L′</var> &lt; <var>L</var></span>, то <span
+              class="math-inline">[<var>L′</var>, <var>R′</var>]</span> обработан раньше из-за сортировки по левой
+            границе. Если <span class="math-inline"><var>L′</var> = <var>L</var></span>, то из отличия отрезков и
+            вложенности следует <span class="math-inline"><var>R′</var> &gt; <var>R</var></span>; при равных левых
+            границах больший правый конец также расположен раньше.</p>
+          <p>Таким образом, содержащий отрезок уже находится в дереве. Из <span
+              class="math-inline"><var>R′</var> ≥ <var>R</var></span> следует <span
+              class="math-inline">pos(<var>R′</var>) ≥ <var>p</var></span>, поэтому запрос <span
+              class="math-inline">[<var>p</var>, <var>k</var>)</span> обязательно его учтёт.</p>
 
           <h3>Теорема</h3>
           <p>По лемме 1 алгоритм не считает недопустимые пары, а по лемме 2 считает каждую допустимую пару. Элементы
@@ -142,11 +155,14 @@
         <section class="entry-section" aria-labelledby="complexity-title">
           <p class="section-kicker">Оценка ресурсов</p>
           <h2 id="complexity-title">Сложность</h2>
-          <p>Сортировка отрезков и правых границ занимает <code>O(n log n)</code>. Каждый класс выполняет один запрос и
-            одно обновление за <code>O(log k) ⊆ O(log n)</code>. Поэтому</p>
-          <p><code>T(n) = O(n log n), S(n) = O(n)</code>.</p>
-          <p>Ответ может иметь порядок <code>C(n, 2)</code>, поэтому для ответа и произведения <code>q · c</code>
-            нужен тип <code>long long</code>.</p>
+          <p>Сортировка отрезков и правых границ занимает <span class="math-inline">O(<var>n</var> log
+              <var>n</var>)</span>. Каждый класс выполняет один запрос и одно обновление за <span
+              class="math-inline">O(log <var>k</var>) ⊆ O(log <var>n</var>)</span>. Поэтому</p>
+          <p class="math-display"><var>T</var>(<var>n</var>) = O(<var>n</var> log <var>n</var>),
+            <var>S</var>(<var>n</var>) = O(<var>n</var>).</p>
+          <p>Ответ может иметь порядок <span class="math-inline">C(<var>n</var>, 2)</span>, поэтому для ответа и
+            произведения <span class="math-inline"><var>q</var> · <var>c</var></span> нужен тип
+            <code>long long</code>.</p>
         </section>
 
         <section class="entry-section" aria-labelledby="dead-end-title">
@@ -178,8 +194,8 @@
               сжатие;</li>
             <li>равные координаты требуют специального tie-breaking или групповой обработки.</li>
           </ul>
-          <p>В этой задаче сортировка обеспечивает <code>L′ ≤ L</code>, а дерево отрезков проверяет
-            <code>R′ ≥ R</code>.</p>
+          <p>В этой задаче сортировка обеспечивает <span class="math-inline"><var>L′</var> ≤ <var>L</var></span>, а
+            дерево отрезков проверяет <span class="math-inline"><var>R′</var> ≥ <var>R</var></span>.</p>
         </section>
 
         <section class="entry-section" aria-labelledby="corrections-title">
@@ -188,8 +204,9 @@
           <p>Ниже сохранены исправления, зафиксированные в post-Accepted разборе. Каждое из них меняет исходное
             утверждение или необходимое условие реализации.</p>
           <ul>
-            <li><strong>CORRECTION:</strong> условие на правую границу нестрогое: <code>R′ ≥ R</code>, а не
-              <code>R′ &gt; R</code>.</li>
+            <li><strong>CORRECTION:</strong> условие на правую границу нестрогое: <span
+                class="math-inline"><var>R′</var> ≥ <var>R</var></span>, а не <span
+                class="math-inline"><var>R′</var> &gt; <var>R</var></span>.</li>
             <li><strong>CORRECTION:</strong> при одинаковых левых границах правые границы сортируются по убыванию.</li>
             <li><strong>CORRECTION:</strong> полностью одинаковые отрезки объединяются в классы.</li>
             <li><strong>CORRECTION:</strong> для каждого класса соблюдается порядок <code>Query</code> →
@@ -220,9 +237,9 @@
           <p class="section-kicker">Метаданные</p>
           <dl class="field-list">
             <div><dt>Идентификатор</dt><dd><code>Sem_1/Contest_4/Task_F</code></dd></div>
-            <div><dt>Семестр</dt><dd>Sem_1</dd></div>
-            <div><dt>Контест</dt><dd>Contest_4</dd></div>
-            <div><dt>Задача</dt><dd>Task_F</dd></div>
+            <div><dt>Семестр</dt><dd>1</dd></div>
+            <div><dt>Контест</dt><dd>4</dd></div>
+            <div><dt>Задача</dt><dd>F</dd></div>
             <div><dt>Дата решения</dt><dd><time datetime="2026-07-20">2026-07-20</time></dd></div>
             <div><dt>Статус</dt><dd>accepted</dd></div>
             <div><dt>Язык</dt><dd>C++</dd></div>

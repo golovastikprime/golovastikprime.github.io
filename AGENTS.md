@@ -34,6 +34,8 @@ The server command is for interactive preview. Run the two Typst commands when v
 
 - Keep pages dependency-free, UTF-8 static HTML. Reuse `styles.css`, the established typography, and the existing header/footer structure; do not introduce a framework or production dependency without approval.
 - Use root-absolute internal links such as `/algorithmic-problem-solving/patterns/` so nested journal pages resolve consistently. External links opened in a new tab must include `rel="noreferrer"`.
+- Keep filesystem identifiers such as `Sem_1/Contest_4/Task_F` in paths and explicit identifier fields, but use human-readable labels such as `Семестр 1`, `Контест 4`, and `Задача F` in page titles, headings, breadcrumbs, and indexes.
+- Use `.math-inline` and `.math-display` for mathematical notation in study entries. Reserve `<code>` for source code, pseudocode, filenames, and repository identifiers.
 - Journal pages follow `algorithmic-problem-solving/problem-journal/Sem_X/Contest_N/Task_K/index.html`. Links to the separate solution repository follow its matching `Sem_X/Contest_N/Task_K` path. The solution repository base URL has not been supplied: leave a clearly marked placeholder instead of guessing it.
 - Keep the separate solution repository canonical. When the user explicitly requests a local accepted-code attachment, store a source-equivalent snapshot beside the task page and link it with a root-absolute path; do not turn the study site into the primary solution archive.
 - A task page should cross-link the relevant pattern pages, existing theory under `/conspecta/`, external solution code or an explicitly requested local attachment, applicable mistake entries, and review items. Use `<time datetime="YYYY-MM-DD">` for machine-readable dates.

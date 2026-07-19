@@ -77,6 +77,11 @@
 .entry-section a{color:var(--ink);text-underline-offset:3px}
 .entry-section a:hover{color:var(--accent)}
 .entry-section code,.path-diagram code{padding:2px 5px;border:1px solid #dedad0;border-radius:3px;background:#ece9e1;color:#3e3f3b;font:600 11px/1.6 Consolas,"Courier New",monospace;overflow-wrap:anywhere}
+.math-inline,.entry-section p.math-display,.entry-section var{font-family:"Cambria Math","STIX Two Math","Source Serif 4","Times New Roman",serif;color:var(--ink);font-weight:400;letter-spacing:.01em}
+.math-inline{display:inline-block;font-size:1.08em;white-space:nowrap}
+.entry-section p.math-display{max-width:100%;margin:18px 0 22px;padding:10px 14px;overflow-x:auto;border-left:2px solid var(--accent);background:rgba(79,70,184,.045);font-size:clamp(16px,2vw,18px);line-height:1.65;text-align:center;white-space:nowrap;-webkit-overflow-scrolling:touch}
+.math-inline var,.math-display var{font-style:italic}
+.math-inline sub,.math-inline sup,.math-display sub,.math-display sup{font-size:.72em;line-height:0}
 .template-token{display:inline-block;min-width:110px;max-width:100%;padding:2px 7px;border:1px dashed #aaa69d;border-radius:3px;background:#faf8f2;color:#77776f;font:600 10px/1.5 Manrope,sans-serif;overflow-wrap:anywhere;vertical-align:middle;white-space:normal}
 .page-intro h1 .template-token{padding:7px 11px;font:600 clamp(28px,4vw,52px)/1.08 "Source Serif 4",serif;letter-spacing:-.025em}
 .study-lead .template-token{font-size:13px;line-height:1.6}
