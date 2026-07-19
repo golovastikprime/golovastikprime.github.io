@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Пустой шаблон разбора задачи; не решение и не личная учебная запись.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Task_K — шаблон разбора задачи</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/#library">Библиотека</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решение задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <nav class="study-nav" aria-label="Разделы Algorithmic Problem Solving">
+    <a href="/algorithmic-problem-solving/">Обзор</a>
+    <a href="/algorithmic-problem-solving/patterns/">Паттерны</a>
+    <a href="/algorithmic-problem-solving/problem-journal/" aria-current="location">Журнал задач</a>
+    <a href="/algorithmic-problem-solving/mistake-log/">Журнал ошибок</a>
+    <a href="/algorithmic-problem-solving/review-queue/">Очередь повторения</a>
+  </nav>
+
+  <main class="study-main content-page">
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+      <a href="/algorithmic-problem-solving/">Обзор</a><span aria-hidden="true">/</span>
+      <a href="/algorithmic-problem-solving/problem-journal/">Журнал задач</a><span aria-hidden="true">/</span>
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_X/">Sem_X</a><span aria-hidden="true">/</span>
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_X/Contest_N/">Contest_N</a><span
+        aria-hidden="true">/</span>
+      <span aria-current="page">Task_K</span>
+    </nav>
+
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Шаблон разбора задачи</p>
+      <h1><span class="template-token">[Название задачи]</span></h1>
+      <p class="study-lead"><span class="template-token">[Кратко сформулируйте, чему научила задача, после того как
+          разбор будет написан самостоятельно.]</span></p>
+    </header>
+
+    <aside class="template-banner" aria-label="Статус страницы">
+      <strong>Шаблон — не личная запись</strong>
+      <p>Task_K не является решённой задачей. Здесь нет придуманного условия, решения или рефлексии — только поля для
+        будущего самостоятельного разбора.</p>
+    </aside>
+
+    <div class="entry-layout">
+      <article class="entry-main">
+        <section class="entry-section" aria-labelledby="statement-title">
+          <p class="section-kicker">Источник задачи</p>
+          <h2 id="statement-title">Условие в Yandex Contest</h2>
+          <p><span class="template-token"><code>&lt;URL условия в Yandex Contest&gt;</code></span></p>
+          <p><span class="template-token">[Добавьте только ссылку и краткое напоминание о входе и выходе; не
+              копируйте условие без необходимости.]</span></p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="code-title">
+          <p class="section-kicker">Отдельный репозиторий решений</p>
+          <h2 id="code-title">Код решения</h2>
+          <dl class="field-list">
+            <div><dt>Путь</dt><dd><code>Sem_X/Contest_N/Task_K</code></dd></div>
+            <div><dt>URL</dt><dd><span class="template-token"><code>&lt;https://github.com/OWNER/REPOSITORY/tree/main/Sem_X/Contest_N/Task_K&gt;</code></span></dd></div>
+          </dl>
+          <p>Адрес репозитория показан как текстовый заполнитель и намеренно не является активной ссылкой.</p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="approach-title">
+          <p class="section-kicker">После решения</p>
+          <h2 id="approach-title">Подход</h2>
+          <p><span class="template-token">[Опишите идею своими словами: какие состояния, структуры данных или
+              преобразования приводят к ответу?]</span></p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="correctness-title">
+          <p class="section-kicker">Почему это работает</p>
+          <h2 id="correctness-title">Корректность и инвариант</h2>
+          <p><span class="template-token">[Сформулируйте инвариант или ключевое утверждение и объясните, почему оно
+              верно в начале, сохраняется и даёт ответ при завершении.]</span></p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="complexity-title">
+          <p class="section-kicker">Оценка ресурсов</p>
+          <h2 id="complexity-title">Сложность</h2>
+          <dl class="field-list">
+            <div><dt>Время</dt><dd><span class="template-token">[O(...), с объяснением]</span></dd></div>
+            <div><dt>Память</dt><dd><span class="template-token">[O(...), с объяснением]</span></dd></div>
+          </dl>
+        </section>
+
+        <section class="entry-section" aria-labelledby="failed-title">
+          <p class="section-kicker">История поиска</p>
+          <h2 id="failed-title">Неудачные попытки</h2>
+          <p><span class="template-token">[Какие подходы были проверены, почему они не прошли ограничения или где
+              нарушалась корректность? Оставьте пустым, если таких попыток не было.]</span></p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="takeaway-title">
+          <p class="section-kicker">Короткая память</p>
+          <h2 id="takeaway-title">Главный вывод</h2>
+          <p><span class="template-token">[Запишите одно конкретное наблюдение, которое стоит перенести на следующую
+              похожую задачу.]</span></p>
+        </section>
+      </article>
+
+      <aside class="entry-sidebar" aria-label="Метаданные и перекрёстные ссылки">
+        <section class="entry-section">
+          <p class="section-kicker">Метаданные</p>
+          <dl class="field-list">
+            <div><dt>Семестр</dt><dd><span class="template-token">[Sem_X]</span></dd></div>
+            <div><dt>Контест</dt><dd><span class="template-token">[Contest_N]</span></dd></div>
+            <div><dt>Задача</dt><dd><span class="template-token">[Task_K]</span></dd></div>
+            <div><dt>Дата решения</dt><dd><time datetime="YYYY-MM-DD"><span
+                    class="template-token">[ГГГГ-ММ-ДД]</span></time></dd></div>
+            <div><dt>Статус</dt><dd><span class="template-token">[решена / требует возврата]</span></dd></div>
+          </dl>
+        </section>
+
+        <section class="entry-section">
+          <p class="section-kicker">Паттерны</p>
+          <p><span class="template-token">[Свяжите с реально использованными паттернами.]</span></p>
+          <div class="link-list">
+            <a href="/algorithmic-problem-solving/patterns/_template/">Шаблон паттерна</a>
+          </div>
+        </section>
+
+        <section class="entry-section">
+          <p class="section-kicker">Теория</p>
+          <p><span class="template-token">[Укажите релевантный конспект или раздел.]</span></p>
+          <div class="link-list">
+            <a href="/#library">Библиотека конспектов</a>
+          </div>
+        </section>
+
+        <section class="entry-section">
+          <p class="section-kicker">Ошибки</p>
+          <p><span class="template-token">[Свяжите только с реально замеченными повторяющимися ошибками.]</span></p>
+          <div class="link-list">
+            <a href="/algorithmic-problem-solving/mistake-log/_template/">Шаблон записи ошибки</a>
+          </div>
+        </section>
+
+        <section class="entry-section">
+          <p class="section-kicker">Повторение</p>
+          <p><span class="template-token">[Добавьте дату и проверочный вопрос, если задачу нужно повторить.]</span></p>
+          <div class="link-list">
+            <a href="/algorithmic-problem-solving/review-queue/_template/">Шаблон элемента очереди</a>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>

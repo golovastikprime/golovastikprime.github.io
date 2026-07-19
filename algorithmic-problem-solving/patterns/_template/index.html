@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Пустой шаблон страницы алгоритмического паттерна; не личная учебная запись.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Шаблон паттерна — Algorithmic Problem Solving</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/#library">Библиотека</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решение задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <nav class="study-nav" aria-label="Разделы Algorithmic Problem Solving">
+    <a href="/algorithmic-problem-solving/">Обзор</a>
+    <a href="/algorithmic-problem-solving/patterns/" aria-current="location">Паттерны</a>
+    <a href="/algorithmic-problem-solving/problem-journal/">Журнал задач</a>
+    <a href="/algorithmic-problem-solving/mistake-log/">Журнал ошибок</a>
+    <a href="/algorithmic-problem-solving/review-queue/">Очередь повторения</a>
+  </nav>
+
+  <main class="study-main content-page">
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+      <a href="/algorithmic-problem-solving/">Обзор</a><span aria-hidden="true">/</span>
+      <a href="/algorithmic-problem-solving/patterns/">Паттерны</a><span aria-hidden="true">/</span>
+      <span aria-current="page">Шаблон</span>
+    </nav>
+
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Шаблон паттерна</p>
+      <h1><span class="template-token">[Название паттерна]</span></h1>
+      <p class="study-lead"><span class="template-token">[Кратко сформулируйте идею и класс задач, для которых
+          она полезна.]</span></p>
+    </header>
+
+    <aside class="template-banner" aria-label="Статус страницы">
+      <strong>Шаблон — не личная запись</strong>
+      <p>Все поля ниже — пустая структура. Скопируйте страницу в каталог с осмысленным именем и замените подсказки
+        только собственными наблюдениями.</p>
+    </aside>
+
+    <div class="entry-layout">
+      <article class="entry-main">
+        <section class="entry-section" aria-labelledby="recognition-title">
+          <p class="section-kicker">Распознавание</p>
+          <h2 id="recognition-title">Сигналы распознавания</h2>
+          <ul class="field-list">
+            <li><span class="template-token">[Как выглядит условие, в котором стоит проверить этот подход?]</span>
+            </li>
+            <li><span class="template-token">[Какие ограничения или формулировки служат сильным сигналом?]</span>
+            </li>
+            <li><span class="template-token">[С чем этот паттерн легко перепутать?]</span></li>
+          </ul>
+        </section>
+
+        <section class="entry-section" aria-labelledby="invariant-title">
+          <p class="section-kicker">Сохраняемое утверждение</p>
+          <h2 id="invariant-title">Инвариант</h2>
+          <p><span class="template-token">[Сформулируйте точное утверждение, которое остаётся истинным после каждого
+              шага алгоритма.]</span></p>
+        </section>
+
+        <section class="entry-section" aria-labelledby="proof-title">
+          <p class="section-kicker">Корректность</p>
+          <h2 id="proof-title">Стратегия доказательства</h2>
+          <p><span class="template-token">[Укажите каркас доказательства: индукция, обменный аргумент, противоречие,
+              монотонность или другой собственный аргумент.]</span></p>
+          <ul class="field-list">
+            <li><strong>База</strong><span class="template-token">[Что верно до первого шага?]</span></li>
+            <li><strong>Переход</strong><span class="template-token">[Почему один шаг сохраняет инвариант?]</span></li>
+            <li><strong>Завершение</strong><span class="template-token">[Почему инвариант даёт требуемый ответ?]</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="entry-section" aria-labelledby="failures-title">
+          <p class="section-kicker">Границы применимости</p>
+          <h2 id="failures-title">Типичные сбои</h2>
+          <ul class="field-list">
+            <li><span class="template-token">[Условие, при котором подход неприменим.]</span></li>
+            <li><span class="template-token">[Контрпример для наивной версии.]</span></li>
+            <li><span class="template-token">[Ошибка реализации или оценки сложности.]</span></li>
+          </ul>
+        </section>
+
+        <section class="entry-section" aria-labelledby="solved-title">
+          <p class="section-kicker">Практика</p>
+          <h2 id="solved-title">Решённые задачи</h2>
+          <p><span class="template-token">[Добавьте ссылки только на собственные записи решённых задач.]</span></p>
+          <div class="link-list">
+            <a href="/algorithmic-problem-solving/problem-journal/Sem_X/Contest_N/Task_K/">Шаблон записи задачи
+              <span aria-hidden="true">→</span></a>
+          </div>
+        </section>
+      </article>
+
+      <aside class="entry-sidebar" aria-label="Метаданные и связи">
+        <section class="entry-section">
+          <p class="section-kicker">Метаданные</p>
+          <dl class="field-list">
+            <div><dt>Статус</dt><dd><span class="template-token">[черновик / проверен]</span></dd></div>
+            <div><dt>Создано</dt><dd><time datetime="YYYY-MM-DD"><span
+                    class="template-token">[ГГГГ-ММ-ДД]</span></time></dd></div>
+            <div><dt>Обновлено</dt><dd><time datetime="YYYY-MM-DD"><span
+                    class="template-token">[ГГГГ-ММ-ДД]</span></time></dd></div>
+          </dl>
+        </section>
+        <section class="entry-section">
+          <p class="section-kicker">Связанные материалы</p>
+          <div class="link-list">
+            <a href="/#library">Теория в библиотеке</a>
+            <a href="/algorithmic-problem-solving/problem-journal/Sem_X/Contest_N/Task_K/">Шаблон задачи</a>
+            <a href="/algorithmic-problem-solving/mistake-log/_template/">Шаблон ошибки</a>
+            <a href="/algorithmic-problem-solving/review-queue/_template/">Шаблон повторения</a>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
