@@ -7,7 +7,7 @@
   <meta name="description"
     content="Разбор задачи F из контеста 4 первого семестра: подсчёт пар вложенных отрезков сортировкой, сжатием координат и деревом отрезков.">
   <meta name="theme-color" content="#f4f1ea">
-  <title>Задача F — Counting Nested Segments — Журнал задач</title>
+  <title>Задача F — Counting Nested Segments — Решения задач</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -23,41 +23,24 @@
       <span>Конспекты <small>ПМФ СПбАУ</small></span>
     </a>
     <nav aria-label="Основная навигация">
-      <a href="/#library">Библиотека</a>
-      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решение задач</a>
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_4/">← Контест 4</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
       <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
         rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
     </nav>
   </header>
 
-  <nav class="study-nav" aria-label="Разделы Algorithmic Problem Solving">
-    <a href="/algorithmic-problem-solving/">Обзор</a>
-    <a href="/algorithmic-problem-solving/patterns/">Паттерны</a>
-    <a href="/algorithmic-problem-solving/problem-journal/" aria-current="location">Журнал задач</a>
-    <a href="/algorithmic-problem-solving/mistake-log/">Журнал ошибок</a>
-    <a href="/algorithmic-problem-solving/review-queue/">Очередь повторения</a>
-  </nav>
-
   <main class="study-main content-page">
-    <nav class="breadcrumbs" aria-label="Хлебные крошки">
-      <a href="/algorithmic-problem-solving/">Обзор</a><span aria-hidden="true">/</span>
-      <a href="/algorithmic-problem-solving/problem-journal/">Журнал задач</a><span aria-hidden="true">/</span>
-      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/">Семестр 1</a><span aria-hidden="true">/</span>
-      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_4/">Контест 4</a><span
-        aria-hidden="true">/</span>
-      <span aria-current="page">Задача F</span>
-    </nav>
-
     <header class="page-intro">
-      <p class="eyebrow"><span></span> Accepted · 2026-07-20</p>
-      <h1>Семестр 1 / Контест 4 / Задача F — Counting Nested Segments</h1>
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 4</p>
+      <h1>Задача F — Counting Nested Segments</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-20">20 июля 2026</time></p>
       <p class="study-lead">В этой задаче сортировка обеспечивает <span class="math-inline"><var>L′</var> ≤
           <var>L</var></span>, а дерево отрезков проверяет <span class="math-inline"><var>R′</var> ≥
           <var>R</var></span>.</p>
     </header>
 
-    <div class="entry-layout">
-      <article class="entry-main">
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_4/Task_F">
         <section class="entry-section" aria-labelledby="statement-title">
           <p class="section-kicker">Условие</p>
           <h2 id="statement-title">Задача</h2>
@@ -224,64 +207,16 @@
           <p class="section-kicker">Источники</p>
           <h2 id="links-title">Ссылки</h2>
           <ul>
-            <li>Условие задачи: <strong>TODO — добавить URL</strong>.</li>
             <li>Accepted-код: <a
                 href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_4/Task_F/F.cpp" download><code>F.cpp</code>
                 — локальная копия</a>.</li>
+            <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и
+                структуры данных II (PDF) ↗</a>.</li>
           </ul>
         </section>
-      </article>
-
-      <aside class="entry-sidebar" aria-label="Метаданные и перекрёстные ссылки">
-        <section class="entry-section">
-          <p class="section-kicker">Метаданные</p>
-          <dl class="field-list">
-            <div><dt>Идентификатор</dt><dd><code>Sem_1/Contest_4/Task_F</code></dd></div>
-            <div><dt>Семестр</dt><dd>1</dd></div>
-            <div><dt>Контест</dt><dd>4</dd></div>
-            <div><dt>Задача</dt><dd>F</dd></div>
-            <div><dt>Дата решения</dt><dd><time datetime="2026-07-20">2026-07-20</time></dd></div>
-            <div><dt>Статус</dt><dd>accepted</dd></div>
-            <div><dt>Язык</dt><dd>C++</dd></div>
-            <div><dt>Темы</dt><dd>sorting · coordinate-compression · segment-tree · sweep-line</dd></div>
-          </dl>
-        </section>
-
-        <section class="entry-section">
-          <p class="section-kicker">Паттерны</p>
-          <p><strong>TODO — оформить паттерн:</strong> сортировка по одной координате и запрос структуры данных по
-            второй.</p>
-          <div class="link-list">
-            <a href="/algorithmic-problem-solving/patterns/">Индекс паттернов</a>
-          </div>
-        </section>
-
-        <section class="entry-section">
-          <p class="section-kicker">Теория</p>
-          <p>Координатное сжатие и дерево отрезков.</p>
-          <div class="link-list">
-            <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank">Алгоритмы и структуры данных II (PDF) ↗</a>
-          </div>
-        </section>
-
-        <section class="entry-section">
-          <p class="section-kicker">Ошибки</p>
-          <p><strong>TODO — связать запись,</strong> если одна из отмеченных коррекций окажется повторяющейся ошибкой.
-          </p>
-          <div class="link-list">
-            <a href="/algorithmic-problem-solving/mistake-log/">Журнал ошибок</a>
-          </div>
-        </section>
-
-        <section class="entry-section">
-          <p class="section-kicker">Повторение</p>
-          <p><strong>TODO — добавить элемент и дату,</strong> если задача будет поставлена на повторение.</p>
-          <div class="link-list">
-            <a href="/algorithmic-problem-solving/review-queue/">Очередь повторения</a>
-          </div>
-        </section>
-      </aside>
-    </div>
+      <!-- Internal TODO: add the problem URL when available. -->
+      <!-- Internal TODO: create and link a pattern page only after the author supplies it. -->
+    </article>
   </main>
 
   <footer>

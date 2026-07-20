@@ -58,12 +58,14 @@
 .page-intro{max-width:830px;margin-bottom:42px}
 .page-intro h1{font-size:clamp(45px,6vw,72px)}
 .page-intro>p{max-width:690px;color:#5e5f59;font-size:16px;line-height:1.7}
+.page-intro>.task-meta{margin:-4px 0 22px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
 .template-banner{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin:0 0 35px;padding:18px 20px;border:1px solid rgba(79,70,184,.26);border-radius:5px;background:rgba(79,70,184,.065)}
 .template-banner strong{display:block;margin-bottom:4px;color:var(--accent);font-size:11px;letter-spacing:.07em;text-transform:uppercase}
 .template-banner p{margin:0;color:#5f605a;font-size:12px;line-height:1.6}
 .status-badge{display:inline-flex;align-items:center;width:max-content;padding:6px 9px;border-radius:3px;background:#eceafb;color:#4f46a9;font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap}
 .entry-layout{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(230px,.85fr);align-items:start;gap:48px}
 .entry-main{min-width:0}
+.task-entry{max-width:780px}
 .entry-sidebar{position:sticky;top:24px;padding:22px;border:1px solid var(--line);border-radius:5px;background:rgba(255,253,248,.72)}
 .entry-sidebar h2,.entry-sidebar h3{margin:0 0 15px;font:700 19px/1.15 "Source Serif 4",serif}
 .entry-sidebar p,.entry-sidebar li{color:var(--muted);font-size:11px;line-height:1.65}
