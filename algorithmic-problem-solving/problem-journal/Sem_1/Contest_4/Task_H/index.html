@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи H из контеста 4 первого семестра: площадь объединения прямоугольников с помощью sweep line, сжатия координат и дерева отрезков.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача H — Площадь объединения прямоугольников — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_4/">← Контест 4</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 4</p>
+      <h1>Задача H — Площадь объединения прямоугольников</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-20">20 июля 2026</time></p>
+      <p class="study-lead">Следовательно, задача сводится к последовательной обработке событий и поддержанию длины
+        объединения активных отрезков на оси <var>y</var>.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_4/Task_H">
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Задача</h2>
+        <p>Даны <var>n</var> прямоугольников со сторонами, параллельными координатным осям. Требуется найти площадь их
+          объединения.</p>
+        <p>Вырожденные прямоугольники, у которых <span class="math-inline"><var>x</var><sub>1</sub> =
+            <var>x</var><sub>2</sub></span> или <span class="math-inline"><var>y</var><sub>1</sub> =
+            <var>y</var><sub>2</sub></span>, имеют нулевую площадь и могут быть пропущены.</p>
+        <p>Для алгоритма прямоугольник удобно представлять полуоткрытым множеством</p>
+        <p class="math-display">[<var>x</var><sub>1</sub>, <var>x</var><sub>2</sub>) ×
+          [<var>y</var><sub>1</sub>, <var>y</var><sub>2</sub>).</p>
+        <p>Выбор открытых или закрытых границ не меняет площадь.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Подход</p>
+        <h2 id="observation-title">Ключевое наблюдение</h2>
+        <p>Вертикальные границы прямоугольников разбивают плоскость на полосы между соседними координатами событий.</p>
+        <p>Для каждого невырожденного прямоугольника создаются два события:</p>
+        <ul>
+          <li>в <var>x</var><sub>1</sub> его <var>y</var>-отрезок
+            <span class="math-inline">[<var>y</var><sub>1</sub>, <var>y</var><sub>2</sub>)</span> добавляется;</li>
+          <li>в <var>x</var><sub>2</sub> этот отрезок удаляется.</li>
+        </ul>
+        <p>Между соседними координатами событий множество активных прямоугольников не меняется. Поэтому объединение их
+          проекций на ось <var>y</var> также постоянно на всей полосе.</p>
+        <p>Если предыдущая координата события равна <var>x</var><sub>prev</sub>, текущая — <var>x</var>, а длина
+          объединения активных <var>y</var>-отрезков равна <var>L</var>, то площадь этой полосы равна</p>
+        <p class="math-display">(<var>x</var> − <var>x</var><sub>prev</sub>) · <var>L</var>.</p>
+        <p>Следовательно, задача сводится к последовательной обработке событий и поддержанию длины объединения активных
+          отрезков на оси <var>y</var>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="events-title">
+        <p class="section-kicker">Sweep line</p>
+        <h2 id="events-title">Представление и обработка событий</h2>
+        <p>Для прямоугольника</p>
+        <p class="math-display">[<var>x</var><sub>1</sub>, <var>x</var><sub>2</sub>) ×
+          [<var>y</var><sub>1</sub>, <var>y</var><sub>2</sub>)</p>
+        <p>создаются события</p>
+        <p class="math-display">(<var>x</var><sub>1</sub>, <var>y</var><sub>1</sub>, <var>y</var><sub>2</sub>, +1), 
+          (<var>x</var><sub>2</sub>, <var>y</var><sub>1</sub>, <var>y</var><sub>2</sub>, −1).</p>
+        <p>События сортируются по <var>x</var> и обрабатываются группами с одинаковой координатой. Перед применением
+          группы с координатой <var>x</var> добавляется площадь предыдущей полосы:</p>
+        <p class="math-display"><var>answer</var> += (<var>x</var> − <var>x</var><sub>prev</sub>) ·
+          <var>length</var>[root].</p>
+        <p>Затем применяются все добавления и удаления из этой группы, после чего полагается</p>
+        <p class="math-display"><var>x</var><sub>prev</sub> = <var>x</var>.</p>
+        <p>События с одинаковым <var>x</var> не создают полосы положительной ширины, поэтому порядок событий внутри одной
+          группы не влияет на итоговую площадь.</p>
+        <p>Если после пропуска вырожденных прямоугольников событий нет, ответ сразу равен нулю и дерево строить не
+          требуется.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="compression-title">
+        <p class="section-kicker">Координаты</p>
+        <h2 id="compression-title">Сжатие координат</h2>
+        <p>Собираются все границы <var>y</var><sub>1</sub> и <var>y</var><sub>2</sub> невырожденных прямоугольников.
+          После сортировки и удаления повторений получается массив</p>
+        <p class="math-display"><var>y</var><sub>0</sub> &lt; <var>y</var><sub>1</sub> &lt; … &lt;
+          <var>y</var><sub><var>m</var>−1</sub>.</p>
+        <p>Лист с индексом <var>i</var> представляет не отдельную координату, а элементарный промежуток</p>
+        <p class="math-display">[<var>y</var><sub><var>i</var></sub>, <var>y</var><sub><var>i</var>+1</sub>).</p>
+        <p>Поэтому существует <span class="math-inline"><var>m</var>−1</span> элементарных промежутков, а корень дерева
+          отвечает за полуинтервал индексов</p>
+        <p class="math-display">[0, <var>m</var>−1),</p>
+        <p>то есть за геометрический интервал</p>
+        <p class="math-display">[<var>y</var><sub>0</sub>, <var>y</var><sub><var>m</var>−1</sub>).</p>
+        <p>Исходный отрезок <span class="math-inline">[<var>y</var><sub><var>l</var></sub>,
+            <var>y</var><sub><var>r</var></sub>)</span> после сжатия становится запросом</p>
+        <p class="math-display">[pos(<var>y</var><sub><var>l</var></sub>),
+          pos(<var>y</var><sub><var>r</var></sub>)).</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="tree-data-title">
+        <p class="section-kicker">Структура данных</p>
+        <h2 id="tree-data-title">Информация в дереве отрезков</h2>
+        <p>Для вершины <var>v</var>, отвечающей за геометрический интервал <var>I</var><sub><var>v</var></sub>,
+          хранятся:</p>
+        <ul>
+          <li><code>count[v]</code> — число активных обновлений, которые полностью покрыли
+            <var>I</var><sub><var>v</var></sub> и завершили рекурсию именно в вершине <var>v</var>;</li>
+          <li><code>length[v]</code> — длина покрытия внутри <var>I</var><sub><var>v</var></sub>, представленная
+            счётчиками в поддереве вершины <var>v</var>.</li>
+        </ul>
+        <p>Важно: покрытие, записанное в предке вершины, геометрически покрывает
+          <var>I</var><sub><var>v</var></sub>, но не входит в <code>count[v]</code> и <code>length[v]</code>. Для
+          получения глобальной длины используется корень, у которого нет предков.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="pull-title">
+        <p class="section-kicker">Инвариант вершины</p>
+        <h2 id="pull-title">Пересчёт вершины</h2>
+        <p>Пусть вершина отвечает за индексы <span class="math-inline">[<var>l</var>, <var>r</var>)</span>, то есть за
+          геометрический интервал</p>
+        <p class="math-display">[<var>y</var><sub><var>l</var></sub>, <var>y</var><sub><var>r</var></sub>).</p>
+        <p>Тогда</p>
+        <p class="math-display"><var>length</var>[<var>v</var>] =<br>
+          ⎧ <var>y</var><sub><var>r</var></sub> − <var>y</var><sub><var>l</var></sub>, если
+          <var>count</var>[<var>v</var>] &gt; 0;<br>
+          ⎪ 0, если <var>count</var>[<var>v</var>] = 0 и <var>r</var> − <var>l</var> = 1;<br>
+          ⎩ <var>length</var>[left(<var>v</var>)] + <var>length</var>[right(<var>v</var>)], если
+          <var>count</var>[<var>v</var>] = 0 и <var>v</var> не лист.</p>
+        <p>Если <code>count[v] &gt; 0</code>, весь интервал вершины покрыт независимо от состояния потомков.</p>
+        <p>Если <code>count[v] == 0</code>, покрытие, представленное внутри поддерева вершины, определяется сохранёнными
+          состояниями детей.</p>
+        <p>Обычный <code>Push</code> здесь не требуется: <code>count[v]</code> не является отложенным обновлением,
+          которое должно быть передано детям.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="update-title">
+        <p class="section-kicker">Операция дерева</p>
+        <h2 id="update-title">Обновление отрезка</h2>
+        <p>Для запроса <span class="math-inline">[<var>q</var><sub><var>l</var></sub>,
+            <var>q</var><sub><var>r</var></sub>)</span> с изменением <code>delta</code>:</p>
+        <ol>
+          <li>Если интервалы не пересекаются, ничего не делаем.</li>
+          <li>Если интервал вершины полностью содержится в запросе:
+            <ul>
+              <li>выполняем <code>count[v] += delta</code>;</li>
+              <li>пересчитываем <code>length[v]</code>;</li>
+              <li>завершаем рекурсию.</li>
+            </ul>
+          </li>
+          <li>При частичном пересечении:
+            <ul>
+              <li>обновляем пересекающихся детей;</li>
+              <li>пересчитываем текущую вершину.</li>
+            </ul>
+          </li>
+        </ol>
+        <p>Даже если <code>count[v] &gt; 0</code>, при частичном запросе необходимо обновлять потомков. Их значения
+          временно не влияют на <code>length[v]</code>, но понадобятся, когда полное покрытие вершины будет удалено.</p>
+        <p>Добавление и последующее удаление одного и того же сжатого отрезка проходят по одной и той же канонической
+          декомпозиции дерева. Поэтому удаление уменьшает именно те счётчики, которые были увеличены при добавлении.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="sweep-invariant-title">
+        <p class="section-kicker">Корректность sweep line</p>
+        <h2 id="sweep-invariant-title">Инвариант sweep line</h2>
+        <p>Перед обработкой группы событий с координатой <var>x</var> дерево описывает объединение
+          <var>y</var>-проекций прямоугольников, активных на полосе</p>
+        <p class="math-display">[<var>x</var><sub>prev</sub>, <var>x</var>).</p>
+        <p>Между <var>x</var><sub>prev</sub> и <var>x</var> нет вертикальных границ прямоугольников. Поэтому множество
+          активных прямоугольников и длина объединения их <var>y</var>-проекций постоянны на всей полосе.</p>
+        <p>Следовательно,</p>
+        <p class="math-display">(<var>x</var> − <var>x</var><sub>prev</sub>) · <var>length</var>[root]</p>
+        <p>равно площади объединения прямоугольников внутри этой полосы.</p>
+        <p>После добавления площади применяются все события с координатой <var>x</var>, и дерево начинает описывать
+          следующую полосу. Сумма вкладов всех полос равна площади всего объединения.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="tree-proof-title">
+        <p class="section-kicker">Корректность дерева</p>
+        <h2 id="tree-proof-title">Доказательство корректности дерева</h2>
+        <p>Для вершины <var>v</var> обозначим через <var>U</var><sub><var>v</var></sub> объединение геометрических
+          интервалов всех вершин <var>u</var> в поддереве <var>v</var>, для которых</p>
+        <p class="math-display"><var>count</var>[<var>u</var>] &gt; 0.</p>
+        <p>Докажем по индукции по высоте вершины, что</p>
+        <p class="math-display"><var>length</var>[<var>v</var>] = |<var>U</var><sub><var>v</var></sub>|.</p>
+
+        <h3>База</h3>
+        <p>Пусть <var>v</var> — лист, соответствующий элементарному промежутку</p>
+        <p class="math-display">[<var>y</var><sub><var>i</var></sub>, <var>y</var><sub><var>i</var>+1</sub>).</p>
+        <p>Если <code>count[v] &gt; 0</code>, то <var>U</var><sub><var>v</var></sub> совпадает со всем промежутком,
+          поэтому</p>
+        <p class="math-display"><var>length</var>[<var>v</var>] =
+          <var>y</var><sub><var>i</var>+1</sub> − <var>y</var><sub><var>i</var></sub> =
+          |<var>U</var><sub><var>v</var></sub>|.</p>
+        <p>Если <code>count[v] == 0</code>, в поддереве листа нет других вершин, поэтому
+          <span class="math-inline"><var>U</var><sub><var>v</var></sub> = ∅</span> и <code>length[v] = 0</code>.</p>
+
+        <h3>Индукционный переход</h3>
+        <p>Пусть утверждение верно для детей внутренней вершины <var>v</var>.</p>
+        <p>Если <code>count[v] &gt; 0</code>, то интервал <var>I</var><sub><var>v</var></sub> сам входит в объединение
+          <var>U</var><sub><var>v</var></sub>. Все интервалы из поддерева содержатся в
+          <var>I</var><sub><var>v</var></sub>, поэтому</p>
+        <p class="math-display"><var>U</var><sub><var>v</var></sub> = <var>I</var><sub><var>v</var></sub></p>
+        <p>и</p>
+        <p class="math-display"><var>length</var>[<var>v</var>] = |<var>I</var><sub><var>v</var></sub>| =
+          |<var>U</var><sub><var>v</var></sub>|.</p>
+        <p>Если <code>count[v] == 0</code>, то</p>
+        <p class="math-display"><var>U</var><sub><var>v</var></sub> =
+          <var>U</var><sub>left(<var>v</var>)</sub> ∪ <var>U</var><sub>right(<var>v</var>)</sub>.</p>
+        <p>Интервалы детей не пересекаются и вместе образуют <var>I</var><sub><var>v</var></sub>. Поэтому по
+          индукционному предположению</p>
+        <p class="math-display">|<var>U</var><sub><var>v</var></sub>| =
+          |<var>U</var><sub>left(<var>v</var>)</sub>| + |<var>U</var><sub>right(<var>v</var>)</sub>|<br>
+          = <var>length</var>[left(<var>v</var>)] + <var>length</var>[right(<var>v</var>)]<br>
+          = <var>length</var>[<var>v</var>].</p>
+        <p>Значит, утверждение верно для любой вершины.</p>
+        <p>Каждый активный <var>y</var>-отрезок раскладывается обновлением на объединение интервалов канонических вершин
+          дерева. Поэтому <var>U</var><sub>root</sub> совпадает с объединением всех активных <var>y</var>-отрезков, а
+          <code>length[root]</code> равна его длине.</p>
+        <p>Совместно с инвариантом sweep line это доказывает корректность всего алгоритма.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка ресурсов</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Создаётся не более <span class="math-inline">2<var>n</var></span> событий и собирается не более
+          <span class="math-inline">2<var>n</var></span> координат <var>y</var>.</p>
+        <ul>
+          <li>сортировка событий: <span class="math-inline">O(<var>n</var> log <var>n</var>)</span>;</li>
+          <li>сортировка координат: <span class="math-inline">O(<var>n</var> log <var>n</var>)</span>;</li>
+          <li>поиск сжатых границ каждого события: <span class="math-inline">O(log <var>n</var>)</span>;</li>
+          <li>одно обновление дерева: <span class="math-inline">O(log <var>n</var>)</span>;</li>
+          <li>число событий: <span class="math-inline">O(<var>n</var>)</span>.</li>
+        </ul>
+        <p>Итоговая временная сложность:</p>
+        <p class="math-display"><var>T</var>(<var>n</var>) = O(<var>n</var> log <var>n</var>).</p>
+        <p>Массив событий, координаты и дерево отрезков занимают линейную память:</p>
+        <p class="math-display"><var>M</var>(<var>n</var>) = O(<var>n</var>).</p>
+        <p>Глубина рекурсии дерева равна <span class="math-inline">O(log <var>n</var>)</span>.</p>
+        <p>Разности координат, покрытую длину, произведение ширины полосы на её высоту и итоговый ответ следует
+          вычислять в достаточно широком целочисленном типе; при стандартных ограничениях с координатами типа
+          <code>int</code> для этого используется <code>long long</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistake-title">
+        <p class="section-kicker">История поиска</p>
+        <h2 id="mistake-title">Главная ошибка</h2>
+        <p>Первая версия дерева пыталась использовать стандартную схему <code>range add + range sum</code> с lazy
+          propagation.</p>
+        <p>Это неверно, потому что требуется хранить не сумму кратностей покрытия, а длину множества точек, покрытых хотя
+          бы один раз.</p>
+        <p>Например, если два одинаковых прямоугольника полностью совпадают, длина их объединения не удваивается.</p>
+        <p>Правильная структура хранит отдельно:</p>
+        <ul>
+          <li>число полных покрытий вершины <code>count[v]</code>;</li>
+          <li>фактическую длину объединения <code>length[v]</code>.</li>
+        </ul>
+        <p>При этом <code>count[v]</code> не нужно проталкивать детям: частичные покрытия независимо сохраняются ниже
+          по дереву.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Признаки похожих задач</h2>
+        <p>Sweep line применим, когда:</p>
+        <ul>
+          <li>состояние меняется только в конечном наборе координат-событий;</li>
+          <li>между соседними событиями состояние остаётся постоянным;</li>
+          <li>каждое событие локально добавляет или удаляет объект;</li>
+          <li>вклад между событиями можно вычислить из некоторого агрегата текущего состояния.</li>
+        </ul>
+        <p>В этой задаче событие добавляет или удаляет отрезок по второй координате, а требуемый агрегат — длина
+          объединения активных отрезков.</p>
+        <p>Дополнительные признаки для coordinate compression:</p>
+        <ul>
+          <li>координаты могут быть большими;</li>
+          <li>заранее известны все координаты, в которых состояние может измениться;</li>
+          <li>важны порядок и расстояния между соседними координатами, а не все точки числовой оси;</li>
+          <li>листья должны представлять промежутки между соседними координатами, поскольку требуется геометрическая
+            длина.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="changes-title">
+        <p class="section-kicker">Post-Accepted</p>
+        <h2 id="changes-title">Явно отмеченные содержательные изменения</h2>
+        <p>Ниже перечислены изменения относительно предоставленного post-Accepted пересказа. Редакционные исправления
+          Markdown и LaTeX здесь не перечисляются.</p>
+        <ol>
+          <li><strong>CORRECTION:</strong> индукционный инвариант сформулирован для покрытия, представленного
+            счётчиками в поддереве вершины. Исходное утверждение о полном геометрическом покрытии внутри каждой вершины
+            неверно, если покрывающее обновление записано у её предка. Для корня локальный инвариант совпадает с
+            требуемым глобальным утверждением.</li>
+          <li><strong>ADDITION:</strong> явно разобран пустой случай: если все прямоугольники вырождены, список событий
+            пуст, ответ равен нулю и дерево не строится.</li>
+          <li><strong>ADDITION:</strong> отмечена необходимость широкого целочисленного типа для длин, произведения и
+            ответа.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и структуры
+              данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add accepted code only after the author explicitly supplies or approves it. -->
+      <!-- Internal TODO: create and link a published pattern page only after the author supplies it. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
