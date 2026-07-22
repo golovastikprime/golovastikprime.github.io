@@ -14,6 +14,8 @@
     href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
 </head>
 
 <body class="study-page">
@@ -42,15 +44,15 @@
       <section class="entry-section" aria-labelledby="statement-title">
         <p class="section-kicker">Условие</p>
         <h2 id="statement-title">Задача</h2>
-        <p>Изначально дано пустое мультимножество <var>S</var>. Требуется обработать запросы двух типов:</p>
+        <p>Изначально дано пустое мультимножество <span class="math-inline">\(S\)</span>. Требуется обработать запросы двух типов:</p>
         <ul>
-          <li><code>+ x</code> — добавить число <var>x</var> в <var>S</var>;</li>
-          <li><code>? x</code> — вывести сумму всех элементов <var>S</var>, не превосходящих <var>x</var>.</li>
+          <li><code>+ x</code> — добавить число <span class="math-inline">\(x\)</span> в <span class="math-inline">\(S\)</span>;</li>
+          <li><code>? x</code> — вывести сумму всех элементов <span class="math-inline">\(S\)</span>, не превосходящих <span class="math-inline">\(x\)</span>.</li>
         </ul>
         <p>Ограничения:</p>
         <ul>
-          <li><span class="math-inline">1 ≤ <var>q</var> ≤ 10<sup>5</sup></span>;</li>
-          <li><span class="math-inline">0 ≤ <var>x</var> ≤ 10<sup>9</sup></span>.</li>
+          <li><span class="math-inline">\(1 \le q \le 10^5\)</span>;</li>
+          <li><span class="math-inline">\(0 \le x \le 10^9\)</span>.</li>
         </ul>
       </section>
 
@@ -63,25 +65,23 @@
           массива и сдвигать остальные элементы. Вместо этого обновляется уже существующая позиция
           <code>pos(x)</code> в структуре данных.</p>
         <p>Поскольку массив координат отсортирован, условие</p>
-        <p class="math-display"><var>v</var> ≤ <var>x</var></p>
+        <div class="math-display">\[v \le x\]</div>
         <p>соответствует префиксу</p>
-        <p class="math-display">[0, <var>k</var>), <var>k</var> = upper_bound(<var>coords</var>, <var>x</var>).</p>
+        <div class="math-display">\[\bigl[0, k\bigr), \qquad k = \operatorname{upper\_bound}(\mathrm{coords}, x).\]</div>
         <p>Следовательно, запрос <code>? x</code> сводится к вычислению суммы на префиксе сжатых координат.</p>
       </section>
 
       <section class="entry-section" aria-labelledby="stored-data-title">
         <p class="section-kicker">Структура данных</p>
         <h2 id="stored-data-title">Хранимая информация</h2>
-        <p>Пусть <code>coords[i]</code> — <var>i</var>-я различная координата, а <code>count[i]</code> — количество уже
+        <p>Пусть <code>coords[i]</code> — <span class="math-inline">\(i\)</span>-я различная координата, а <code>count[i]</code> — количество уже
           обработанных операций <code>+ coords[i]</code>.</p>
         <p>Лист дерева, соответствующий координате <code>coords[i]</code>, хранит</p>
-        <p class="math-display"><var>tree</var>[<var>N</var>+<var>i</var>] =
-          <var>coords</var>[<var>i</var>] · <var>count</var>[<var>i</var>].</p>
-        <p>Внутренняя вершина <var>v</var>, отвечающая за диапазон индексов координат
-          <span class="math-inline">[<var>l</var>, <var>r</var>)</span>, хранит</p>
-        <p class="math-display"><var>tree</var>[<var>v</var>] =
-          ∑<sub><var>i</var>=<var>l</var></sub><sup><var>r</var>−1</sup>
-          <var>coords</var>[<var>i</var>] · <var>count</var>[<var>i</var>].</p>
+        <div class="math-display">\[\mathrm{tree}[N+i] = \mathrm{coords}[i] \cdot \mathrm{count}[i].\]</div>
+        <p>Внутренняя вершина <span class="math-inline">\(v\)</span>, отвечающая за диапазон индексов координат
+          <span class="math-inline">\(\bigl[l, r\bigr)\)</span>, хранит</p>
+        <div class="math-display">\[\mathrm{tree}[v] =
+          \sum_{i=l}^{r-1} \mathrm{coords}[i] \cdot \mathrm{count}[i].\]</div>
         <p>То есть каждая вершина хранит сумму всех уже добавленных элементов, координаты которых лежат в её
           диапазоне.</p>
       </section>
@@ -92,27 +92,30 @@
 
         <h3>Вставка <code>+ x</code></h3>
         <ol>
-          <li>Найти сжатый индекс <span class="math-inline"><var>i</var> = pos(<var>x</var>)</span>.</li>
+          <li>Найти сжатый индекс <span class="math-inline">\(i = \operatorname{pos}(x)\)</span>.</li>
           <li>Увеличить <code>count[i]</code> на единицу.</li>
           <li>Обновить лист:</li>
         </ol>
-        <p class="math-display"><var>tree</var>[<var>N</var>+<var>i</var>] =
-          <var>coords</var>[<var>i</var>] · <var>count</var>[<var>i</var>].</p>
+        <div class="math-display">\[\mathrm{tree}[N+i] =
+          \mathrm{coords}[i] \cdot \mathrm{count}[i].\]</div>
         <ol start="4">
           <li>Пересчитать вершины на пути от листа к корню как сумму двух детей.</li>
         </ol>
-        <p>Эквивалентно можно не хранить <code>count[i]</code> отдельно, а при каждой вставке прибавлять <var>x</var> к
+        <p>Эквивалентно можно не хранить <code>count[i]</code> отдельно, а при каждой вставке прибавлять <span class="math-inline">\(x\)</span> к
           соответствующему листу.</p>
 
         <h3>Запрос <code>? x</code></h3>
         <p>Найти</p>
-        <p class="math-display"><var>k</var> = upper_bound(<var>coords</var>, <var>x</var>).</p>
+        <div class="math-display">\[k = \operatorname{upper\_bound}(\mathrm{coords}, x).\]</div>
         <p>По определению <code>upper_bound</code>:</p>
-        <p class="math-display">∀ <var>i</var> &lt; <var>k</var>:
-          <var>coords</var>[<var>i</var>] ≤ <var>x</var>,<br>
-          ∀ <var>i</var> ≥ <var>k</var>: <var>coords</var>[<var>i</var>] &gt; <var>x</var>.</p>
+        <div class="math-display">\[
+          \begin{cases}
+            \mathrm{coords}[i] \le x, &amp; \forall i \lt k, \\
+            \mathrm{coords}[i] > x, &amp; \forall i \ge k.
+          \end{cases}
+        \]</div>
         <p>Поэтому все и только подходящие координаты находятся в префиксе
-          <span class="math-inline">[0, <var>k</var>)</span>. Ответ равен сумме дерева на этом префиксе.</p>
+          <span class="math-inline">\(\bigl[0, k\bigr)\)</span>. Ответ равен сумме дерева на этом префиксе.</p>
       </section>
 
       <section class="entry-section" aria-labelledby="proof-title">
@@ -120,56 +123,54 @@
         <h2 id="proof-title">Доказательство корректности</h2>
 
         <h3>Инвариант дерева</h3>
-        <p>После обработки любого префикса запросов для каждой вершины <var>v</var>, отвечающей за диапазон
-          <span class="math-inline">[<var>l</var>, <var>r</var>)</span>, выполняется</p>
-        <p class="math-display"><var>tree</var>[<var>v</var>] =
-          ∑<sub><var>i</var>=<var>l</var></sub><sup><var>r</var>−1</sup>
-          <var>coords</var>[<var>i</var>] · <var>count</var>[<var>i</var>].</p>
+        <p>После обработки любого префикса запросов для каждой вершины <span class="math-inline">\(v\)</span>, отвечающей за диапазон
+          <span class="math-inline">\(\bigl[l, r\bigr)\)</span>, выполняется</p>
+        <div class="math-display">\[\mathrm{tree}[v] =
+          \sum_{i=l}^{r-1} \mathrm{coords}[i] \cdot \mathrm{count}[i].\]</div>
 
         <h3>База</h3>
-        <p>До обработки запросов мультимножество пусто, поэтому для всех <var>i</var></p>
-        <p class="math-display"><var>count</var>[<var>i</var>] = 0.</p>
+        <p>До обработки запросов мультимножество пусто, поэтому для всех <span class="math-inline">\(i\)</span></p>
+        <div class="math-display">\[\mathrm{count}[i] = 0.\]</div>
         <p>Следовательно, все листья и все внутренние вершины дерева равны нулю, и инвариант выполнен.</p>
 
         <h3>Сохранение при <code>+ x</code></h3>
-        <p>Пусть <span class="math-inline"><var>i</var> = pos(<var>x</var>)</span>. После вставки изменяется только
-          <code>count[i]</code>, поэтому меняется только вклад листа <span class="math-inline"><var>N</var> +
-            <var>i</var></span>.</p>
-        <p>Вершины, диапазоны которых не содержат <var>i</var>, не зависят от этого листа и остаются корректными.</p>
-        <p>Вершины, диапазоны которых содержат <var>i</var>, образуют путь от листа к корню. При пересчёте каждой такой
+        <p>Пусть <span class="math-inline">\(i = \operatorname{pos}(x)\)</span>. После вставки изменяется только
+          <code>count[i]</code>, поэтому меняется только вклад листа <span class="math-inline">\(N+i\)</span>.</p>
+        <p>Вершины, диапазоны которых не содержат <span class="math-inline">\(i\)</span>, не зависят от этого листа и остаются корректными.</p>
+        <p>Вершины, диапазоны которых содержат <span class="math-inline">\(i\)</span>, образуют путь от листа к корню. При пересчёте каждой такой
           вершины как суммы её детей значение снова становится суммой вкладов всех листьев её диапазона. Значит,
           инвариант сохраняется.</p>
 
         <h3>Корректность <code>? x</code></h3>
         <p>Пусть</p>
-        <p class="math-display"><var>k</var> = upper_bound(<var>coords</var>, <var>x</var>).</p>
-        <p>Тогда индексы <span class="math-inline">0, …, <var>k</var>−1</span> соответствуют всем и только значениям,
-          не превосходящим <var>x</var>. По инварианту дерева сумма на
-          <span class="math-inline">[0, <var>k</var>)</span> равна</p>
-        <p class="math-display">∑<sub><var>i</var>=0</sub><sup><var>k</var>−1</sup>
-          <var>coords</var>[<var>i</var>] · <var>count</var>[<var>i</var>],</p>
-        <p>то есть сумме всех уже добавленных элементов мультимножества <var>S</var>, не превосходящих <var>x</var>, с
+        <div class="math-display">\[k = \operatorname{upper\_bound}(\mathrm{coords}, x).\]</div>
+        <p>Тогда индексы <span class="math-inline">\(0, \ldots, k-1\)</span> соответствуют всем и только значениям,
+          не превосходящим <span class="math-inline">\(x\)</span>. По инварианту дерева сумма на
+          <span class="math-inline">\(\bigl[0, k\bigr)\)</span> равна</p>
+        <div class="math-display">\[\sum_{i=0}^{k-1}
+          \mathrm{coords}[i] \cdot \mathrm{count}[i],\]</div>
+        <p>то есть сумме всех уже добавленных элементов мультимножества <span class="math-inline">\(S\)</span>, не превосходящих <span class="math-inline">\(x\)</span>, с
           учётом кратности.</p>
       </section>
 
       <section class="entry-section" aria-labelledby="complexity-title">
         <p class="section-kicker">Оценка ресурсов</p>
         <h2 id="complexity-title">Сложность</h2>
-        <p>Пусть <span class="math-inline"><var>m</var> ≤ <var>q</var></span> — число различных значений в операциях
+        <p>Пусть <span class="math-inline">\(m \le q\)</span> — число различных значений в операциях
           <code>+</code>.</p>
         <ul>
-          <li>чтение запросов и сбор координат: <span class="math-inline">O(<var>q</var>)</span>;</li>
-          <li>сортировка координат: <span class="math-inline">O(<var>q</var> log <var>q</var>)</span>;</li>
-          <li>удаление дубликатов: <span class="math-inline">O(<var>q</var>)</span>;</li>
-          <li>построение дерева: <span class="math-inline">O(<var>m</var>)</span>;</li>
-          <li>каждая вставка: <span class="math-inline">O(log <var>m</var>)</span>;</li>
-          <li>каждый запрос суммы: <span class="math-inline">O(log <var>m</var>)</span>.</li>
+          <li>чтение запросов и сбор координат: <span class="math-inline">\(\mathcal{O}(q)\)</span>;</li>
+          <li>сортировка координат: <span class="math-inline">\(\mathcal{O}(q \log q)\)</span>;</li>
+          <li>удаление дубликатов: <span class="math-inline">\(\mathcal{O}(q)\)</span>;</li>
+          <li>построение дерева: <span class="math-inline">\(\mathcal{O}(m)\)</span>;</li>
+          <li>каждая вставка: <span class="math-inline">\(\mathcal{O}(\log m)\)</span>;</li>
+          <li>каждый запрос суммы: <span class="math-inline">\(\mathcal{O}(\log m)\)</span>.</li>
         </ul>
         <p>Итого:</p>
-        <p class="math-display"><var>T</var>(<var>q</var>) = O(<var>q</var> log <var>q</var>), 
-          <var>M</var>(<var>q</var>) = O(<var>q</var>).</p>
+        <div class="math-display">\[T(q) = \mathcal{O}(q \log q), \qquad
+          M(q) = \mathcal{O}(q).\]</div>
         <p>Для сумм необходим <code>long long</code>, поскольку максимальный ответ может достигать</p>
-        <p class="math-display">10<sup>5</sup> · 10<sup>9</sup> = 10<sup>14</sup>.</p>
+        <div class="math-display">\[10^5 \cdot 10^9 = 10^{14}.\]</div>
       </section>
 
       <section class="entry-section" aria-labelledby="dead-end-title">
@@ -179,13 +180,13 @@
           <code>vector</code> и явных prefix sums.</p>
         <p>Это приводит к двум линейным операциям:</p>
         <ul>
-          <li>вставка в середину <code>vector</code> требует сдвига <span class="math-inline">O(<var>q</var>)</span>
+          <li>вставка в середину <code>vector</code> требует сдвига <span class="math-inline">\(\mathcal{O}(q)\)</span>
             элементов;</li>
-          <li>после вставки требуется изменить <span class="math-inline">O(<var>q</var>)</span> последующих префиксных
+          <li>после вставки требуется изменить <span class="math-inline">\(\mathcal{O}(q)\)</span> последующих префиксных
             сумм.</li>
         </ul>
-        <p>Поэтому одна вставка могла стоить <span class="math-inline">O(<var>q</var>)</span>, а вся последовательность
-          запросов — <span class="math-inline">O(<var>q</var><sup>2</sup>)</span> в худшем случае.</p>
+        <p>Поэтому одна вставка могла стоить <span class="math-inline">\(\mathcal{O}(q)\)</span>, а вся последовательность
+          запросов — <span class="math-inline">\(\mathcal{O}(q^2)\)</span> в худшем случае.</p>
         <p>Корневая ошибка состояла в попытке поддерживать динамический порядок элементов физически, хотя все
           возможные координаты были известны заранее и могли получить постоянные индексы.</p>
       </section>
@@ -197,8 +198,8 @@
         <ul>
           <li>все возможные координаты обновлений известны заранее;</li>
           <li>обновление изменяет одну координату;</li>
-          <li>запрос задаётся неравенством вида <span class="math-inline"><var>v</var> ≤ <var>x</var></span> или
-            <span class="math-inline"><var>v</var> &lt; <var>x</var></span>;</li>
+          <li>запрос задаётся неравенством вида <span class="math-inline">\(v \le x\)</span> или
+            <span class="math-inline">\(v \lt x\)</span>;</li>
           <li>после сортировки условие превращается в префикс;</li>
           <li>по префиксу требуется вычислять агрегат: сумму, количество, максимум и т. п.;</li>
           <li>физическая вставка в отсортированный массив была бы слишком дорогой.</li>
@@ -218,7 +219,7 @@
           <li><strong>Уточнено:</strong> лист хранит не только количество, а полный вклад
             <code>coords[i] * count[i]</code>.</li>
           <li><strong>Уточнено:</strong> граница запроса задаётся <code>upper_bound</code>, поэтому естественный
-            диапазон — полуинтервал <span class="math-inline">[0, <var>k</var>)</span>.</li>
+            диапазон — полуинтервал <span class="math-inline">\(\bigl[0, k\bigr)\)</span>.</li>
           <li><strong>Исправлено:</strong> одной бинарной сортировки недостаточно для дешёвой вставки в
             <code>vector</code>; линейный сдвиг исчезает только после назначения постоянных сжатых индексов.</li>
           <li><strong>Добавлено:</strong> арифметика суммы должна выполняться в <code>long long</code>.</li>

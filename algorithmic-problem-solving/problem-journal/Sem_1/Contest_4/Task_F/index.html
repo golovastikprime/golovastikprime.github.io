@@ -14,6 +14,8 @@
     href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
 </head>
 
 <body class="study-page">
@@ -35,28 +37,27 @@
       <p class="eyebrow"><span></span> Семестр 1 · Контест 4</p>
       <h1>Задача F — Counting Nested Segments</h1>
       <p class="task-meta">Accepted · C++ · <time datetime="2026-07-20">20 июля 2026</time></p>
-      <p class="study-lead">В этой задаче сортировка обеспечивает <span class="math-inline"><var>L′</var> ≤
-          <var>L</var></span>, а дерево отрезков проверяет <span class="math-inline"><var>R′</var> ≥
-          <var>R</var></span>.</p>
+      <p class="study-lead">В этой задаче сортировка обеспечивает <span class="math-inline">\(L' \le L\)</span>, а
+        дерево отрезков проверяет <span class="math-inline">\(R' \ge R\)</span>.</p>
     </header>
 
     <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_4/Task_F">
         <section class="entry-section" aria-labelledby="statement-title">
           <p class="section-kicker">Условие</p>
           <h2 id="statement-title">Задача</h2>
-          <p>Дан набор из <var>n</var> отрезков на прямой. Два отрезка называются вложенными, если они не равны и
+          <p>Дан набор из <span class="math-inline">\(n\)</span> отрезков на прямой. Два отрезка называются вложенными, если они не равны и
             один из них содержит другой. Требуется найти число пар вложенных отрезков.</p>
           <p>Неравенство отрезков здесь означает, что пары их границ не совпадают полностью:</p>
-          <p class="math-display">(<var>L</var><sub>i</sub>, <var>R</var><sub>i</sub>) ≠
-            (<var>L</var><sub>j</sub>, <var>R</var><sub>j</sub>).</p>
+          <div class="math-display">\[(L_i, R_i) \ne (L_j, R_j).\]</div>
           <p>Совпадение только левой или только правой границы не исключает вложенность.</p>
 
           <h3>Формат ввода</h3>
-          <p>В первой строке дано целое число <var>n</var>:</p>
-          <p class="math-display">1 ≤ <var>n</var> ≤ 3 · 10<sup>5</sup>.</p>
-          <p>В следующих <var>n</var> строках даны пары целых чисел <var>l<sub>i</sub></var>, <var>r<sub>i</sub></var>,
+          <p>В первой строке дано целое число <span class="math-inline">\(n\)</span>:</p>
+          <div class="math-display">\[1 \le n \le 3 \cdot 10^5.\]</div>
+          <p>В следующих <span class="math-inline">\(n\)</span> строках даны пары целых чисел
+            <span class="math-inline">\(l_i\)</span>, <span class="math-inline">\(r_i\)</span>,
             задающие границы отрезков:</p>
-          <p class="math-display">0 ≤ <var>l</var><sub>i</sub> ≤ <var>r</var><sub>i</sub> ≤ 10<sup>9</sup>.</p>
+          <div class="math-display">\[0 \le l_i \le r_i \le 10^9.\]</div>
 
           <h3>Формат вывода</h3>
           <p>Вывести число пар вложенных отрезков.</p>
@@ -65,25 +66,25 @@
         <section class="entry-section" aria-labelledby="observation-title">
           <p class="section-kicker">Подход</p>
           <h2 id="observation-title">Ключевое наблюдение</h2>
-          <p>Отрезок <span class="math-inline">[<var>L′</var>, <var>R′</var>]</span> содержит <span
-              class="math-inline">[<var>L</var>, <var>R</var>]</span> тогда и только тогда, когда</p>
-          <p class="math-display"><var>L′</var> ≤ <var>L</var>, <var>R′</var> ≥ <var>R</var>.</p>
-          <p>Здесь есть два монотонных условия по двум координатам. Отсортируем отрезки по <var>L</var> по
-            возрастанию, а при равных <var>L</var> — по <var>R</var> по убыванию. Тогда для текущего отрезка условие
-            <span class="math-inline"><var>L′</var> ≤ <var>L</var></span> уже обеспечено порядком обработки. Среди
-            ранее обработанных отрезков остаётся посчитать только те, для которых <span
-              class="math-inline"><var>R′</var> ≥ <var>R</var></span>.</p>
+          <p>Отрезок <span class="math-inline">\([L', R']\)</span> содержит <span
+              class="math-inline">\([L, R]\)</span> тогда и только тогда, когда</p>
+          <div class="math-display">\[L' \le L, \qquad R' \ge R.\]</div>
+          <p>Здесь есть два монотонных условия по двум координатам. Отсортируем отрезки по
+            <span class="math-inline">\(L\)</span> по возрастанию, а при равных
+            <span class="math-inline">\(L\)</span> — по <span class="math-inline">\(R\)</span> по убыванию. Тогда
+            для текущего отрезка условие <span class="math-inline">\(L' \le L\)</span> уже обеспечено порядком
+            обработки. Среди ранее обработанных отрезков остаётся посчитать только те, для которых
+            <span class="math-inline">\(R' \ge R\)</span>.</p>
           <p>Правые границы сжимаются в массив</p>
-          <p class="math-display">rights = [<var>r</var><sub>0</sub> &lt; <var>r</var><sub>1</sub> &lt; … &lt;
-            <var>r</var><sub>k−1</sub>].</p>
-          <p>Если <span class="math-inline"><var>p</var> = pos(<var>R</var>)</span>, то условие <span
-              class="math-inline"><var>R′</var> ≥ <var>R</var></span> эквивалентно попаданию сжатой координаты
-            <var>R′</var> в суффикс <span class="math-inline">[<var>p</var>, <var>k</var>)</span>. Количество таких
-            ранее обработанных отрезков поддерживает дерево отрезков.</p>
-          <p>Полностью одинаковые пары <span class="math-inline">(<var>L</var>, <var>R</var>)</span> объединяются в
-            класс мощности <var>c</var>. Для класса
-            сначала выполняется запрос, а только затем все <var>c</var> его элементов добавляются в дерево. Поэтому
-            одинаковые отрезки не учитывают друг друга.</p>
+          <div class="math-display">\[\mathrm{rights} = [r_0 \lt r_1 \lt \dots \lt r_{k-1}].\]</div>
+          <p>Если <span class="math-inline">\(p = \operatorname{pos}(R)\)</span>, то условие
+            <span class="math-inline">\(R' \ge R\)</span> эквивалентно попаданию сжатой координаты
+            <span class="math-inline">\(R'\)</span> в суффикс <span class="math-inline">\([p, k)\)</span>.
+            Количество таких ранее обработанных отрезков поддерживает дерево отрезков.</p>
+          <p>Полностью одинаковые пары <span class="math-inline">\((L, R)\)</span> объединяются в класс мощности
+            <span class="math-inline">\(c\)</span>. Для класса сначала выполняется запрос, а только затем все
+            <span class="math-inline">\(c\)</span> его элементов добавляются в дерево. Поэтому одинаковые отрезки не
+            учитывают друг друга.</p>
           <p>Для текущего класса:</p>
           <p><code>q = Query(p, k)</code>,</p>
           <p><code>answer += q · c</code>,</p>
@@ -93,11 +94,12 @@
         <section class="entry-section" aria-labelledby="invariant-title">
           <p class="section-kicker">Структура данных</p>
           <h2 id="invariant-title">Инвариант структуры данных</h2>
-          <p>Перед обработкой очередного класса в листе с индексом <var>j</var> хранится количество уже обработанных
-            отрезков, правая граница которых имеет сжатый индекс <var>j</var>. Во внутренней вершине хранится сумма по
-            соответствующему диапазону.</p>
-          <p>Следовательно, запрос суммы на <span class="math-inline">[<var>p</var>, <var>k</var>)</span> возвращает
-            число уже обработанных отрезков с правой границей не меньше <var>R</var>.</p>
+          <p>Перед обработкой очередного класса в листе с индексом <span class="math-inline">\(j\)</span> хранится
+            количество уже обработанных отрезков, правая граница которых имеет сжатый индекс
+            <span class="math-inline">\(j\)</span>. Во внутренней вершине хранится сумма по соответствующему
+            диапазону.</p>
+          <p>Следовательно, запрос суммы на <span class="math-inline">\([p, k)\)</span> возвращает число уже
+            обработанных отрезков с правой границей не меньше <span class="math-inline">\(R\)</span>.</p>
         </section>
 
         <section class="entry-section" aria-labelledby="proof-title">
@@ -105,28 +107,27 @@
           <h2 id="proof-title">Доказательство корректности</h2>
 
           <h3>Лемма 1. Каждая посчитанная пара допустима</h3>
-          <p>Пусть при обработке класса <span class="math-inline">[<var>L</var>, <var>R</var>]</span> запрос учёл
-            ранее обработанный отрезок <span class="math-inline">[<var>L′</var>, <var>R′</var>]</span>.</p>
-          <p>Из порядка сортировки следует <span class="math-inline"><var>L′</var> ≤ <var>L</var></span>. Поскольку
-            сжатая координата <var>R′</var> попала в суффикс <span class="math-inline">[<var>p</var>,
-              <var>k</var>)</span>, имеем <span class="math-inline"><var>R′</var> ≥ <var>R</var></span>. Поэтому</p>
-          <p class="math-display">[<var>L</var>, <var>R</var>] ⊆ [<var>L′</var>, <var>R′</var>].</p>
-          <p>Полное равенство невозможно: весь класс одинаковых отрезков <span class="math-inline">(<var>L</var>,
-              <var>R</var>)</span> добавляется в дерево только после запроса.</p>
+          <p>Пусть при обработке класса <span class="math-inline">\([L, R]\)</span> запрос учёл ранее обработанный
+            отрезок <span class="math-inline">\([L', R']\)</span>.</p>
+          <p>Из порядка сортировки следует <span class="math-inline">\(L' \le L\)</span>. Поскольку сжатая координата
+            <span class="math-inline">\(R'\)</span> попала в суффикс <span class="math-inline">\([p, k)\)</span>,
+            имеем <span class="math-inline">\(R' \ge R\)</span>. Поэтому</p>
+          <div class="math-display">\[[L, R] \subseteq [L', R'].\]</div>
+          <p>Полное равенство невозможно: весь класс одинаковых отрезков
+            <span class="math-inline">\((L, R)\)</span> добавляется в дерево только после запроса.</p>
 
           <h3>Лемма 2. Каждая допустимая пара будет посчитана</h3>
-          <p>Пусть отличный от текущего отрезок <span class="math-inline">[<var>L′</var>, <var>R′</var>]</span>
-            содержит <span class="math-inline">[<var>L</var>, <var>R</var>]</span>. Тогда</p>
-          <p class="math-display"><var>L′</var> ≤ <var>L</var>, <var>R′</var> ≥ <var>R</var>.</p>
-          <p>Если <span class="math-inline"><var>L′</var> &lt; <var>L</var></span>, то <span
-              class="math-inline">[<var>L′</var>, <var>R′</var>]</span> обработан раньше из-за сортировки по левой
-            границе. Если <span class="math-inline"><var>L′</var> = <var>L</var></span>, то из отличия отрезков и
-            вложенности следует <span class="math-inline"><var>R′</var> &gt; <var>R</var></span>; при равных левых
-            границах больший правый конец также расположен раньше.</p>
-          <p>Таким образом, содержащий отрезок уже находится в дереве. Из <span
-              class="math-inline"><var>R′</var> ≥ <var>R</var></span> следует <span
-              class="math-inline">pos(<var>R′</var>) ≥ <var>p</var></span>, поэтому запрос <span
-              class="math-inline">[<var>p</var>, <var>k</var>)</span> обязательно его учтёт.</p>
+          <p>Пусть отличный от текущего отрезок <span class="math-inline">\([L', R']\)</span> содержит
+            <span class="math-inline">\([L, R]\)</span>. Тогда</p>
+          <div class="math-display">\[L' \le L, \qquad R' \ge R.\]</div>
+          <p>Если <span class="math-inline">\(L' \lt L\)</span>, то <span class="math-inline">\([L', R']\)</span>
+            обработан раньше из-за сортировки по левой границе. Если <span class="math-inline">\(L' = L\)</span>,
+            то из отличия отрезков и вложенности следует <span class="math-inline">\(R' > R\)</span>; при равных
+            левых границах больший правый конец также расположен раньше.</p>
+          <p>Таким образом, содержащий отрезок уже находится в дереве. Из
+            <span class="math-inline">\(R' \ge R\)</span> следует
+            <span class="math-inline">\(\operatorname{pos}(R') \ge p\)</span>, поэтому запрос
+            <span class="math-inline">\([p, k)\)</span> обязательно его учтёт.</p>
 
           <h3>Теорема</h3>
           <p>По лемме 1 алгоритм не считает недопустимые пары, а по лемме 2 считает каждую допустимую пару. Элементы
@@ -138,13 +139,12 @@
         <section class="entry-section" aria-labelledby="complexity-title">
           <p class="section-kicker">Оценка ресурсов</p>
           <h2 id="complexity-title">Сложность</h2>
-          <p>Сортировка отрезков и правых границ занимает <span class="math-inline">O(<var>n</var> log
-              <var>n</var>)</span>. Каждый класс выполняет один запрос и одно обновление за <span
-              class="math-inline">O(log <var>k</var>) ⊆ O(log <var>n</var>)</span>. Поэтому</p>
-          <p class="math-display"><var>T</var>(<var>n</var>) = O(<var>n</var> log <var>n</var>),
-            <var>S</var>(<var>n</var>) = O(<var>n</var>).</p>
-          <p>Ответ может иметь порядок <span class="math-inline">C(<var>n</var>, 2)</span>, поэтому для ответа и
-            произведения <span class="math-inline"><var>q</var> · <var>c</var></span> нужен тип
+          <p>Сортировка отрезков и правых границ занимает
+            <span class="math-inline">\(O(n \log n)\)</span>. Каждый класс выполняет один запрос и одно обновление за
+            <span class="math-inline">\(O(\log k) \subseteq O(\log n)\)</span>. Поэтому</p>
+          <div class="math-display">\[T(n) = O(n \log n), \qquad S(n) = O(n).\]</div>
+          <p>Ответ может иметь порядок <span class="math-inline">\(\binom{n}{2}\)</span>, поэтому для ответа и
+            произведения <span class="math-inline">\(q \cdot c\)</span> нужен тип
             <code>long long</code>.</p>
         </section>
 
@@ -177,8 +177,8 @@
               сжатие;</li>
             <li>равные координаты требуют специального tie-breaking или групповой обработки.</li>
           </ul>
-          <p>В этой задаче сортировка обеспечивает <span class="math-inline"><var>L′</var> ≤ <var>L</var></span>, а
-            дерево отрезков проверяет <span class="math-inline"><var>R′</var> ≥ <var>R</var></span>.</p>
+          <p>В этой задаче сортировка обеспечивает <span class="math-inline">\(L' \le L\)</span>, а дерево отрезков
+            проверяет <span class="math-inline">\(R' \ge R\)</span>.</p>
         </section>
 
         <section class="entry-section" aria-labelledby="corrections-title">
@@ -187,9 +187,8 @@
           <p>Ниже сохранены исправления, зафиксированные в post-Accepted разборе. Каждое из них меняет исходное
             утверждение или необходимое условие реализации.</p>
           <ul>
-            <li><strong>CORRECTION:</strong> условие на правую границу нестрогое: <span
-                class="math-inline"><var>R′</var> ≥ <var>R</var></span>, а не <span
-                class="math-inline"><var>R′</var> &gt; <var>R</var></span>.</li>
+            <li><strong>CORRECTION:</strong> условие на правую границу нестрогое:
+              <span class="math-inline">\(R' \ge R\)</span>, а не <span class="math-inline">\(R' > R\)</span>.</li>
             <li><strong>CORRECTION:</strong> при одинаковых левых границах правые границы сортируются по убыванию.</li>
             <li><strong>CORRECTION:</strong> полностью одинаковые отрезки объединяются в классы.</li>
             <li><strong>CORRECTION:</strong> для каждого класса соблюдается порядок <code>Query</code> →
