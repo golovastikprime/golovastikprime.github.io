@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Review задачи F из контеста 1 первого семестра: число меньших элементов справа через модификацию merge sort.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача F — число меньших элементов справа — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_1/">← Контест 1</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 1</p>
+      <h1>Задача F — число меньших элементов справа</h1>
+      <p class="task-meta">Reviewed · C++ · <time datetime="2026-07-23">23 июля 2026</time></p>
+      <p class="study-lead">Здесь требуется более сильный результат: не одна сумма, а число инверсий, начинающихся в
+        каждом конкретном индексе.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_1/Task_F">
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Условие</h2>
+        <p>Дан массив</p>
+        <div class="math-display">\[
+          a_1,a_2,\ldots,a_n,
+          \]</div>
+        <p>где</p>
+        <div class="math-display">\[
+          1\le n\le 10^5,
+          \qquad
+          -10^9\le a_i\le10^9.
+          \]</div>
+        <p>Для каждого индекса <span class="math-inline">\(i\)</span> требуется найти</p>
+        <div class="math-display">\[
+          f_i=
+          \left|
+          \left\{
+          j\ \middle|\ j&gt;i,\ a_j&lt;a_i
+          \right\}
+          \right|.
+          \]</div>
+        <p>Иными словами, <span class="math-inline">\(f_i\)</span> — количество элементов, которые одновременно:</p>
+        <ul>
+          <li>находятся правее <span class="math-inline">\(a_i\)</span> в исходном массиве;</li>
+          <li>строго меньше <span class="math-inline">\(a_i\)</span>.</li>
+        </ul>
+        <p>Требуется вывести все <span class="math-inline">\(n\)</span> значений <span
+            class="math-inline">\(f_i\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="example-title">
+        <p class="section-kicker">Пример</p>
+        <h2 id="example-title">Пример смысла ответа</h2>
+        <p>Для массива</p>
+        <div class="math-display">\[
+          [5,2,4,2,1]
+          \]</div>
+        <p>получаем:</p>
+        <div class="table-wrap">
+          <table class="entry-table">
+            <thead>
+              <tr>
+                <th scope="col"><span class="math-inline">\(i\)</span></th>
+                <th scope="col"><span class="math-inline">\(a_i\)</span></th>
+                <th scope="col">меньшие элементы справа</th>
+                <th scope="col"><span class="math-inline">\(f_i\)</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>5</td>
+                <td><span class="math-inline">\(2,4,2,1\)</span></td>
+                <td>4</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>2</td>
+                <td><span class="math-inline">\(1\)</span></td>
+                <td>1</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>4</td>
+                <td><span class="math-inline">\(2,1\)</span></td>
+                <td>2</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>2</td>
+                <td><span class="math-inline">\(1\)</span></td>
+                <td>1</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>1</td>
+                <td>—</td>
+                <td>0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Ответ:</p>
+        <div class="math-display">\[
+          [4,1,2,1,0].
+          \]</div>
+        <p>Второе число <span class="math-inline">\(2\)</span>, стоящее справа от первого числа <span
+            class="math-inline">\(2\)</span>, не учитывается: неравенство в условии строгое.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="slow-title">
+        <p class="section-kicker">Перебор</p>
+        <h2 id="slow-title">Медленное решение</h2>
+        <p>Для каждого <span class="math-inline">\(i\)</span> можно просмотреть все позиции</p>
+        <div class="math-display">\[
+          j=i+1,i+2,\ldots,n
+          \]</div>
+        <p>и увеличить <span class="math-inline">\(f_i\)</span>, если <span
+            class="math-inline">\(a_j&lt;a_i\)</span>.</p>
+        <p>Число проверяемых пар равно</p>
+        <div class="math-display">\[
+          \sum_{i=1}^{n}(n-i)
+          =
+          \frac{n(n-1)}2
+          =
+          \Theta(n^2).
+          \]</div>
+        <p>При <span class="math-inline">\(n=10^5\)</span> это порядка <span
+            class="math-inline">\(5\cdot10^9\)</span> сравнений, поэтому полный перебор не подходит.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Подход</p>
+        <h2 id="observation-title">Ключевое наблюдение</h2>
+        <p>Пара индексов</p>
+        <div class="math-display">\[
+          (i,j),\qquad i&lt;j,\quad a_i&gt;a_j,
+          \]</div>
+        <p>является инверсией. Обычный merge sort умеет подсчитывать общее число инверсий во время слияния двух
+          отсортированных половин.</p>
+        <p>Здесь требуется более сильный результат: не одна сумма, а число инверсий, начинающихся в каждом конкретном
+          индексе <span class="math-inline">\(i\)</span>.</p>
+        <p>Для этого вместе со значением хранится его исходный индекс:</p>
+        <pre><code class="language-cpp">struct Item {
+  int data;
+  int idx;
+};</code></pre>
+        <p>Когда во время слияния найдено несколько меньших элементов справа от конкретного <code>Item</code>, их
+          количество прибавляется в</p>
+        <pre><code class="language-cpp">f_[item.idx]</code></pre>
+        <p>Поэтому последующая перестановка элементов при сортировке не теряет связь с позицией, для которой строится
+          ответ.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="halves-title">
+        <p class="section-kicker">Индексы</p>
+        <h2 id="halves-title">Почему половины merge sort соответствуют условию <span
+            class="math-inline">\(j&gt;i\)</span></h2>
+        <p>Вызов merge sort для исходного диапазона индексов</p>
+        <div class="math-display">\[
+          [l,r]
+          \]</div>
+        <p>разбивает его на</p>
+        <div class="math-display">\[
+          [l,m]
+          \qquad\text{и}\qquad
+          [m+1,r].
+          \]</div>
+        <p>Рекурсивные вызовы только переставляют элементы внутри своей половины. Следовательно, непосредственно перед
+          слиянием:</p>
+        <ul>
+          <li><code>arr_1</code> содержит элементы, исходные индексы которых лежали в <span
+              class="math-inline">\([l,m]\)</span>;</li>
+          <li><code>arr_2</code> содержит элементы, исходные индексы которых лежали в <span
+              class="math-inline">\([m+1,r]\)</span>.</li>
+        </ul>
+        <p>Поэтому для любого элемента левой половины и любого элемента правой половины автоматически выполнено условие
+        </p>
+        <div class="math-display">\[
+          i&lt;j.
+          \]</div>
+        <p>Во время слияния остаётся проверить только условие на значения:</p>
+        <div class="math-display">\[
+          a_j&lt;a_i.
+          \]</div>
+        <p>Это важный факт: сортируются значения, но разделение на половины было сделано по исходному порядку индексов.
+        </p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="pointer-title">
+        <p class="section-kicker">Слияние</p>
+        <h2 id="pointer-title">Что означает указатель <code>j</code> при слиянии</h2>
+        <p>Пусть обе половины уже отсортированы по значению:</p>
+        <div class="math-display">\[
+          L=\texttt{arr\_1},
+          \qquad
+          R=\texttt{arr\_2}.
+          \]</div>
+        <p>В коде:</p>
+        <ul>
+          <li><code>i</code> — число уже обработанных элементов <span class="math-inline">\(L\)</span>;</li>
+          <li><code>j</code> — число уже обработанных элементов <span class="math-inline">\(R\)</span>;</li>
+          <li><code>k</code> — следующая позиция результата слияния.</li>
+        </ul>
+        <p>Правый элемент выбирается только в случае</p>
+        <pre><code class="language-cpp">arr_1[i].data &gt; arr_2[j].data</code></pre>
+        <p>и после этого <code>j</code> увеличивается.</p>
+        <p>Таким образом, каждый элемент правого префикса</p>
+        <div class="math-display">\[
+          R[0],R[1],\ldots,R[j-1]
+          \]</div>
+        <p>был вынесен раньше некоторого ещё не обработанного элемента левой половины только потому, что оказался строго
+          меньше него.</p>
+        <p>Так как <span class="math-inline">\(L\)</span> отсортирован, этот правый элемент также строго меньше всех
+          следующих элементов <span class="math-inline">\(L\)</span>.</p>
+        <p>Когда выбирается текущий левый элемент по условию</p>
+        <pre><code class="language-cpp">arr_1[i].data &lt;= arr_2[j].data</code></pre>
+        <p>получаем:</p>
+        <ol>
+          <li>все уже вынесенные <span class="math-inline">\(j\)</span> правых элементов строго меньше
+            <code>arr_1[i]</code>;</li>
+          <li>первый ещё не вынесенный правый элемент не меньше <code>arr_1[i]</code>;</li>
+          <li>следовательно, среди всей правой половины ровно <span class="math-inline">\(j\)</span> элементов строго
+            меньше текущего левого.</li>
+        </ol>
+        <p>Поэтому обновление</p>
+        <pre><code class="language-cpp">f_[arr_1[i].idx] += j;</code></pre>
+        <p>добавляет точное число новых подходящих индексов из правой половины.</p>
+        <p>Если правая половина закончилась, то все её элементы уже были вынесены и строго меньше каждого оставшегося
+          элемента левой половины. Поэтому тот же прибавляемый счётчик <code>j</code> корректен и в цикле, который
+          дописывает остаток <code>arr_1</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="invariant-title">
+        <p class="section-kicker">Инвариант</p>
+        <h2 id="invariant-title">Инвариант слияния</h2>
+        <p>Перед каждой итерацией основного цикла слияния выполняются следующие утверждения.</p>
+        <ol>
+          <li>Диапазон <code>arr[left..k)</code> является отсортированным слиянием уже обработанных префиксов
+            <div class="math-display">\[
+              L[0..i)
+              \qquad\text{и}\qquad
+              R[0..j).
+              \]</div>
+          </li>
+          <li>Каждый элемент обработанного правого префикса <span class="math-inline">\(R[0..j)\)</span> строго меньше
+            каждого ещё не обработанного элемента левой половины <span class="math-inline">\(L[i..n)\)</span>.</li>
+          <li>Для каждого уже обработанного элемента левой половины в его ячейку <code>f_[idx]</code> добавлено ровно
+            число меньших элементов из <span class="math-inline">\(R\)</span>.</li>
+        </ol>
+
+        <h3>База</h3>
+        <p>В начале</p>
+        <div class="math-display">\[
+          i=j=0,\qquad k=l.
+          \]</div>
+        <p>Оба обработанных префикса пусты. Записанная часть результата также пуста, а новых вкладов в <code>f_</code>
+          ещё нет. Все три утверждения выполнены.</p>
+
+        <h3>Сохранение: выбирается правый элемент</h3>
+        <p>Если</p>
+        <div class="math-display">\[
+          R[j]&lt;L[i],
+          \]</div>
+        <p>правый элемент записывается в результат, после чего <code>j</code> увеличивается.</p>
+        <p>Поскольку <span class="math-inline">\(L\)</span> отсортирован,</p>
+        <div class="math-display">\[
+          L[i]\le L[i+1]\le\ldots,
+          \]</div>
+        <p>добавленный правый элемент строго меньше не только <span class="math-inline">\(L[i]\)</span>, но и всех
+          оставшихся элементов левой половины. Второй пункт инварианта сохраняется.</p>
+        <p>Ответы пока не обновляются: этот элемент будет учтён для каждого подходящего левого элемента тогда, когда тот
+          будет вынесен в результат.</p>
+
+        <h3>Сохранение: выбирается левый элемент</h3>
+        <p>Если</p>
+        <div class="math-display">\[
+          L[i]\le R[j],
+          \]</div>
+        <p>все элементы <span class="math-inline">\(R[0..j)\)</span> по инварианту строго меньше <span
+            class="math-inline">\(L[i]\)</span>, а ни один элемент <span class="math-inline">\(R[j..m)\)</span> не
+          может быть меньше <span class="math-inline">\(L[i]\)</span>, поскольку <span
+            class="math-inline">\(R[j]\)</span> — минимальный из необработанных правых элементов.</p>
+        <p>Следовательно, добавление <code>j</code> даёт точный вклад правой половины для этого левого элемента. После
+          его записи первый и третий пункты инварианта сохраняются.</p>
+
+        <h3>Завершение</h3>
+        <p>Когда одна половина закончилась:</p>
+        <ul>
+          <li>если закончилась левая половина, все её ответы по пересекающим половины парам уже вычислены;</li>
+          <li>если закончилась правая половина, для каждого оставшегося левого элемента все <span
+              class="math-inline">\(j=m\)</span> правых элементов строго меньше него, поэтому код добавляет
+            <code>j</code> при дописывании остатка.</li>
+        </ul>
+        <p>После завершения <code>Merge</code> диапазон отсортирован, а все пары, пересекающие границу между половинами,
+          учтены правильно.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="equal-title">
+        <p class="section-kicker">Строгость</p>
+        <h2 id="equal-title">Почему равные значения не учитываются</h2>
+        <p>Условие задачи требует</p>
+        <div class="math-display">\[
+          a_j&lt;a_i,
+          \]</div>
+        <p>а не <span class="math-inline">\(a_j\le a_i\)</span>.</p>
+        <p>При равенстве код выбирает левый элемент первым:</p>
+        <pre><code class="language-cpp">if (arr_1[i].data &lt;= arr_2[j].data) {
+  // берётся левый элемент
+}</code></pre>
+        <p>Правый элемент с тем же значением ещё не входит в обработанный правый префикс, поэтому не включается в
+          <code>j</code> и не прибавляется к ответу.</p>
+        <p>Если заменить <code>&lt;=</code> на <code>&lt;</code>, то при равенстве сначала будет вынесен правый элемент.
+          После этого он ошибочно попадёт в число «меньших».</p>
+        <p>Минимальный контрпример:</p>
+        <div class="math-display">\[
+          [1,1].
+          \]</div>
+        <p>Правильный ответ равен</p>
+        <div class="math-display">\[
+          [0,0].
+          \]</div>
+        <p>При неверной обработке равенства для первого элемента получилось бы <span
+            class="math-inline">\(1\)</span>.</p>
+        <p>Здесь устойчивый выбор левого элемента при равенстве нужен не ради самой сортировки, а ради точного
+          соответствия строгому неравенству задачи.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="accumulation-title">
+        <p class="section-kicker">Накопление</p>
+        <h2 id="accumulation-title">Почему используется <code>+=</code>, а не присваивание</h2>
+        <p>Меньшие элементы справа от одного индекса могут находиться в разных блоках рекурсивного разбиения.</p>
+        <p>Например, часть инверсий для элемента может быть найдена в нижнем рекурсивном слиянии внутри его половины, а
+          другая часть — позже, при слиянии этой половины с соседней.</p>
+        <p>Поэтому ответ накапливается:</p>
+        <pre><code class="language-cpp">f_[arr_1[i].idx] += j;</code></pre>
+        <p>Присваивание уничтожило бы вклад, найденный на предыдущих уровнях рекурсии.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="proof-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="proof-title">Доказательство корректности merge sort</h2>
+        <p>Докажем по индукции по длине исходного диапазона <span class="math-inline">\([l,r]\)</span> следующее
+          утверждение:</p>
+        <blockquote>
+          <p>После <code>MergeSort(arr, l, r)</code> элементы диапазона отсортированы по значению, а все пары подходящих
+            индексов, оба конца которых принадлежат этому исходному диапазону, внесли ровно один вклад в соответствующие
+            элементы <code>f_</code>.</p>
+        </blockquote>
+
+        <h3>База</h3>
+        <p>Если <span class="math-inline">\(l\ge r\)</span>, диапазон содержит не более одного элемента.</p>
+        <p>Он уже отсортирован. Пары различных индексов внутри него отсутствуют, поэтому добавлять к ответу ничего не
+          требуется.</p>
+
+        <h3>Индукционный переход</h3>
+        <p>Пусть утверждение верно для диапазонов меньшей длины.</p>
+        <p>Текущий диапазон разбивается на левую и правую половины. По индукционному предположению:</p>
+        <ul>
+          <li>левый рекурсивный вызов сортирует левую половину и учитывает все пары, целиком лежащие в ней;</li>
+          <li>правый рекурсивный вызов сортирует правую половину и учитывает все пары, целиком лежащие в ней.</li>
+        </ul>
+        <p>После этого <code>Merge</code>, согласно доказанному инварианту, сортирует объединённый диапазон и учитывает
+          все подходящие пары, у которых первый индекс находится в левой половине, а второй — в правой.</p>
+        <p>Любая пара индексов внутри <span class="math-inline">\([l,r]\)</span> принадлежит ровно одному из трёх типов:
+        </p>
+        <ol>
+          <li>оба индекса в левой половине;</li>
+          <li>оба индекса в правой половине;</li>
+          <li>первый индекс в левой, второй — в правой.</li>
+        </ol>
+        <p>Эти типы попарно не пересекаются и покрывают все возможные пары <span
+            class="math-inline">\(i&lt;j\)</span>. Следовательно, каждая подходящая пара учтена ровно один раз.</p>
+        <p>После слияния диапазон также отсортирован. Индукционный переход доказан.</p>
+        <p>Для корневого вызова диапазон содержит весь исходный массив. Поэтому после <code>Apply()</code>:</p>
+        <div class="math-display">\[
+          f_i=
+          \left|
+          \left\{
+          j\mid j&gt;i,\ a_j&lt;a_i
+          \right\}
+          \right|
+          \]</div>
+        <p>для каждого исходного индекса <span class="math-inline">\(i\)</span>. Это и есть требуемый ответ.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="unique-level-title">
+        <p class="section-kicker">Подсчёт пар</p>
+        <h2 id="unique-level-title">Другой взгляд: единственный уровень подсчёта пары</h2>
+        <p>Для любых двух исходных позиций <span class="math-inline">\(i&lt;j\)</span> существует единственная
+          наименьшая вершина рекурсии merge sort, в которой они впервые оказываются в разных половинах.</p>
+        <p>Именно при слиянии этой вершины пара рассматривается как пересекающая границу:</p>
+        <ul>
+          <li>ниже этой вершины элементы принадлежат разным рекурсивным вызовам;</li>
+          <li>выше неё они уже находятся внутри одной и той же отсортированной половины.</li>
+        </ul>
+        <p>Поэтому одна пара не может быть посчитана дважды. Если <span
+            class="math-inline">\(a_j&lt;a_i\)</span>, она добавляет единицу в <code>f_[i]</code>; иначе не добавляет
+          ничего.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="trace-title">
+        <p class="section-kicker">Трассировка</p>
+        <h2 id="trace-title">Трассировка на примере</h2>
+        <p>Рассмотрим</p>
+        <div class="math-display">\[
+          [5,2,4,2,1].
+          \]</div>
+        <p>При корневом слиянии отсортированные половины имеют вид</p>
+        <div class="math-display">\[
+          L=[2,4,5],
+          \qquad
+          R=[1,2],
+          \]</div>
+        <p>причём каждый <code>Item</code> сохраняет свой исходный индекс.</p>
+        <ol>
+          <li>Сначала выносится правое значение <span class="math-inline">\(1\)</span>, поэтому
+            <code>j = 1</code>.</li>
+          <li>Затем выносится левое значение <span class="math-inline">\(2\)</span>. Ровно один правый элемент строго
+            меньше него, поэтому к ответу исходного второго элемента прибавляется <span
+              class="math-inline">\(1\)</span>.</li>
+          <li>Равное правое значение <span class="math-inline">\(2\)</span> выносится только после левого <span
+              class="math-inline">\(2\)</span>; оно не было ошибочно посчитано как меньшее.</li>
+          <li>После этого <code>j = 2</code>, и к ответам элементов <span class="math-inline">\(4\)</span> и <span
+              class="math-inline">\(5\)</span> добавляется по два пересекающих половины элемента.</li>
+        </ol>
+        <p>Инверсии внутри каждой половины уже были учтены рекурсивными вызовами. После сложения вкладов всех уровней
+          получается</p>
+        <div class="math-display">\[
+          [4,1,2,1,0].
+          \]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+
+        <h3>Время</h3>
+        <p>На каждом уровне рекурсии суммарная длина всех сливаемых диапазонов равна <span
+            class="math-inline">\(n\)</span>. Одно слияние диапазона длины <span class="math-inline">\(s\)</span>
+          выполняется за <span class="math-inline">\(\Theta(s)\)</span>, потому что каждый указатель движется только
+          вперёд.</p>
+        <p>Число уровней равно</p>
+        <div class="math-display">\[
+          \Theta(\log n).
+          \]</div>
+        <p>Следовательно,</p>
+        <div class="math-display">\[
+          T(n)
+          =
+          2T(n/2)+\Theta(n)
+          =
+          \boxed{\Theta(n\log n)}.
+          \]</div>
+        <p>Создание и заполнение временных векторов на каждом слиянии не меняет эту оценку: суммарно на одном уровне
+          копируется <span class="math-inline">\(\Theta(n)\)</span> элементов.</p>
+
+        <h3>Память</h3>
+        <p>Массив <code>f_</code> содержит <span class="math-inline">\(n\)</span> целых чисел. Во время одного слияния
+          временные массивы <code>arr_1</code> и <code>arr_2</code> суммарно содержат длину текущего диапазона.</p>
+        <p>Когда выполняется слияние родительского диапазона, временные массивы его дочерних вызовов уже уничтожены.
+          Поэтому пиковый, а не суммарный, размер временных массивов равен <span
+            class="math-inline">\(O(n)\)</span>.</p>
+        <p>Дополнительно стек рекурсии занимает</p>
+        <div class="math-display">\[
+          O(\log n).
+          \]</div>
+        <p>Итоговая дополнительная память:</p>
+        <div class="math-display">\[
+          \boxed{\Theta(n)}.
+          \]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="types-title">
+        <p class="section-kicker">Типы</p>
+        <h2 id="types-title">Корректность выбранных типов</h2>
+        <p>Максимально возможный ответ для одной позиции равен</p>
+        <div class="math-display">\[
+          n-1\le 99999.
+          \]</div>
+        <p>Поэтому <code>int</code> безопасен для:</p>
+        <ul>
+          <li>каждого значения <code>f_[i]</code>;</li>
+          <li>исходного индекса <code>idx</code>;</li>
+          <li>границ и указателей merge sort.</li>
+        </ul>
+        <p>Входные значения удовлетворяют</p>
+        <div class="math-display">\[
+          -10^9\le a_i\le10^9
+          \]</div>
+        <p>и также помещаются в <code>int</code>.</p>
+        <p>Общая сумма всех ответов могла бы достигать</p>
+        <div class="math-display">\[
+          \frac{n(n-1)}2,
+          \]</div>
+        <p>и для неё потребовался бы 64-битный тип. Однако программа не складывает все ответы в одну переменную, поэтому
+          переполнения <code>int</code> здесь нет.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверка</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li><span class="math-inline">\(n=1\)</span>: рекурсивный вызов сразу завершается, ответ равен <span
+              class="math-inline">\(0\)</span>.</li>
+          <li>Массив строго возрастает: справа нет меньших элементов, все ответы равны нулю.</li>
+          <li>Массив строго убывает: для нумерации с нуля ответ имеет вид
+            <div class="math-display">\[
+              [n-1,n-2,\ldots,1,0].
+              \]</div>
+          </li>
+          <li>Все значения равны: благодаря условию <code>&lt;=</code> ни одно равенство не считается, все ответы
+            равны нулю.</li>
+          <li>Есть дубликаты в разных половинах: левый дубликат выносится раньше правого и не получает ложного вклада.
+          </li>
+          <li>Отрицательные значения: алгоритм использует только обычное сравнение, знак не требует специальной
+            обработки.</li>
+          <li>Минимальные и максимальные допустимые значения <span class="math-inline">\(-10^9\)</span> и <span
+              class="math-inline">\(10^9\)</span> безопасны для <code>int</code>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="implementation-title">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="implementation-title">Замечания к реализации</h2>
+
+        <h3>Исходный индекс обязателен</h3>
+        <p>После первого же слияния позиция элемента в <code>arr</code> может перестать совпадать с его позицией во
+          входе. Если обновлять ответ по текущей позиции <code>k</code>, результаты будут записаны не тем индексам.</p>
+        <p>Поле <code>Item::idx</code> сохраняет идентичность элемента независимо от перестановок.</p>
+
+        <h3>Сортировка изменяет входной массив</h3>
+        <p><code>Sort</code> хранит ссылку на <code>arr</code>, а <code>Apply()</code> сортирует этот вектор на месте.
+          Для данной программы это безопасно: после сортировки исходный порядок значений больше не используется, а
+          ответы уже адресуются через сохранённые <code>idx</code>.</p>
+        <p>В переиспользуемом интерфейсе это побочное действие стоит явно указать в контракте.</p>
+
+        <h3>Временный буфер можно переиспользовать</h3>
+        <p>Текущая реализация создаёт два временных вектора в каждом вызове <code>Merge</code>. Это корректно и
+          укладывается в ограничения, но вызывает много динамических выделений памяти.</p>
+        <p>Библиотечная версия merge sort обычно создаёт один буфер длины <span class="math-inline">\(n\)</span> в
+          <code>Apply()</code> и переиспользует его во всех слияниях. Асимптотика останется той же:</p>
+        <div class="math-display">\[
+          \Theta(n\log n)\text{ времени},
+          \qquad
+          \Theta(n)\text{ памяти}.
+          \]</div>
+
+        <h3>Ссылка внутри <code>Sort</code></h3>
+        <p>Поле</p>
+        <pre><code class="language-cpp">std::vector&lt;Item&gt;&amp; arr_ref_;</code></pre>
+        <p>требует, чтобы исходный вектор жил дольше объекта <code>Sort</code>. В <code>main</code> это условие
+          выполнено: <code>arr</code> создаётся раньше <code>sr</code> и уничтожается позже него.</p>
+
+        <h3>Функциональных ошибок не найдено</h3>
+        <p>При ограничениях из условия:</p>
+        <ul>
+          <li>границы рекурсии корректны;</li>
+          <li>строгие сравнения обработаны правильно;</li>
+          <li>ответы записываются по исходным индексам;</li>
+          <li>переполнения используемых целых типов нет;</li>
+          <li>формат вывода допустим.</li>
+        </ul>
+        <p>Переданный код вычисляет требуемые значения за <span
+            class="math-inline">\(\Theta(n\log n)\)</span> времени и <span
+            class="math-inline">\(\Theta(n)\)</span> дополнительной памяти.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="failure-title">
+        <p class="section-kicker">Failure mode</p>
+        <h2 id="failure-title">Главный failure mode</h2>
+        <p>Личный тупик до Accepted не был описан, поэтому он не приписывается автору. Главная логическая опасность этой
+          модификации merge sort — доказать лишь корректность общей сортировки, но не доказать, что <code>j</code>
+          является точным вкладом в ответ конкретного исходного элемента.</p>
+        <p>Нужно одновременно контролировать три факта:</p>
+        <ol>
+          <li>правая половина соответствует более поздним исходным индексам;</li>
+          <li>уже вынесенный правый префикс состоит из строго меньших значений;</li>
+          <li>поле <code>idx</code> направляет найденный вклад в правильную ячейку ответа.</li>
+        </ol>
+        <p>Если пропустить хотя бы один из них, обычный корректный merge sort ещё не гарантирует корректность массива
+          <code>f_</code>.</p>
+        <p>Вторая частая ошибка — использовать неправильное правило при равенстве. Оно меняет решаемую задачу со
+          строгого сравнения <span class="math-inline">\(a_j&lt;a_i\)</span> на нестрогое <span
+            class="math-inline">\(a_j\le a_i\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="alternatives-title">
+        <p class="section-kicker">Сравнение</p>
+        <h2 id="alternatives-title">Почему близкие подходы менее удобны</h2>
+
+        <h3>Полный перебор</h3>
+        <p>Проверяет все пары и требует <span class="math-inline">\(\Theta(n^2)\)</span> времени, что слишком много при
+          <span class="math-inline">\(n=10^5\)</span>.</p>
+
+        <h3>Сначала полностью отсортировать значения</h3>
+        <p>Обычная сортировка уничтожает информацию о том, какие элементы находились справа от каждого индекса. Одного
+          ранга значения недостаточно: условие одновременно зависит от порядка индексов и порядка значений.</p>
+
+        <h3>Fenwick tree или segment tree</h3>
+        <p>Можно идти по исходному массиву справа налево и хранить частоты уже увиденных значений после coordinate
+          compression. Для <span class="math-inline">\(a_i\)</span> запрос префикса значений, строго меньших <span
+            class="math-inline">\(a_i\)</span>, даст требуемый ответ.</p>
+        <p>Этот подход также работает за</p>
+        <div class="math-display">\[
+          O(n\log n)
+          \]</div>
+        <p>времени и <span class="math-inline">\(O(n)\)</span> памяти. Он полезен как альтернативный паттерн, особенно
+          когда кроме подсчёта появляются динамические обновления. Однако для задачи из блока сортировок модификация
+          merge sort решает задачу непосредственно и не требует отдельной структуры данных.</p>
+
+        <h3>Balanced BST без размеров поддеревьев</h3>
+        <p>Обычное бинарное дерево поиска умеет находить и вставлять значение, но не умеет за <span
+            class="math-inline">\(O(\log n)\)</span> возвращать количество меньших ключей. Для этого нужны частоты
+          дубликатов и размеры поддеревьев либо специализированная order statistics tree.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Признаки похожих задач</h2>
+        <p>Модификацию merge sort стоит искать, когда:</p>
+        <ul>
+          <li>требуется подсчитать пары индексов <span class="math-inline">\(i&lt;j\)</span>;</li>
+          <li>условие на пару задаётся сравнением значений <span class="math-inline">\(a_i\)</span> и <span
+              class="math-inline">\(a_j\)</span>;</li>
+          <li>нужен ответ для каждого исходного индекса, а не только общая сумма;</li>
+          <li>пары можно разделить на лежащие внутри половин и пересекающие границу;</li>
+          <li>после сортировки половин пересекающие пары считаются движением двух указателей;</li>
+          <li>исходную идентичность элемента можно сохранить дополнительным полем <code>idx</code>.</li>
+        </ul>
+        <p>Особенно важно заранее определить:</p>
+        <ul>
+          <li>какое неравенство требуется — строгое или нестрогое;</li>
+          <li>какая половина должна выбираться при равенстве;</li>
+          <li>к какому концу пары относится индивидуальный ответ;</li>
+          <li>нужно прибавлять вклад или заменять ранее найденное значение;</li>
+          <li>сохраняется ли исходный индекс после перестановок.</li>
+        </ul>
+        <p>Тот же общий приём встречается в задачах:</p>
+        <ul>
+          <li>подсчёт общего числа инверсий;</li>
+          <li>число меньших элементов справа;</li>
+          <li>число больших элементов слева;</li>
+          <li>подсчёт пар, удовлетворяющих монотонному неравенству;</li>
+          <li>построение per-index статистики во время divide-and-conquer.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="changes-title">
+        <p class="section-kicker">Post-Accepted</p>
+        <h2 id="changes-title">Явно отмеченные содержательные изменения</h2>
+        <p>Отдельный post-Accepted пересказ не передавался; лог полностью восстановлен из условия на скриншоте и
+          предоставленного решения.</p>
+        <ol>
+          <li><strong>ADDITION:</strong> сформулировано соответствие рекурсивных половин условию <span
+              class="math-inline">\(j&gt;i\)</span>.</li>
+          <li><strong>ADDITION:</strong> доказан инвариант слияния, объясняющий точный смысл счётчика <code>j</code>.
+          </li>
+          <li><strong>ADDITION:</strong> доказано, что каждая допустимая пара учитывается ровно один раз.</li>
+          <li><strong>CLARIFICATION:</strong> поле <code>idx</code> нужно для адресации ответа после перестановки
+            элементов.</li>
+          <li><strong>CLARIFICATION:</strong> <code>+=</code> сохраняет вклады, найденные на разных уровнях рекурсии.
+          </li>
+          <li><strong>CLARIFICATION:</strong> выбор левого элемента при равенстве реализует строгое неравенство <span
+              class="math-inline">\(a_j&lt;a_i\)</span>.</li>
+          <li><strong>VERIFICATION:</strong> при данных ограничениях функциональных ошибок и переполнений в решении не
+            найдено.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_1/Task_F/F.cpp"
+              download><code>F.cpp</code> — локальная копия</a>.</li>
+          <li>Теория: <a href="/conspecta/1/pdfs/algosi-1.pdf" target="_blank" rel="noreferrer">Алгоритмы и структуры
+              данных I (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL when available. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
