@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи A из контеста 2 первого семестра: правильная скобочная последовательность, стек и инвариант сканирования.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача A — правильная скобочная последовательность — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_2/">← Контест 2</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 2</p>
+      <h1>Задача A — правильная скобочная последовательность</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-23">23 июля 2026</time></p>
+      <p class="study-lead">Закрывающая скобка обязана соответствовать последней ещё не закрытой открывающей скобке.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_2/Task_A">
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Условие</h2>
+        <p>Дана строка <span class="math-inline">\(S\)</span>, состоящая только из символов</p>
+        <div class="math-display">\[
+          (\,),\quad [\,],\quad \{\,\}.
+          \]</div>
+        <p>Нужно определить, является ли она правильной скобочной последовательностью.</p>
+        <p>Правильные последовательности строятся по следующим правилам:</p>
+        <ul>
+          <li>пустая строка правильна;</li>
+          <li>если <span class="math-inline">\(A\)</span> и <span class="math-inline">\(B\)</span> правильны, то
+            <span class="math-inline">\(AB\)</span> правильно;</li>
+          <li>если <span class="math-inline">\(A\)</span> правильна, то <span
+              class="math-inline">\((A)\)</span>, <span class="math-inline">\([A]\)</span> и <span
+              class="math-inline">\(\{A\}\)</span> правильны.</li>
+        </ul>
+        <p>Ограничения:</p>
+        <ul>
+          <li><span class="math-inline">\(1\le |S|\le 10^5\)</span>;</li>
+          <li>время — <span class="math-inline">\(1\)</span> секунда;</li>
+          <li>память — <span class="math-inline">\(256\)</span> МБ.</li>
+        </ul>
+        <p>Требуется вывести <code>YES</code>, если <span class="math-inline">\(S\)</span> правильна, и
+          <code>NO</code> иначе.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Подход</p>
+        <h2 id="observation-title">Ключевое наблюдение</h2>
+        <p>Закрывающая скобка обязана соответствовать <strong>последней ещё не закрытой</strong> открывающей скобке.</p>
+        <p>Пусть уже встретились открывающие скобки <code>(</code>, а затем <code>[</code>. Пока <code>[</code> не
+          закрыта, закрыть более раннюю <code>(</code> нельзя: иначе скобочные пары пересеклись бы. Поэтому при чтении
+          закрывающей скобки нужна только самая новая незакрытая открывающая скобка.</p>
+        <p>Это порядок LIFO:</p>
+        <ul>
+          <li>открывающая скобка добавляется в стек;</li>
+          <li>закрывающая сравнивается с вершиной стека;</li>
+          <li>совпавшая пара удаляется.</li>
+        </ul>
+        <p>Одного подсчёта баланса недостаточно, поскольку необходимо помнить типы скобок. Например, в строке
+          <code>([)]</code> количества открывающих и закрывающих скобок совпадают, но при чтении <code>)</code>
+          последней незакрытой скобкой является <code>[</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="stack-title">
+        <p class="section-kicker">Структура данных</p>
+        <h2 id="stack-title">Представление стека</h2>
+        <p>Стек реализован как односвязный список с фиктивной вершиной <code>M_dummy_head_</code>.</p>
+        <ul>
+          <li><code>M_dummy_head_.next</code> указывает на вершину стека;</li>
+          <li>каждый настоящий узел хранит символ и указатель на следующий элемент;</li>
+          <li>нижний узел указывает на <code>M_dummy_head_</code>;</li>
+          <li>для пустого стека <code>M_dummy_head_.next == &amp;M_dummy_head_</code>;</li>
+          <li><code>M_size_</code> хранит число настоящих узлов.</li>
+        </ul>
+        <p>Поэтому все основные операции выполняются в начале списка:</p>
+        <ul>
+          <li><code>Push</code> создаёт новый узел перед прежней вершиной;</li>
+          <li><code>Top</code> читает данные первого узла;</li>
+          <li><code>Pop</code> перенаправляет <code>M_dummy_head_.next</code> на второй узел и удаляет первый.</li>
+        </ul>
+
+        <h3>Инвариант реализации стека</h3>
+        <p>После любой последовательности корректно вызванных <code>Push</code> и <code>Pop</code>:</p>
+        <ol>
+          <li>цепочка от <code>M_dummy_head_.next</code> до <code>M_dummy_head_</code> содержит все элементы стека от
+            вершины ко дну;</li>
+          <li><code>M_size_</code> равно числу настоящих узлов в этой цепочке;</li>
+          <li><code>M_dummy_head_.next == &amp;M_dummy_head_</code> тогда и только тогда, когда стек пуст.</li>
+        </ol>
+        <p><code>Push</code> добавляет ровно один первый узел и увеличивает размер. <code>Pop</code> удаляет ровно
+          первый узел и уменьшает размер. Следовательно, обе операции сохраняют этот инвариант.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="algorithm-title">
+        <p class="section-kicker">Алгоритм</p>
+        <h2 id="algorithm-title">Алгоритм</h2>
+        <p>Строка просматривается слева направо.</p>
+        <p>Для очередного символа <span class="math-inline">\(c\)</span>:</p>
+        <ol>
+          <li>Если <span class="math-inline">\(c\)</span> — открывающая скобка, положить её в стек.</li>
+          <li>Иначе <span class="math-inline">\(c\)</span> является закрывающей скобкой:
+            <ul>
+              <li>если стек пуст, вывести <code>NO</code>;</li>
+              <li>взять верхнюю открывающую скобку и удалить её из стека;</li>
+              <li>если типы скобок не образуют пару, вывести <code>NO</code>.</li>
+            </ul>
+          </li>
+          <li>После обработки всей строки вывести <code>YES</code> тогда и только тогда, когда стек пуст.</li>
+        </ol>
+        <p>Ветвь <code>else</code> безопасна именно из-за гарантии условия, что других символов во входной строке
+          нет.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="scan-invariant-title">
+        <p class="section-kicker">Корректность шага</p>
+        <h2 id="scan-invariant-title">Инвариант сканирования</h2>
+        <p>После обработки префикса <span class="math-inline">\(S[0..i)\)</span>, если алгоритм ещё не вывел
+          <code>NO</code>, выполняются свойства:</p>
+        <ol>
+          <li>все закрывающие скобки префикса уже сопоставлены с открывающими того же типа;</li>
+          <li>полученные пары правильно вложены и не пересекаются;</li>
+          <li>стек снизу вверх содержит в порядке появления ровно те открывающие скобки префикса, которые ещё не были
+            закрыты;</li>
+          <li>вершина стека — последняя незакрытая открывающая скобка.</li>
+        </ol>
+
+        <h3>База</h3>
+        <p>До обработки первого символа префикс пуст. Сопоставленных и незакрытых скобок нет, стек пуст, поэтому
+          инвариант выполнен.</p>
+
+        <h3>Открывающая скобка</h3>
+        <p>Новая скобка пока не имеет пары и появляется позже всех прежних незакрытых скобок. <code>Push</code>
+          помещает её на вершину, поэтому свойства инварианта сохраняются.</p>
+
+        <h3>Закрывающая скобка</h3>
+        <p>Если стек пуст, у текущей закрывающей скобки нет незакрытой открывающей скобки слева. Значит, никакое
+          правильное сопоставление невозможно, и ответ <code>NO</code> корректен.</p>
+        <p>Если стек непуст, его вершина является последней незакрытой открывающей скобкой.</p>
+        <ul>
+          <li>Если типы совпадают, эти две скобки образуют очередную вложенную пару. После <code>Pop</code> в стеке
+            остаются ровно остальные незакрытые скобки, поэтому инвариант сохраняется.</li>
+          <li>Если типы не совпадают, текущую скобку нельзя сопоставить с более ранней открывающей: находящаяся на
+            вершине скобка осталась бы внутри новой пары, но закрывалась бы уже после неё. Это нарушило бы вложенность.
+            Поэтому ответ <code>NO</code> также корректен.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="proof-title">
+        <p class="section-kicker">Почему это работает</p>
+        <h2 id="proof-title">Доказательство корректности</h2>
+        <p>Докажем, что алгоритм выводит <code>YES</code> тогда и только тогда, когда строка является правильной
+          скобочной последовательностью.</p>
+
+        <h3>Если алгоритм вывел <code>YES</code></h3>
+        <p>Алгоритм не встретил ни закрывающей скобки без пары, ни несовпадения типов. По инварианту все построенные
+          пары правильно вложены.</p>
+        <p>В конце стек пуст, поэтому незакрытых открывающих скобок также нет. Следовательно, каждая скобка входит ровно
+          в одну согласованную пару, а все пары правильно вложены.</p>
+        <p>Чтобы связать это с рекурсивным определением, рассмотрим первую скобку непустой строки и соответствующую ей
+          закрывающую скобку. Между ними находится правильная последовательность <span
+            class="math-inline">\(A\)</span>, а после них — правильная последовательность <span
+            class="math-inline">\(B\)</span>. Тогда вся строка имеет один из видов</p>
+        <div class="math-display">\[
+          (A)B,\qquad [A]B,\qquad \{A\}B.
+          \]</div>
+        <p>Последовательно применяя правила обёртки и конкатенации, получаем, что вся строка правильна.</p>
+
+        <h3>Если строка правильная</h3>
+        <p>В правильной последовательности никакая закрывающая скобка не может появиться до своей открывающей, а тип
+          закрывающей скобки совпадает с типом самой внутренней ещё не закрытой пары.</p>
+        <p>Поэтому во время сканирования стек не окажется пустым перед обработкой закрывающей скобки и проверка типов ни
+          разу не завершится неудачей. Поскольку в правильной последовательности каждая открывающая скобка имеет пару,
+          после обработки всей строки стек будет пуст.</p>
+        <p>Значит, алгоритм выведет <code>YES</code>.</p>
+        <p>Оба направления доказаны.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка ресурсов</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Пусть <span class="math-inline">\(n=|S|\)</span>.</p>
+        <p>Каждый символ:</p>
+        <ul>
+          <li>один раз читается;</li>
+          <li>не более одного раза добавляется в стек;</li>
+          <li>не более одного раза удаляется из стека.</li>
+        </ul>
+        <p>Операции <code>Push</code>, <code>Top</code>, <code>Pop</code> и <code>Empty</code> занимают
+          <span class="math-inline">\(O(1)\)</span>. Уничтожение оставшихся узлов также суммарно занимает не более
+          <span class="math-inline">\(O(n)\)</span>.</p>
+        <p>Итоговая сложность:</p>
+        <div class="math-display">\[
+          T(n)=O(n),\qquad M(n)=O(n).
+          \]</div>
+        <p>Максимальная память достигается, например, на строке из одних открывающих скобок.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверка</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li>Первый символ закрывающий: стек пуст, ответ <code>NO</code>.</li>
+          <li>Несовпадение типов: <code>([)]</code>, ответ <code>NO</code>.</li>
+          <li>Все пары закрыты, но нарушен тип одной пары: <code>{]</code>, ответ <code>NO</code>.</li>
+          <li>После просмотра остались открывающие скобки: <code>((</code>, ответ <code>NO</code>.</li>
+          <li>Последовательная конкатенация пар: <code>()[]{}</code>, ответ <code>YES</code>.</li>
+          <li>Глубокая вложенность: <code>{[()]}</code>, ответ <code>YES</code>.</li>
+        </ul>
+        <p>Важно различать два независимых условия:</p>
+        <ol>
+          <li>ни один префикс не должен содержать недопустимую закрывающую скобку;</li>
+          <li>после всей строки не должно остаться незакрытых открывающих скобок.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="implementation-title">
+        <p class="section-kicker">Review реализации</p>
+        <h2 id="implementation-title">Замечания к реализации</h2>
+        <p>Личный тупик или первоначальная неверная идея не были указаны, поэтому они здесь не приписываются автору.
+          Ниже перечислены только проблемы, обнаруженные непосредственно в переданном коде.</p>
+
+        <h3><code>Clear()</code> не восстанавливает пустое состояние</h3>
+        <p>Текущая реализация удаляет все узлы, но не выполняет</p>
+        <pre><code class="language-cpp">M_dummy_head_.next = &amp;M_dummy_head_;
+M_size_ = 0;</code></pre>
+        <p>После публичного вызова <code>Clear()</code> размер остаётся ненулевым, а <code>M_dummy_head_.next</code>
+          указывает на уже освобождённую память. Последующие <code>Empty</code>, <code>Top</code>, <code>Pop</code>,
+          <code>Push</code> или повторный <code>Clear</code> могут привести к неправильному результату или undefined
+          behavior.</p>
+        <p>В данной программе <code>Clear()</code> вызывается только из деструктора, после чего объект больше не
+          используется. Поэтому этот дефект не меняет ответ задачи, но нарушает контракт самостоятельного класса
+          <code>Stack</code>.</p>
+
+        <h3>Копирование владеющего контейнера</h3>
+        <p>Компилятор сгенерирует поверхностные copy constructor и copy assignment operator. Два объекта начнут владеть
+          одними и теми же узлами, что может привести к double free.</p>
+        <p>В этой задаче стек не копируется, но для корректного переиспользуемого контейнера нужно либо реализовать
+          глубокое копирование, либо явно запретить его:</p>
+        <pre><code class="language-cpp">Stack(const Stack&amp;) = delete;
+Stack&amp; operator=(const Stack&amp;) = delete;</code></pre>
+
+        <h3>Предусловие <code>Top()</code></h3>
+        <p><code>Top()</code> разрешено вызывать только для непустого стека. В основном алгоритме это предусловие
+          соблюдено проверкой <code>Empty()</code>.</p>
+
+        <h3>Другие символы</h3>
+        <p>Функция <code>IsCloseBracket</code> в решении не используется: любой символ, не являющийся открывающей
+          скобкой, обрабатывается как закрывающий. Для данной задачи это корректно, поскольку алфавит входа гарантирован
+          условием.</p>
+        <p>Для переносимой декларации <code>std::size_t</code> следует также явно подключать заголовок
+          <code>&lt;cstddef&gt;</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Признаки похожих задач</h2>
+        <p>Стек стоит рассматривать, когда:</p>
+        <ul>
+          <li>элементы образуют вложенные конструкции;</li>
+          <li>очередной закрывающий элемент должен соответствовать последнему незавершённому открывающему;</li>
+          <li>при обработке слева направо нужно временно хранить незавершённые объекты;</li>
+          <li>корректность каждого шага зависит от вершины, а не от всех сохранённых элементов;</li>
+          <li>встречаются операции «открыть контекст» и «закрыть последний контекст».</li>
+        </ul>
+        <p>Тот же принцип появляется при:</p>
+        <ul>
+          <li>проверке вложенности тегов;</li>
+          <li>разборе выражений и вызовов функций;</li>
+          <li>моделировании рекурсивных обходов;</li>
+          <li>обработке <code>undo</code> для последнего действия;</li>
+          <li>вычислении выражений в постфиксной записи.</li>
+        </ul>
+        <p>Главный сигнал: требуется работать не с самым ранним, а с <strong>самым последним незавершённым</strong>
+          объектом.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="changes-title">
+        <p class="section-kicker">Post-Accepted</p>
+        <h2 id="changes-title">Явно отмеченные содержательные изменения</h2>
+        <p>Поскольку отдельный post-Accepted пересказ не был передан, основная часть заметки восстановлена из условия и
+          кода. Следующие пункты являются результатом review реализации:</p>
+        <ol>
+          <li><strong>CORRECTION:</strong> публичный <code>Clear()</code> удаляет узлы, но не восстанавливает пустое
+            состояние стека.</li>
+          <li><strong>ADDITION:</strong> для владеющего raw pointers контейнера необходимо определить или запретить
+            копирование.</li>
+          <li><strong>CLARIFICATION:</strong> ветвь <code>else</code> трактует любой неоткрывающий символ как
+            закрывающий; это корректно только благодаря ограничению входного алфавита.</li>
+          <li><strong>CLARIFICATION:</strong> <code>Top()</code> имеет предусловие <code>!Empty()</code>, которое
+            основной алгоритм соблюдает.</li>
+          <li><strong>ADDITION:</strong> для <code>std::size_t</code> следует явно подключать
+            <code>&lt;cstddef&gt;</code>.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Теория: <a href="/conspecta/1/pdfs/algosi-1.pdf" target="_blank" rel="noreferrer">Алгоритмы и структуры
+              данных I (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the canonical accepted-code URL after it is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
