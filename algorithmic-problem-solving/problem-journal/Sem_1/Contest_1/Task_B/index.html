@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Review задачи B из контеста 1 первого семестра: QuickSelect, дубликаты, худший случай и median of medians.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача B — k-я порядковая статистика — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_1/">← Контест 1</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 1</p>
+      <h1>Задача B — <span class="math-inline">\(k\)</span>-я порядковая статистика</h1>
+      <p class="task-meta">Reviewed · C++ · <time datetime="2026-07-23">23 июля 2026</time></p>
+      <p class="study-lead">Заявленная линейная гарантия отсутствует: допустимый вход с большим числом равных элементов
+        приводит к квадратичному времени независимо от выбора pivot.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_1/Task_B">
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Условие</h2>
+        <p>Даны числа</p>
+        <div class="math-display">\[
+          n,\quad k,\quad A_0,\quad A_1,
+          \]</div>
+        <p>где</p>
+        <div class="math-display">\[
+          1\le k\le n\le 10^7,
+          \qquad
+          0\le A_0,A_1&lt;10^7+4321.
+          \]</div>
+        <p>Остальные элементы массива задаются рекуррентно:</p>
+        <div class="math-display">\[
+          A_i=
+          \bigl(123A_{i-1}+45A_{i-2}\bigr)
+          \bmod (10^7+4321),
+          \qquad i\ge 2.
+          \]</div>
+        <p>Требуется вывести <span class="math-inline">\(k\)</span>-ю порядковую статистику массива, то есть элемент,
+          который находился бы на позиции <span class="math-inline">\(k\)</span> после сортировки массива по
+          неубыванию. В условии <span class="math-inline">\(k\)</span> нумеруется с единицы.</p>
+        <p>Для получения удвоенного балла алгоритм должен быть:</p>
+        <ul>
+          <li>детерминированным;</li>
+          <li>работающим за <span class="math-inline">\(O(n)\)</span> в худшем случае.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="status-title">
+        <p class="section-kicker">Review</p>
+        <h2 id="status-title">Статус переданного решения</h2>
+        <p>Переданное решение реализует QuickSelect со случайно выбираемым pivot и двухчастным разбиением Lomuto.</p>
+        <p>Необходимо различать три утверждения.</p>
+        <ol>
+          <li><strong>Идея выбора одной части после partition корректна.</strong></li>
+          <li><strong>Реализация некорректна для <span class="math-inline">\(n=1\)</span>:</strong> происходит запись за
+            границу вектора в <code>nums[1]</code>.</li>
+          <li><strong>Заявленная линейная гарантия отсутствует:</strong> для допустимого входа с большим числом равных
+            элементов реализация работает за <span class="math-inline">\(\Theta(n^2)\)</span>, независимо от выбора
+            pivot.</li>
+        </ol>
+        <p>Следовательно, по одному только коду нельзя записывать итоговую сложность как <span
+            class="math-inline">\(O(n)\)</span>, а бонусное требование текущий алгоритм не выполняет.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Подход</p>
+        <h2 id="observation-title">Ключевое наблюдение</h2>
+        <p>Чтобы найти один элемент заданного ранга, необязательно полностью сортировать массив.</p>
+        <p>После разбиения относительно pivot можно получить позицию <span class="math-inline">\(p\)</span>, для
+          которой</p>
+        <div class="math-display">\[
+          \begin{aligned}
+          A_i&amp;\le A_p &amp;&amp;\text{для } i&lt;p,\\
+          A_i&amp;&gt;A_p &amp;&amp;\text{для } i&gt;p.
+          \end{aligned}
+          \]</div>
+        <p>Тогда pivot уже стоит на допустимой позиции в отсортированном массиве:</p>
+        <ul>
+          <li>если <span class="math-inline">\(p=k\)</span>, ответ найден;</li>
+          <li>если <span class="math-inline">\(k&lt;p\)</span>, достаточно продолжить только в левой части;</li>
+          <li>если <span class="math-inline">\(k&gt;p\)</span>, достаточно продолжить только в правой части.</li>
+        </ul>
+        <p>Вторая часть массива после каждого partition отбрасывается целиком. Именно это отличает selection от полной
+          сортировки.</p>
+        <p>В программе входное <span class="math-inline">\(k\)</span> переводится из нумерации с единицы в нумерацию с
+          нуля:</p>
+        <pre><code class="language-cpp">QuickSelect(nums, k - 1)</code></pre>
+        <p>Это преобразование корректно.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="generation-title">
+        <p class="section-kicker">Данные</p>
+        <h2 id="generation-title">Генерация массива</h2>
+        <p>Обозначим</p>
+        <div class="math-display">\[
+          M=10^7+4321.
+          \]</div>
+        <p>Для каждого <span class="math-inline">\(i\ge2\)</span> программа вычисляет</p>
+        <div class="math-display">\[
+          \begin{aligned}
+          a&amp;=(123A_{i-1})\bmod M,\\
+          b&amp;=(45A_{i-2})\bmod M,\\
+          A_i&amp;=(a+b)\bmod M.
+          \end{aligned}
+          \]</div>
+        <p>По свойствам остатка</p>
+        <div class="math-display">\[
+          0\le A_i&lt;M,
+          \]</div>
+        <p>поэтому все сгенерированные значения удовлетворяют тому же диапазону, что и начальные.</p>
+        <p>Использование 64-битного типа для умножений безопасно. При данных ограничениях даже сами произведения
+          значительно меньше максимального значения <code>std::int64_t</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="partition-title">
+        <p class="section-kicker">Инвариант</p>
+        <h2 id="partition-title">Инвариант <code>Partition</code></h2>
+        <p>Рассматривается полуобработанный включительный диапазон</p>
+        <div class="math-display">\[
+          [\texttt{left},\texttt{right}].
+          \]</div>
+        <p>Выбранный pivot временно переносится в <code>nums[right]</code>. Перед очередной итерацией цикла с индексом
+          <span class="math-inline">\(i\)</span> выполняется инвариант:</p>
+        <ol>
+          <li>элементы диапазона
+            <div class="math-display">\[
+              [\texttt{left},j)
+              \]</div>
+            не превосходят pivot;</li>
+          <li>элементы диапазона
+            <div class="math-display">\[
+              [j,i)
+              \]</div>
+            строго больше pivot;</li>
+          <li>элементы диапазона
+            <div class="math-display">\[
+              [i,\texttt{right})
+              \]</div>
+            ещё не классифицированы;</li>
+          <li>сам pivot находится в <code>nums[right]</code>.</li>
+        </ol>
+
+        <h3>База</h3>
+        <p>В начале</p>
+        <div class="math-display">\[
+          i=j=\texttt{left}.
+          \]</div>
+        <p>Оба классифицированных диапазона пусты, поэтому инвариант выполнен.</p>
+
+        <h3>Сохранение</h3>
+        <p>Если</p>
+        <div class="math-display">\[
+          \texttt{nums[i]}\le \texttt{pivot},
+          \]</div>
+        <p>элемент меняется местами с <code>nums[j]</code>, после чего <span class="math-inline">\(j\)</span>
+          увеличивается. Рассмотренный элемент добавляется к первой области, а находившийся на позиции <span
+            class="math-inline">\(j\)</span> элемент переносится в область элементов, больших pivot.</p>
+        <p>Если</p>
+        <div class="math-display">\[
+          \texttt{nums[i]}&gt;\texttt{pivot},
+          \]</div>
+        <p>обмен не нужен: элемент сразу расширяет вторую область.</p>
+        <p>В обоих случаях после увеличения <span class="math-inline">\(i\)</span> инвариант сохраняется.</p>
+
+        <h3>Завершение</h3>
+        <p>После цикла имеем</p>
+        <div class="math-display">\[
+          \begin{aligned}
+          \texttt{nums[left..j)}&amp;\le\texttt{pivot},\\
+          \texttt{nums[j..right)}&amp;&gt;\texttt{pivot}.
+          \end{aligned}
+          \]</div>
+        <p>Обмен <code>nums[j]</code> и <code>nums[right]</code> ставит pivot на позицию <span
+            class="math-inline">\(j\)</span>. Поэтому</p>
+        <div class="math-display">\[
+          \begin{aligned}
+          \texttt{nums[left..j)}&amp;\le\texttt{nums[j]},\\
+          \texttt{nums(j..right]}&amp;&gt;\texttt{nums[j]}.
+          \end{aligned}
+          \]</div>
+        <p>Функция корректно возвращает <span class="math-inline">\(p=j\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="quickselect-title">
+        <p class="section-kicker">Корректность</p>
+        <h2 id="quickselect-title">Корректность QuickSelect</h2>
+        <p>Докажем по индукции по длине активного диапазона, что вызов</p>
+        <pre><code class="language-text">QuickSelectHelper(nums, left, right, k)</code></pre>
+        <p>возвращает элемент требуемого ранга при условии</p>
+        <div class="math-display">\[
+          \texttt{left}\le k\le\texttt{right}.
+          \]</div>
+
+        <h3>База</h3>
+        <p>Если</p>
+        <div class="math-display">\[
+          \texttt{left}=\texttt{right},
+          \]</div>
+        <p>в диапазоне остался один элемент. Он и является искомым.</p>
+
+        <h3>Индукционный переход</h3>
+        <p>Пусть <code>Partition</code> вернул позицию <span class="math-inline">\(p\)</span>. По доказанному свойству
+          разбиения все элементы слева от <span class="math-inline">\(p\)</span> не превосходят
+          <code>nums[p]</code>, а все элементы справа строго больше него. Следовательно, <code>nums[p]</code> может
+          занимать позицию <span class="math-inline">\(p\)</span> в неубывающей сортировке активного диапазона.</p>
+        <p>Возможны три случая.</p>
+        <ul>
+          <li><span class="math-inline">\(p=k\)</span>. Тогда <code>nums[p]</code> — искомая порядковая статистика.</li>
+          <li><span class="math-inline">\(p&gt;k\)</span>. Искомый элемент находится в <span
+              class="math-inline">\([\texttt{left},p-1]\)</span>; правая часть не может содержать ранг <span
+              class="math-inline">\(k\)</span>.</li>
+          <li><span class="math-inline">\(p&lt;k\)</span>. Искомый элемент находится в <span
+              class="math-inline">\([p+1,\texttt{right}]\)</span>; левая часть вместе с pivot занимает более ранние
+            позиции.</li>
+        </ul>
+        <p>В двух последних случаях рекурсивный вызов выполняется на строго меньшем диапазоне. По индукционному
+          предположению он возвращает правильный ответ.</p>
+        <p>Таким образом, сама логика QuickSelect корректна.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="not-linear-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="not-linear-title">Почему текущая оценка не равна <span class="math-inline">\(O(n)\)</span></h2>
+        <p>Один вызов <code>Partition</code> на диапазоне длины <span class="math-inline">\(m\)</span> занимает</p>
+        <div class="math-display">\[
+          \Theta(m).
+          \]</div>
+        <p>Если pivot каждый раз отделяет только один элемент, возникает рекуррентность</p>
+        <div class="math-display">\[
+          T(m)=T(m-1)+\Theta(m),
+          \]</div>
+        <p>откуда</p>
+        <div class="math-display">\[
+          T(n)=\Theta(n^2).
+          \]</div>
+        <p>Случайный pivot обычно используется, чтобы получить ожидаемую оценку <span
+            class="math-inline">\(\Theta(n)\)</span>. Однако стандартный анализ предполагает подходящее случайное
+          распределение pivot и корректную обработку равных ключей. Переданная реализация не удовлетворяет второму
+          условию.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="equal-elements-title">
+        <p class="section-kicker">Контрпример</p>
+        <h2 id="equal-elements-title">Контрпример из допустимого входа: все элементы равны</h2>
+        <p>Возьмём</p>
+        <div class="math-display">\[
+          A_0=A_1=0.
+          \]</div>
+        <p>Тогда по индукции</p>
+        <div class="math-display">\[
+          A_i=(123\cdot0+45\cdot0)\bmod M=0
+          \]</div>
+        <p>для каждого <span class="math-inline">\(i\)</span>. Весь массив состоит из нулей.</p>
+        <p>При использовании условия</p>
+        <pre><code class="language-cpp">if (nums[i] &lt;= pivot)</code></pre>
+        <p>каждый элемент переносится в левую часть. Поэтому после partition</p>
+        <div class="math-display">\[
+          p=\texttt{right}
+          \]</div>
+        <p>при любом выбранном pivot.</p>
+        <p>Если, например, <span class="math-inline">\(k=1\)</span>, то есть внутренний индекс равен нулю, размеры
+          последовательных активных диапазонов равны</p>
+        <div class="math-display">\[
+          n,\ n-1,\ n-2,\ \ldots,\ 1.
+          \]</div>
+        <p>Суммарная работа:</p>
+        <div class="math-display">\[
+          \Theta(n)+\Theta(n-1)+\cdots+\Theta(1)
+          =\Theta(n^2).
+          \]</div>
+        <p>Выбор pivot через <code>rand()</code> здесь вообще не помогает: все возможные pivot имеют одно и то же
+          значение.</p>
+        <p>Кроме превышения времени, глубина рекурсии становится <span class="math-inline">\(\Theta(n)\)</span>, что
+          при <span class="math-inline">\(n\le10^7\)</span> практически неизбежно приводит к переполнению стека.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="comparison-title">
+        <p class="section-kicker">Дубликаты</p>
+        <h2 id="comparison-title">Почему замена <code>&lt;=</code> на <code>&lt;</code> недостаточна</h2>
+        <p>Если заменить сравнение на строгое, на массиве одинаковых элементов pivot будет каждый раз попадать в левую
+          границу, а не в правую.</p>
+        <p>Это исправит конкретный случай <span class="math-inline">\(k=1\)</span>, но создаст ту же цепочку для ранга,
+          близкого к <span class="math-inline">\(n\)</span>. Следовательно, проблема не в выборе одного из двух знаков,
+          а в разбиении равных pivot элементов между рекурсивными частями.</p>
+        <p>Для устойчивой обработки дубликатов нужно трёхчастное разбиение:</p>
+        <div class="math-display">\[
+          \underbrace{A_i&lt;pivot}_{[L,M_1)}
+          \quad
+          \underbrace{A_i=pivot}_{[M_1,M_2)}
+          \quad
+          \underbrace{A_i&gt;pivot}_{[M_2,R)}.
+          \]</div>
+        <p>Если <span class="math-inline">\(k\in[M_1,M_2)\)</span>, ответ сразу равен pivot. Рекурсия выполняется
+          только для одной из строгих частей.</p>
+        <p>Трёхчастное разбиение устраняет квадратичное поведение на одинаковых элементах, но при случайном pivot всё
+          ещё даёт лишь ожидаемую линейную оценку, а не детерминированную гарантию худшего случая.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="bonus-title">
+        <p class="section-kicker">Исправление</p>
+        <h2 id="bonus-title">Как выполнить бонусное требование</h2>
+        <p>Следующий раздел описывает исправление, а не алгоритм из переданного кода.</p>
+        <p>Для детерминированного <span class="math-inline">\(O(n)\)</span> выбора pivot можно использовать
+          <strong>median of medians</strong>, или BFPRT.</p>
+        <p>Для активного диапазона длины <span class="math-inline">\(m\)</span>:</p>
+        <ol>
+          <li>разбить элементы на группы по пять;</li>
+          <li>найти медиану каждой группы;</li>
+          <li>рекурсивно найти медиану массива этих медиан;</li>
+          <li>использовать её как pivot;</li>
+          <li>выполнить трёхчастное разбиение;</li>
+          <li>продолжить только в той строгой части, где находится искомый ранг.</li>
+        </ol>
+
+        <h3>Почему остаётся не более <span class="math-inline">\(7m/10+O(1)\)</span> элементов</h3>
+        <p>Не менее половины групповых медиан не меньше median of medians. В каждой полной группе, медиана которой не
+          меньше pivot, существуют как минимум три элемента, не меньших pivot.</p>
+        <p>Симметрично, как минимум три элемента в каждой из не менее чем половины подходящих групп не превосходят
+          pivot. С учётом неполной последней группы и группы самого pivot с каждой стороны гарантированно отбрасывается
+          примерно <span class="math-inline">\(3m/10\)</span> элементов.</p>
+        <p>Поэтому рекурсивная часть после partition имеет размер не более</p>
+        <div class="math-display">\[
+          \frac{7m}{10}+O(1).
+          \]</div>
+
+        <h3>Рекуррентность</h3>
+        <p>Поиск median of medians выполняется на массиве размера примерно <span class="math-inline">\(m/5\)</span>, а
+          после partition остаётся не более <span class="math-inline">\(7m/10+O(1)\)</span> элементов:</p>
+        <div class="math-display">\[
+          T(m)
+          \le
+          T\left(\left\lceil\frac m5\right\rceil\right)
+          +
+          T\left(\frac{7m}{10}+O(1)\right)
+          +
+          \Theta(m).
+          \]</div>
+        <p>Так как</p>
+        <div class="math-display">\[
+          \frac15+\frac7{10}=\frac9{10}&lt;1,
+          \]</div>
+        <p>получаем</p>
+        <div class="math-display">\[
+          \boxed{T(m)=\Theta(m)}.
+          \]</div>
+        <p>Выбор pivot полностью определяется входом, поэтому алгоритм детерминирован и даёт линейную оценку в худшем
+          случае.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="frequency-title">
+        <p class="section-kicker">Альтернатива</p>
+        <h2 id="frequency-title">Альтернатива, использующая ограниченный диапазон значений</h2>
+        <p>В этой конкретной задаче все числа лежат в диапазоне</p>
+        <div class="math-display">\[
+          [0,M),\qquad M=10^7+4321.
+          \]</div>
+        <p>Поэтому можно не хранить сам массив, а поддерживать массив частот:</p>
+        <ol>
+          <li>сгенерировать очередное <span class="math-inline">\(A_i\)</span>;</li>
+          <li>увеличить <code>frequency[A_i]</code>;</li>
+          <li>пройти значения от <span class="math-inline">\(0\)</span> до <span
+              class="math-inline">\(M-1\)</span>, накапливая число элементов;</li>
+          <li>первое значение, на котором накопленная частота стала не меньше <span
+              class="math-inline">\(k\)</span>, является ответом.</li>
+        </ol>
+        <p>Сложность такого решения:</p>
+        <div class="math-display">\[
+          \Theta(n+M)
+          \]</div>
+        <p>по времени и</p>
+        <div class="math-display">\[
+          \Theta(M)
+          \]</div>
+        <p>по памяти.</p>
+        <p>Это детерминированное практическое решение для фиксированного модуля из условия, но оно не является общим
+          алгоритмом selection. Если размер вселенной <span class="math-inline">\(M\)</span> считать отдельным входным
+          параметром, оценка имеет вид <span class="math-inline">\(O(n+M)\)</span>, а не <span
+            class="math-inline">\(O(n)\)</span>. Для общего требования deterministic linear selection нужен BFPRT.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность переданного решения</h2>
+
+        <h3>Генерация</h3>
+        <p>Генерация массива требует</p>
+        <div class="math-display">\[
+          \Theta(n)
+          \]</div>
+        <p>времени.</p>
+        <p>Вектор из <span class="math-inline">\(n\)</span> элементов типа <code>int64_t</code> занимает</p>
+        <div class="math-display">\[
+          8n\text{ байт}.
+          \]</div>
+        <p>При <span class="math-inline">\(n=10^7\)</span> это около <span
+            class="math-inline">\(80\,000\,000\)</span> байт, или <span class="math-inline">\(76.3\)</span> MiB.</p>
+
+        <h3>Selection</h3>
+        <ul>
+          <li>один <code>Partition</code>: <span class="math-inline">\(\Theta(m)\)</span> на активном диапазоне длины
+            <span class="math-inline">\(m\)</span>;</li>
+          <li>лучший случай: <span class="math-inline">\(\Theta(n)\)</span>;</li>
+          <li>ожидаемый случай при дополнительных предположениях о pivot и ключах: <span
+              class="math-inline">\(\Theta(n)\)</span>;</li>
+          <li>худший случай текущей реализации:
+            <div class="math-display">\[
+              \boxed{\Theta(n^2)};
+              \]</div>
+          </li>
+          <li>худшая глубина рекурсии:
+            <div class="math-display">\[
+              \boxed{\Theta(n)}.
+              \]</div>
+          </li>
+        </ul>
+        <p>Итоговая память определяется входным вектором и стеком рекурсии:</p>
+        <div class="math-display">\[
+          O(n)+O(\text{depth}).
+          \]</div>
+        <p>В худшем случае обе величины линейны. Практически рекурсивный стек может исчерпаться значительно раньше, чем
+          будет достигнута теоретическая граница <span class="math-inline">\(n\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="single-element-title">
+        <p class="section-kicker">Ошибка</p>
+        <h2 id="single-element-title">Ошибка при <span class="math-inline">\(n=1\)</span></h2>
+        <p>Условие допускает</p>
+        <div class="math-display">\[
+          n=1.
+          \]</div>
+        <p>Но программа сначала создаёт вектор размера <span class="math-inline">\(n\)</span>, а затем выполняет:</p>
+        <pre><code class="language-cpp">std::cin &gt;&gt; nums[0] &gt;&gt; nums[1];</code></pre>
+        <p>При <span class="math-inline">\(n=1\)</span> элемента <code>nums[1]</code> не существует. Запись за границу
+          вектора является undefined behavior.</p>
+        <p>Например, вход</p>
+        <pre><code class="language-text">1 1 7 9</code></pre>
+        <p>допустим, а правильный ответ равен <span class="math-inline">\(7\)</span>. Значение <span
+            class="math-inline">\(A_1\)</span> всё равно присутствует во входе, но его нужно считать в отдельную
+          переменную, не записывая в несуществующий элемент массива.</p>
+        <p>Корректная логика инициализации должна отдельно учитывать размеры:</p>
+        <ul>
+          <li><span class="math-inline">\(A_0\)</span> записывается, если <span
+              class="math-inline">\(n\ge1\)</span>;</li>
+          <li><span class="math-inline">\(A_1\)</span> записывается, только если <span
+              class="math-inline">\(n\ge2\)</span>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="implementation-title">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="implementation-title">Замечания к реализации</h2>
+
+        <h3>Не хватает стандартных заголовков</h3>
+        <p>Код использует:</p>
+        <ul>
+          <li><code>int64_t</code>;</li>
+          <li><code>rand</code>;</li>
+          <li><code>std::swap</code>.</li>
+        </ul>
+        <p>Для переносимой программы соответствующие объявления следует получать из явных заголовков:</p>
+        <pre><code class="language-cpp">#include &lt;cstdint&gt;
+#include &lt;cstdlib&gt;
+#include &lt;utility&gt;</code></pre>
+        <p>Предпочтительное имя 64-битного типа —</p>
+        <pre><code class="language-cpp">std::int64_t</code></pre>
+        <p>после подключения <code>&lt;cstdint&gt;</code>.</p>
+        <p>То, что конкретный компилятор может предоставить эти объявления через транзитивные включения, не является
+          гарантией стандарта C++.</p>
+
+        <h3><code>rand() % range</code> не даёт строгой равномерности</h3>
+        <p>Операция</p>
+        <pre><code class="language-cpp">rand() % (right - left + 1)</code></pre>
+        <p>в общем случае имеет modulo bias, если число возможных результатов <code>rand()</code> не делится на размер
+          диапазона.</p>
+        <p>Кроме того, стандарт C++ гарантирует только</p>
+        <div class="math-display">\[
+          \texttt{RAND\_MAX}\ge32767.
+          \]</div>
+        <p>На реализации с малым <code>RAND_MAX</code> не все смещения большого диапазона вообще могут быть выбраны
+          одним вызовом <code>rand()</code>.</p>
+        <p>Это не нарушает логическую корректность partition: любой pivot допустим. Однако это не позволяет использовать
+          модель «равномерно случайный pivot» без дополнительного обоснования ожидаемой сложности.</p>
+
+        <h3>Отсутствие <code>srand</code> не доказывает требуемую детерминированность</h3>
+        <p>Если <code>srand</code> не вызывался, реализация <code>rand()</code> начинает с заданного начального
+          состояния. Это может делать последовательность воспроизводимой в рамках одной стандартной библиотеки.</p>
+        <p>Но бонус требует не просто повторяемого выполнения, а детерминированного алгоритма с гарантией <span
+            class="math-inline">\(O(n)\)</span>. Даже если считать данную последовательность pivot детерминированной,
+          контрпример со всеми нулями всё равно даёт <span class="math-inline">\(\Theta(n^2)\)</span>.</p>
+
+        <h3>Рекурсию можно заменить циклом, но этого недостаточно</h3>
+        <p>QuickSelect естественно реализуется итеративно, изменяя <code>left</code> или <code>right</code>. Это
+          устраняет риск линейного расхода стека.</p>
+        <p>Однако итеративная форма не меняет сумму размеров обработанных диапазонов. Без гарантированно хорошего pivot
+          худшее время остаётся квадратичным.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверка</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li><span class="math-inline">\(n=1\)</span>: ответ равен <span class="math-inline">\(A_0\)</span>; текущий
+            код имеет выход за границу массива.</li>
+          <li><span class="math-inline">\(k=1\)</span>: требуется минимум массива.</li>
+          <li><span class="math-inline">\(k=n\)</span>: требуется максимум массива.</li>
+          <li><span class="math-inline">\(A_0=A_1=0\)</span>: весь массив состоит из нулей.</li>
+          <li>Все значения равны: двухчастное partition не должно рекурсивно удалять по одному элементу.</li>
+          <li>Много дубликатов: нужен отдельный блок <code>== pivot</code>.</li>
+          <li>Pivot является минимумом или максимумом: одна из строгих частей пуста.</li>
+          <li>Уже отсортированный или обратно отсортированный массив: фиксированный неудачный pivot может дать
+            квадратичное время.</li>
+          <li>Равные значения по обе стороны выбранной позиции: порядковая статистика определяется значением, а не
+            уникальным исходным индексом.</li>
+          <li><span class="math-inline">\(k\)</span> во входе нумеруется с единицы, внутренний индекс — с нуля.</li>
+          <li><span class="math-inline">\(n=10^7\)</span>: необходимо учитывать реальный объём массива и глубину стека.
+          </li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="failure-title">
+        <p class="section-kicker">Failure mode</p>
+        <h2 id="failure-title">Главный failure mode</h2>
+        <p>Главная ошибка — смешение двух разных утверждений:</p>
+        <blockquote>
+          <p>QuickSelect часто работает за линейное время.</p>
+        </blockquote>
+        <p>и</p>
+        <blockquote>
+          <p>Данная реализация гарантированно работает за <span class="math-inline">\(O(n)\)</span> на всех допустимых
+            входах.</p>
+        </blockquote>
+        <p>Первое утверждение может быть верным как ожидаемая оценка для подходящей randomized-реализации. Второе для
+          переданного кода ложно.</p>
+        <p>Особенно важно не забывать о дубликатах. В этой задаче они не являются редким или искусственным случаем:
+          рекуррентная генерация допускает массив из одинаковых нулей.</p>
+        <p>Правильная последовательность проверки:</p>
+        <ol>
+          <li>доказать свойства partition;</li>
+          <li>доказать уменьшение области поиска;</li>
+          <li>отдельно оценить, <strong>насколько</strong> уменьшается область;</li>
+          <li>проверить дубликаты;</li>
+          <li>определить вид оценки: худшая, ожидаемая или амортизированная.</li>
+        </ol>
+        <p>Корректность ответа сама по себе не даёт требуемой временной гарантии.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Признаки похожих задач</h2>
+        <p>Selection стоит рассматривать, когда:</p>
+        <ul>
+          <li>требуется только <span class="math-inline">\(k\)</span>-й элемент, а не весь отсортированный массив;</li>
+          <li>после partition можно навсегда отбросить одну часть;</li>
+          <li>ответ зависит от ранга элемента;</li>
+          <li>полная сортировка за <span class="math-inline">\(O(n\log n)\)</span> выполняет лишнюю работу.</li>
+        </ul>
+        <p>Трёхчастное partition особенно важно, когда:</p>
+        <ul>
+          <li>значения могут повторяться;</li>
+          <li>диапазон значений мал;</li>
+          <li>вход генерируется по модулю;</li>
+          <li>известны тесты с большим числом одинаковых ключей.</li>
+        </ul>
+        <p>Median of medians нужен, когда одновременно требуются:</p>
+        <ul>
+          <li>детерминированность;</li>
+          <li>линейное время именно в худшем случае;</li>
+          <li>независимость гарантии от распределения входных данных.</li>
+        </ul>
+        <p>Отдельный сигнал этой задачи — небольшой известный диапазон значений. Он позволяет также проверить
+          frequency/counting-подход с оценкой <span class="math-inline">\(O(n+M)\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="changes-title">
+        <p class="section-kicker">Post-Accepted</p>
+        <h2 id="changes-title">Явно отмеченные содержательные изменения</h2>
+        <p>Отдельный post-Accepted пересказ не передавался; лог полностью восстановлен из условия на скриншоте и
+          предоставленного кода.</p>
+        <ol>
+          <li><strong>CORRECTION:</strong> текущая сложность не является гарантированным <span
+              class="math-inline">\(O(n)\)</span>; худший случай равен <span
+              class="math-inline">\(\Theta(n^2)\)</span>.</li>
+          <li><strong>COUNTEREXAMPLE:</strong> при <span class="math-inline">\(A_0=A_1=0\)</span> массив состоит только
+            из нулей, а двухчастное partition с <code>&lt;=</code> удаляет по одному элементу.</li>
+          <li><strong>CORRECTION:</strong> при <span class="math-inline">\(n=1\)</span> запись в
+            <code>nums[1]</code> выходит за границу вектора.</li>
+          <li><strong>CLARIFICATION:</strong> отсутствие <code>srand</code> не обеспечивает требование deterministic
+            worst-case <span class="math-inline">\(O(n)\)</span>.</li>
+          <li><strong>CORRECTION:</strong> строгий анализ ожидаемого <span class="math-inline">\(O(n)\)</span>
+            неприменим к текущей обработке дубликатов.</li>
+          <li><strong>ADDITION:</strong> сформулирован инвариант <code>Partition</code> и доказана корректность выбора
+            рекурсивной части.</li>
+          <li><strong>ADDITION:</strong> описано трёхчастное разбиение как необходимое исправление для массовых
+            дубликатов.</li>
+          <li><strong>ADDITION:</strong> описан median of medians и доказана его линейная рекуррентность; это
+            исправление не приписывается исходному решению.</li>
+          <li><strong>ADDITION:</strong> отмечена task-specific альтернатива через массив частот с оценкой <span
+              class="math-inline">\(\Theta(n+M)\)</span>.</li>
+          <li><strong>PORTABILITY:</strong> нужны явные заголовки <code>&lt;cstdint&gt;</code>,
+            <code>&lt;cstdlib&gt;</code> и <code>&lt;utility&gt;</code>.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_1/Task_B/B.cpp"
+              download><code>B.cpp</code> — локальная копия</a>.</li>
+          <li>Теория: <a href="/conspecta/1/pdfs/algosi-1.pdf" target="_blank" rel="noreferrer">Алгоритмы и структуры
+              данных I (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL when available. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
