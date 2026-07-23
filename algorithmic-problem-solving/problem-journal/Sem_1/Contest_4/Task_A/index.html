@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи A из контеста 4 первого семестра: AVL-дерево, вставка, повороты и lower_bound.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача A — AVL-дерево: insert и lower_bound — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_4/">← Контест 4</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 4</p>
+      <h1>Задача A — AVL-дерево: insert и lower_bound</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-23">23 июля 2026</time></p>
+      <p class="study-lead">Обе требуемые операции естественно поддерживает binary search tree.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_4/Task_A">
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Условие</h2>
+        <p>Нужно поддерживать множество целых чисел <span class="math-inline">\(S\)</span>, изначально пустое, и
+          обрабатывать запросы двух типов:</p>
+        <ul>
+          <li><code>+ x</code> — добавить <span class="math-inline">\(x\)</span> в множество; повторная вставка уже
+            существующего значения игнорируется;</li>
+          <li><code>? x</code> — найти минимальное значение <span class="math-inline">\(y\in S\)</span>, для которого
+            <span class="math-inline">\(y\ge x\)</span>. Если такого значения нет, вывести <code>-1</code>.</li>
+        </ul>
+        <p>Если операция <code>+ x</code> идёт сразу после операции <code>?</code>, ответом на которую было <span
+            class="math-inline">\(y\)</span>, в дерево передаётся значение</p>
+        <div class="math-display">\[
+          (x+y)\bmod 10^9.
+          \]</div>
+        <p>Эта зависимость от предыдущего ответа означает, что фактические ключи вставок появляются в ходе обработки
+          запросов. Поэтому обычное предварительное coordinate compression по исходным аргументам операций
+          <code>+</code> здесь неприменимо.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Подход</p>
+        <h2 id="observation-title">Ключевое наблюдение</h2>
+        <p>Обе требуемые операции естественно поддерживает binary search tree:</p>
+        <ul>
+          <li>BST-вставка находит единственное место нового ключа;</li>
+          <li><code>lower_bound(x)</code> во время одного спуска отбрасывает поддеревья, в которых ответ заведомо
+            отсутствует или не может быть лучше уже найденного кандидата.</li>
+        </ul>
+        <p>Однако стоимость обеих операций равна <span class="math-inline">\(O(h)\)</span>, где <span
+            class="math-inline">\(h\)</span> — высота дерева. Обычное BST при монотонных вставках может превратиться в
+          цепочку высоты <span class="math-inline">\(\Theta(n)\)</span>. AVL-дерево после каждой вставки восстанавливает
+          условие</p>
+        <div class="math-display">\[
+          \left|h(v_{\mathrm{left}})-h(v_{\mathrm{right}})\right|\le 1,
+          \]</div>
+        <p>поэтому его высота остаётся <span class="math-inline">\(O(\log n)\)</span>, а каждая операция выполняется за
+          <span class="math-inline">\(O(\log n)\)</span> в худшем случае.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="stored-data-title">
+        <p class="section-kicker">Структура данных</p>
+        <h2 id="stored-data-title">Хранимая информация</h2>
+        <p>Для каждой настоящей вершины хранятся:</p>
+        <pre><code class="language-cpp">int height;
+BaseNode* parent;
+BaseNode* left_child;
+BaseNode* right_child;
+int value;</code></pre>
+        <p>Поле <code>value</code> находится в производной структуре <code>Node</code>, остальные поля — в
+          <code>BaseNode</code>.</p>
+        <p>Дополнительно используется фиктивная вершина <code>dummy_root_</code>:</p>
+        <pre><code class="language-cpp">dummy_root_.left_child</code></pre>
+        <p>всегда указывает на настоящий корень, а у настоящего корня</p>
+        <pre><code class="language-cpp">root-&gt;parent == &amp;dummy_root_;</code></pre>
+        <p>Благодаря этому корень всего дерева после поворота присоединяется тем же кодом, что и корень любого
+          внутреннего поддерева.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="invariants-title">
+        <p class="section-kicker">Инварианты</p>
+        <h2 id="invariants-title">Инварианты AVL-дерева</h2>
+        <p>После завершения каждой операции поддерживаются четыре свойства.</p>
+
+        <h3>1. BST-инвариант</h3>
+        <p>Для каждой настоящей вершины <span class="math-inline">\(v\)</span>:</p>
+        <ul>
+          <li>каждый ключ в левом поддереве строго меньше <code>Value(v)</code>;</li>
+          <li>каждый ключ в правом поддереве строго больше <code>Value(v)</code>.</li>
+        </ul>
+        <p>Равные ключи не вставляются, поэтому структура представляет множество, а не мультимножество.</p>
+
+        <h3>2. Инвариант родительских указателей</h3>
+        <p>Для каждого ребра <span class="math-inline">\(v\to u\)</span>, направленного от родителя к ребёнку,</p>
+        <pre><code class="language-cpp">u-&gt;parent == v;</code></pre>
+        <p>Родителем настоящего корня служит <code>&amp;dummy_root_</code>.</p>
+
+        <h3>3. Инвариант высот</h3>
+        <p>Полагаем</p>
+        <div class="math-display">\[
+          h(\varnothing)=0.
+          \]</div>
+        <p>Для каждой настоящей вершины <span class="math-inline">\(v\)</span></p>
+        <div class="math-display">\[
+          h(v)=1+\max\bigl(h(v_{\mathrm{left}}),h(v_{\mathrm{right}})\bigr).
+          \]</div>
+        <p>В частности, лист имеет высоту <span class="math-inline">\(1\)</span>.</p>
+
+        <h3>4. AVL-инвариант</h3>
+        <p>Определим balance factor:</p>
+        <div class="math-display">\[
+          bf(v)=h(v_{\mathrm{left}})-h(v_{\mathrm{right}}).
+          \]</div>
+        <p>Для каждой вершины должно выполняться</p>
+        <div class="math-display">\[
+          bf(v)\in\{-1,0,1\}.
+          \]</div>
+        <p>Положительный balance factor означает перевес влево, отрицательный — вправо.</p>
+      </section>
+
+      <!-- TASK_A_CONTENT_CONTINUES -->
