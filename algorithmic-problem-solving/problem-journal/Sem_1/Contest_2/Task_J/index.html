@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи J из контеста 2 первого семестра: бинарная min-heap, decreaseKey и обратный индекс позиций.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача J — бинарная min-heap с decreaseKey — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_2/">← Контест 2</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 2</p>
+      <h1>Задача J — бинарная min-heap с decreaseKey</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-23">23 июля 2026</time></p>
+      <p class="study-lead">Элементы перемещаются во время <code>SiftUp</code> и <code>SiftDown</code>, поэтому после
+        каждого обмена необходимо обновить позиции обоих обменянных элементов.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_2/Task_J">
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Условие</h2>
+        <p>Изначально бинарная куча пуста. Требуется самостоятельно обработать запросы:</p>
+        <ul>
+          <li><code>insert x</code> — вставить целое число <span class="math-inline">\(x\)</span>;</li>
+          <li><code>getMin</code> — вывести минимальный элемент; гарантируется, что куча непуста;</li>
+          <li><code>extractMin</code> — удалить минимальный элемент, ничего не выводя; гарантируется, что куча
+            непуста;</li>
+          <li><code>decreaseKey i delta</code> — уменьшить на <span class="math-inline">\(\Delta\)</span> число,
+            добавленное во время <span class="math-inline">\(i\)</span>-го запроса.</li>
+        </ul>
+        <p>Для <code>decreaseKey</code> гарантируется, что:</p>
+        <ul>
+          <li>запрос с номером <span class="math-inline">\(i\)</span> был запросом <code>insert</code>;</li>
+          <li>добавленное этим запросом число всё ещё находится в куче;</li>
+          <li><span class="math-inline">\(\Delta\ge 0\)</span>.</li>
+        </ul>
+        <p>Важно: <span class="math-inline">\(i\)</span> — номер среди <strong>всех</strong> запросов, а не только
+          среди запросов <code>insert</code>.</p>
+        <p>Ограничения:</p>
+        <div class="math-display">\[
+          1\le q\le 10^6,\qquad
+          -10^9\le x\le 10^9,\qquad
+          0\le\Delta\le 10^9.
+          \]</div>
+        <p>На каждый запрос <code>getMin</code> нужно вывести ответ в отдельной строке. Использовать готовую реализацию
+          кучи нельзя.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Подход</p>
+        <h2 id="observation-title">Ключевое наблюдение</h2>
+        <p>Обычная бинарная min-heap позволяет:</p>
+        <ul>
+          <li>получить минимум из корня за <span class="math-inline">\(O(1)\)</span>;</li>
+          <li>вставить элемент за <span class="math-inline">\(O(\log n)\)</span>;</li>
+          <li>удалить минимум за <span class="math-inline">\(O(\log n)\)</span>.</li>
+        </ul>
+        <p>Но запрос <code>decreaseKey i delta</code> задаёт элемент не его текущей позицией в массиве кучи, а
+          номером старого запроса <code>insert</code>.</p>
+        <p>Искать этот элемент линейным просмотром массива нельзя: один запрос стоил бы <span
+            class="math-inline">\(O(n)\)</span>, а при <span class="math-inline">\(q\le 10^6\)</span> суммарное время
+          могло бы стать <span class="math-inline">\(O(q^2)\)</span>.</p>
+        <p>Поэтому вместе с каждым значением хранится постоянный идентификатор</p>
+        <div class="math-display">\[
+          \texttt{query\_id},
+          \]</div>
+        <p>а отдельный массив</p>
+        <div class="math-display">\[
+          \texttt{position[query\_id]}
+          \]</div>
+        <p>хранит текущий индекс этого элемента в массиве кучи.</p>
+        <p>Элементы перемещаются во время <code>SiftUp</code> и <code>SiftDown</code>, поэтому после
+          <strong>каждого обмена</strong> необходимо обновить позиции обоих обменянных элементов.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="representation-title">
+        <p class="section-kicker">Структура данных</p>
+        <h2 id="representation-title">Представление структуры</h2>
+
+        <h3>Элемент кучи</h3>
+        <p>Каждый элемент имеет вид</p>
+        <div class="math-display">\[
+          (\texttt{value},\texttt{query\_id}),
+          \]</div>
+        <p>где:</p>
+        <ul>
+          <li><code>value</code> — текущее значение;</li>
+          <li><code>query_id</code> — нулевой индекс запроса, которым элемент был вставлен.</li>
+        </ul>
+        <p>Сравнение выполняется лексикографически:</p>
+        <ol>
+          <li>сначала по <code>value</code>;</li>
+          <li>при равных значениях — по <code>query_id</code>.</li>
+        </ol>
+        <p>Второй пункт не требуется для значения ответа, но задаёт строгий детерминированный порядок между равными
+          элементами.</p>
+
+        <h3>Массив кучи</h3>
+        <p>Куча хранится в нумерованном с нуля массиве <code>buffer_</code>. Для вершины <span
+            class="math-inline">\(v\)</span>:</p>
+        <div class="math-display">\[
+          \operatorname{parent}(v)=\left\lfloor\frac{v-1}{2}\right\rfloor,
+          \qquad
+          \operatorname{left}(v)=2v+1,
+          \qquad
+          \operatorname{right}(v)=2v+2.
+          \]</div>
+
+        <h3>Обратный индекс</h3>
+        <p>Если элемент, добавленный запросом <code>query_id</code>, сейчас расположен в <code>buffer_[v]</code>, то
+        </p>
+        <div class="math-display">\[
+          \texttt{position[query\_id]}=v.
+          \]</div>
+        <p>Для запросов, не соответствующих живому элементу кучи, хранится <span class="math-inline">\(-1\)</span>.</p>
+        <p>Входные номера запросов начинаются с единицы, а внутренние идентификаторы — с нуля. Поэтому команда</p>
+        <pre><code class="language-text">decreaseKey i delta</code></pre>
+        <p>обращается к внутреннему идентификатору <span class="math-inline">\(i-1\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="invariants-title">
+        <p class="section-kicker">Инварианты</p>
+        <h2 id="invariants-title">Инварианты</h2>
+        <p>После обработки любого префикса запросов поддерживаются два связанных инварианта.</p>
+
+        <h3>1. Инвариант кучи</h3>
+        <p>Для каждой вершины <span class="math-inline">\(v&gt;0\)</span></p>
+        <div class="math-display">\[
+          \texttt{buffer[parent(v)]}
+          \preceq
+          \texttt{buffer[v]},
+          \]</div>
+        <p>где <span class="math-inline">\(\preceq\)</span> — лексикографический порядок по паре <span
+            class="math-inline">\((\texttt{value},\texttt{query\_id})\)</span>.</p>
+        <p>Следовательно, корень не превосходит любой другой элемент: вдоль пути от корня к произвольной вершине
+          значения не убывают. Поэтому <code>buffer_[0]</code> содержит элемент с минимальным <code>value</code>.</p>
+
+        <h3>2. Инвариант позиций</h3>
+        <p>Для каждого занятого индекса <span class="math-inline">\(v\)</span></p>
+        <div class="math-display">\[
+          \texttt{position[buffer[v].query\_id]}=v.
+          \]</div>
+        <p>Иными словами, <code>position_</code> является обратным отображением от идентификатора живого элемента к его
+          текущей позиции в <code>buffer_</code>.</p>
+        <p>Эти инварианты должны сохраняться одновременно. Правильный heap order бесполезен для
+          <code>decreaseKey</code>, если обратный индекс устарел; правильные позиции сами по себе не позволяют быстро
+          находить минимум.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="swap-title">
+        <p class="section-kicker">Базовая операция</p>
+        <h2 id="swap-title">Базовая операция <code>SwapItems</code></h2>
+        <p>Операция обмена:</p>
+        <ol>
+          <li>меняет местами два элемента массива;</li>
+          <li>записывает новый индекс первого элемента в <code>position_</code>;</li>
+          <li>записывает новый индекс второго элемента в <code>position_</code>.</li>
+        </ol>
+        <p>Сам обмен сохраняет множество элементов. Последующие две записи восстанавливают инвариант позиций для обоих
+          изменивших место элементов; для остальных элементов ничего не изменилось.</p>
+        <p>Поэтому все перемещения внутри <code>SiftUp</code>, <code>SiftDown</code> и <code>ExtractMin</code> должны
+          выполняться только через эту операцию.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="operations-title">
+        <p class="section-kicker">Корректность</p>
+        <h2 id="operations-title">Корректность операций</h2>
+
+        <h3><code>Insert(value, query_id)</code></h3>
+        <p>Новый элемент добавляется в конец массива и его позиция сразу записывается в <code>position_</code>.</p>
+        <p>До вставки heap order выполнялся во всём дереве. Новый элемент является листом, поэтому возможное нарушение
+          возникает только на ребре между ним и родителем.</p>
+        <p><code>SiftUp</code> сравнивает элемент с родителем:</p>
+        <ul>
+          <li>если родитель не больше элемента, инвариант уже восстановлен;</li>
+          <li>иначе элементы меняются местами, и возможное нарушение перемещается на один уровень вверх.</li>
+        </ul>
+        <p>Каждый обмен уменьшает глубину текущей вершины на единицу. Поэтому процедура завершится не более чем через
+          высоту дерева и восстановит heap order. <code>SwapItems</code> одновременно сохраняет корректность обратного
+          индекса.</p>
+
+        <h3><code>GetMin()</code></h3>
+        <p>По инварианту кучи корень не превосходит ни один другой элемент. Следовательно,</p>
+        <div class="math-display">\[
+          \texttt{buffer[0].value}
+          \]</div>
+        <p>является минимальным текущим значением.</p>
+        <p>Проверка пустоты внутри операции не требуется благодаря гарантии условия.</p>
+
+        <h3><code>ExtractMin()</code></h3>
+        <p>Сначала запоминается корень — удаляемый минимальный элемент.</p>
+        <p>Если в куче находится один элемент, он удаляется, а его позиция становится равной <span
+            class="math-inline">\(-1\)</span>.</p>
+        <p>Иначе:</p>
+        <ol>
+          <li>корень меняется местами с последним элементом;</li>
+          <li>прежний корень удаляется с конца массива;</li>
+          <li>его позиция помечается как <span class="math-inline">\(-1\)</span>;</li>
+          <li>новый корень опускается с помощью <code>SiftDown</code>.</li>
+        </ol>
+        <p>После переноса последнего элемента в корень поддеревья ниже него по-прежнему являются корректными кучами.
+          Нарушение может находиться только между перемещённым элементом и одним из его детей.</p>
+        <p><code>SiftDown</code> выбирает наименьшего среди текущей вершины и существующих детей:</p>
+        <ul>
+          <li>если наименьшей остаётся текущая вершина, heap order восстановлен;</li>
+          <li>иначе она меняется местами с наименьшим ребёнком, и единственное возможное нарушение перемещается вниз.
+          </li>
+        </ul>
+        <p>Глубина увеличивается на каждом обмене, поэтому процедура завершится за <span
+            class="math-inline">\(O(\log n)\)</span>. Все обмены сохраняют инвариант позиций.</p>
+
+        <h3><code>DecreaseKey(query_id, delta)</code></h3>
+        <p>По инварианту позиций нужный элемент находится за <span class="math-inline">\(O(1)\)</span>:</p>
+        <div class="math-display">\[
+          v=\texttt{position[query\_id]}.
+          \]</div>
+        <p>После присваивания</p>
+        <div class="math-display">\[
+          \texttt{buffer[v].value}
+          \mathrel{-}=\Delta
+          \]</div>
+        <p>значение может стать меньше родителя, но не может нарушить отношения с детьми: если раньше оно не
+          превосходило ребёнка, то после уменьшения тем более не превосходит его.</p>
+        <p>Следовательно, возможное нарушение направлено только вверх, и достаточно вызвать <code>SiftUp(v)</code>.
+          Использовать <code>SiftDown</code> после уменьшения ключа не требуется.</p>
+        <p>При <span class="math-inline">\(\Delta=0\)</span> порядок не меняется, и <code>SiftUp</code> сразу
+          завершается.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="proof-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="proof-title">Доказательство корректности всего алгоритма</h2>
+        <p>Докажем по индукции по числу обработанных запросов, что:</p>
+        <ol>
+          <li><code>buffer_</code> содержит ровно элементы, которые были вставлены и ещё не удалены;</li>
+          <li>выполняется инвариант кучи;</li>
+          <li>выполняется инвариант позиций;</li>
+          <li>каждый <code>getMin</code> выводит минимальное текущее значение.</li>
+        </ol>
+
+        <h3>База</h3>
+        <p>До первого запроса оба массива описывают пустую кучу. Множество живых элементов пусто, а оба структурных
+          инварианта выполнены тривиально.</p>
+
+        <h3>Индукционный переход</h3>
+        <ul>
+          <li><code>insert</code> добавляет ровно требуемый элемент, а <code>SiftUp</code> восстанавливает оба
+            инварианта.</li>
+          <li><code>extractMin</code> удаляет корень, который по heap order является минимальным, а
+            <code>SiftDown</code> восстанавливает оба инварианта.</li>
+          <li><code>decreaseKey</code> благодаря <code>position_</code> изменяет именно элемент, вставленный указанным
+            запросом, после чего <code>SiftUp</code> восстанавливает heap order и не нарушает соответствие
+            идентификаторов позициям.</li>
+          <li><code>getMin</code> не меняет состояние, а по инварианту кучи читает минимальный элемент из корня.</li>
+        </ul>
+        <p>Следовательно, утверждения сохраняются после каждого запроса. Значит, алгоритм корректно выполняет все
+          операции и печатает правильный ответ на каждый <code>getMin</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Пусть <span class="math-inline">\(h\)</span> — текущий размер кучи, <span
+            class="math-inline">\(h\le q\)</span>.</p>
+        <div class="table-wrap">
+          <table class="entry-table">
+            <thead>
+              <tr>
+                <th scope="col">Операция</th>
+                <th scope="col">Время</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>insert</code></td>
+                <td><span class="math-inline">\(O(\log h)\)</span></td>
+              </tr>
+              <tr>
+                <td><code>getMin</code></td>
+                <td><span class="math-inline">\(O(1)\)</span></td>
+              </tr>
+              <tr>
+                <td><code>extractMin</code></td>
+                <td><span class="math-inline">\(O(\log h)\)</span></td>
+              </tr>
+              <tr>
+                <td><code>decreaseKey</code></td>
+                <td><span class="math-inline">\(O(\log h)\)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p><code>SiftUp</code> и <code>SiftDown</code> проходят не более высоты полного бинарного дерева:</p>
+        <div class="math-display">\[
+          \lfloor\log_2 h\rfloor.
+          \]</div>
+        <p>Для <span class="math-inline">\(q\)</span> запросов:</p>
+        <div class="math-display">\[
+          T(q)=O(q\log q),\qquad M(q)=O(q).
+          \]</div>
+        <p>Память состоит из массива кучи и массива <code>position_</code> длины <span
+            class="math-inline">\(q\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="integer-title">
+        <p class="section-kicker">Типы данных</p>
+        <h2 id="integer-title">Почему требуется <code>int64_t</code></h2>
+        <p>Начальное значение и отдельная поправка помещаются в 32-битный <code>int</code>, но один живой элемент может
+          быть уменьшен много раз.</p>
+        <p>После последовательности операций его значение равно</p>
+        <div class="math-display">\[
+          x-\sum_j\Delta_j.
+          \]</div>
+        <p>При <span class="math-inline">\(q\le 10^6\)</span> и <span
+            class="math-inline">\(\Delta_j\le 10^9\)</span> модуль накопленного изменения может иметь порядок</p>
+        <div class="math-display">\[
+          10^{15},
+          \]</div>
+        <p>что не помещается в 32-битный знаковый тип. Поэтому значение и поправка хранятся в
+          <code>int64_t</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверка</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li>Куча из одного элемента: <code>extractMin</code> должен оставить пустой массив и установить его позицию
+            в <span class="math-inline">\(-1\)</span>.</li>
+          <li>Равные значения: tie-break по <code>query_id</code> выбирает один из минимумов детерминированно; выводимое
+            минимальное значение не меняется.</li>
+          <li><span class="math-inline">\(\Delta=0\)</span>: элемент остаётся на месте либо <code>SiftUp</code>
+            немедленно останавливается.</li>
+          <li>Уменьшение корня: у него нет родителя, поэтому <code>SiftUp</code> ничего не меняет.</li>
+          <li>Уменьшение элемента на несколько уровней: каждый обмен обязан обновлять обе записи в
+            <code>position_</code>.</li>
+          <li>Между <code>insert</code> и <code>decreaseKey</code> могут находиться запросы других типов:
+            идентификатором остаётся номер <code>insert</code> среди всех запросов.</li>
+          <li><code>GetMin</code> и <code>ExtractMin</code> не проверяют пустоту, что корректно только благодаря
+            гарантиям условия.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="failure-title">
+        <p class="section-kicker">Failure mode</p>
+        <h2 id="failure-title">Главный failure mode</h2>
+        <p>Личный тупик или первоначальная неверная идея не были указаны, поэтому они не приписываются автору.</p>
+        <p>Главная общая опасность этой реализации — обменять элементы кучи, но не обновить <code>position_</code>.</p>
+        <p>Рассмотрим запросы:</p>
+        <pre><code class="language-text">4
+insert 5
+insert 3
+decreaseKey 1 4
+getMin</code></pre>
+        <p>После второй вставки <code>3</code> поднимается в корень, а <code>5</code> перемещается на индекс <span
+            class="math-inline">\(1\)</span>. Если позиции не обновились, запрос <code>decreaseKey 1 4</code> ошибочно
+          уменьшит <code>3</code>, а не <code>5</code>.</p>
+        <p>Правильное состояние после уменьшения:</p>
+        <div class="math-display">\[
+          \{1,3\},
+          \]</div>
+        <p>поэтому ответ равен <span class="math-inline">\(1\)</span>. Структура с устаревшим обратным индексом могла бы
+          получить <span class="math-inline">\(\{-1,5\}\)</span> и вывести <span class="math-inline">\(-1\)</span>.</p>
+        <p>Корневая причина: массив кучи хранит <strong>подвижные позиции</strong>, тогда как внешний запрос использует
+          <strong>постоянный идентификатор</strong>. Между ними всегда должно поддерживаться точное обратное
+          отображение.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="implementation-title">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="implementation-title">Замечания к реализации</h2>
+
+        <h3>Нумерация запросов</h3>
+        <p>Цикл обрабатывает все команды с <code>query_id</code> от <span class="math-inline">\(0\)</span> до <span
+            class="math-inline">\(q-1\)</span>. Только операция <code>insert</code> сохраняет свой
+          <code>query_id</code> в элементе, но команды остальных типов всё равно занимают номера.</p>
+        <p>Поэтому входное <span class="math-inline">\(i\)</span> преобразуется именно в <code>i - 1</code>, а
+          отдельный счётчик вставок здесь был бы неверен.</p>
+
+        <h3>Удалённые элементы</h3>
+        <p>После <code>ExtractMin</code> позиция удалённого идентификатора устанавливается в <span
+            class="math-inline">\(-1\)</span>. Условие гарантирует, что будущий <code>decreaseKey</code> не обратится к
+          нему, но это присваивание сохраняет полный смысл массива <code>position_</code>.</p>
+
+        <h3>Заголовок для <code>int64_t</code></h3>
+        <p>Для стандартно переносимого кода следует явно добавить</p>
+        <pre><code class="language-cpp">#include &lt;cstdint&gt;</code></pre>
+        <p>и использовать имя <code>std::int64_t</code>. Доступность неквалифицированного <code>int64_t</code> только
+          через транзитивные подключения других заголовков стандартом не гарантируется.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Признаки похожих задач</h2>
+        <p>Indexed heap стоит рассматривать, когда одновременно выполняются признаки:</p>
+        <ul>
+          <li>требуется быстро получать или удалять экстремальный элемент;</li>
+          <li>последующая операция ссылается на ранее добавленный объект по его номеру, <code>id</code> или handle;</li>
+          <li>элементы меняют позиции внутри обычной бинарной кучи;</li>
+          <li>линейный поиск элемента перед обновлением слишком дорог;</li>
+          <li>изменение ключа имеет известное направление.</li>
+        </ul>
+        <p>Направление изменения определяет просеивание:</p>
+        <ul>
+          <li>уменьшение ключа в min-heap — <code>SiftUp</code>;</li>
+          <li>увеличение ключа в min-heap — <code>SiftDown</code>;</li>
+          <li>произвольная замена ключа — выбор направления после сравнения старого и нового значений.</li>
+        </ul>
+        <p>Общий паттерн:</p>
+        <div class="math-display">\[
+          \text{binary heap}
+          +
+          \text{stable object id}
+          +
+          \text{inverse position map}.
+          \]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="changes-title">
+        <p class="section-kicker">Post-Accepted</p>
+        <h2 id="changes-title">Явно отмеченные содержательные изменения</h2>
+        <p>Отдельный post-Accepted пересказ не был передан, поэтому наблюдение и доказательство восстановлены из условия
+          и предоставленного решения. Личный тупик не выдумывался.</p>
+        <ol>
+          <li><strong>ADDITION:</strong> явно сформулированы два совместных инварианта — heap order и обратное
+            отображение <code>position_</code>.</li>
+          <li><strong>CLARIFICATION:</strong> <code>query_id</code> — номер среди всех запросов; входной номер <span
+              class="math-inline">\(i\)</span> преобразуется в <span class="math-inline">\(i-1\)</span>.</li>
+          <li><strong>CLARIFICATION:</strong> сравнение по <code>query_id</code> при равных значениях нужно для
+            детерминированного полного порядка, но не влияет на выводимое минимальное значение.</li>
+          <li><strong>ADDITION:</strong> обоснована необходимость <code>int64_t</code> накоплением нескольких поправок.
+          </li>
+          <li><strong>PORTABILITY CORRECTION:</strong> следует явно подключить <code>&lt;cstdint&gt;</code> и
+            использовать <code>std::int64_t</code>.</li>
+          <li><strong>ADDITION:</strong> failure mode с устаревшим <code>position_</code> приведён как общий риск
+            реализации, а не как заявленная автором ошибка.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Accepted-код: <a
+              href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_2/Task_J/J.cpp"
+              download><code>J.cpp</code> — локальная копия</a>.</li>
+          <li>Теория: <a href="/conspecta/1/pdfs/algosi-1.pdf" target="_blank" rel="noreferrer">Алгоритмы и структуры
+              данных I (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL when available. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
