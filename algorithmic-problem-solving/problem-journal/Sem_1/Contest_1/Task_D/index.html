@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи D из контеста 1 первого семестра: устойчивый LSD radix sort для 64-битных беззнаковых чисел.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача D — LSD radix sort для uint64_t — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_1/">← Контест 1</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 1</p>
+      <h1>Задача D — LSD radix sort для uint64_t</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-23">23 июля 2026</time></p>
+      <p class="study-lead">Устойчивость принципиальна: внутри группы с одинаковым текущим байтом должен сохраняться
+        уже построенный порядок по всем младшим байтам.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_1/Task_D">
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Условие</h2>
+        <p>Дан массив из <span class="math-inline">\(n\)</span> неотрицательных 64-битных целых чисел:</p>
+        <div class="math-display">\[
+          1\le n\le 10^6,
+          \qquad
+          0\le a_i&lt;2^{64}.
+          \]</div>
+        <p>Требуется отсортировать массив по неубыванию, реализовав поразрядную сортировку LSD.</p>
+        <p>Каждое число помещается в <code>uint64_t</code>; максимально допустимое значение равно <span
+            class="math-inline">\(2^{64}-1\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Подход</p>
+        <h2 id="observation-title">Ключевое наблюдение</h2>
+        <p>У каждого 64-битного числа есть ровно восемь 8-битных разрядов. Если выбрать основание</p>
+        <div class="math-display">\[
+          B=2^8=256,
+          \]</div>
+        <p>то любое входное число <span class="math-inline">\(x\)</span> единственным образом представляется как</p>
+        <div class="math-display">\[
+          x=d_0+d_1B+d_2B^2+\cdots+d_7B^7,
+          \qquad
+          0\le d_i&lt;256.
+          \]</div>
+        <p>Разряд <span class="math-inline">\(d_0\)</span> — младший байт, а <span
+            class="math-inline">\(d_7\)</span> — старший.</p>
+        <p>Его можно извлечь битовыми операциями:</p>
+        <div class="math-display">\[
+          d_i(x)=
+          \left(x\mathbin{\texttt{&gt;&gt;}}(8i)\right)
+          \mathbin{\texttt{\&amp;}}255.
+          \]</div>
+        <p>Алгоритм LSD обрабатывает разряды от младшего к старшему:</p>
+        <div class="math-display">\[
+          d_0,d_1,\ldots,d_7.
+          \]</div>
+        <p>На каждом проходе массив устойчиво сортируется по одному байту с помощью counting sort.</p>
+        <p>Устойчивость здесь принципиальна: когда элементы с одинаковым текущим байтом сохраняют взаимный порядок,
+          сохраняется уже построенный порядок по всем младшим байтам.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="base-title">
+        <p class="section-kicker">Основание</p>
+        <h2 id="base-title">Почему основание равно 256</h2>
+        <p>Для одного байта существует только <span class="math-inline">\(256\)</span> возможных значений. Поэтому один
+          проход counting sort занимает</p>
+        <div class="math-display">\[
+          \Theta(n+256)
+          \]</div>
+        <p>времени и не использует сравнения элементов.</p>
+        <p>Для 64-битного ключа требуется ровно</p>
+        <div class="math-display">\[
+          \frac{64}{8}=8
+          \]</div>
+        <p>проходов. Число проходов и размер алфавита разрядов являются константами, поэтому полная сортировка работает
+          за линейное время относительно <span class="math-inline">\(n\)</span>.</p>
+        <p>В общем случае при разряде ширины <span class="math-inline">\(r\)</span> бит число проходов равно <span
+            class="math-inline">\(\lceil64/r\rceil\)</span>, а стоимость имеет вид</p>
+        <div class="math-display">\[
+          O\left(
+          \left\lceil\frac{64}{r}\right\rceil
+          \cdot(n+2^r)
+          \right).
+          \]</div>
+        <p>Выбор <span class="math-inline">\(r=8\)</span> даёт небольшой массив счётчиков и всего восемь проходов.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="algorithm-title">
+        <p class="section-kicker">Алгоритм</p>
+        <h2 id="algorithm-title">Алгоритм</h2>
+        <p>Создаётся вспомогательный массив <code>buffer</code> длины <span class="math-inline">\(n\)</span>.</p>
+        <p>Для каждого номера байта</p>
+        <div class="math-display">\[
+          b=0,1,\ldots,7
+          \]</div>
+        <p>выполняются следующие действия.</p>
+        <ol>
+          <li>Создать массив <code>count[256]</code>, заполненный нулями.</li>
+          <li>Для каждого числа <span class="math-inline">\(x\)</span> извлечь текущий байт
+            <div class="math-display">\[
+              d_b(x)=(x&gt;&gt;(8b))\mathbin{\&amp;}255
+              \]</div>
+            и увеличить <code>count[d_b(x)]</code>.</li>
+          <li>Вычислить начала блоков:
+            <div class="math-display">\[
+              \operatorname{pos}[0]=0,
+              \qquad
+              \operatorname{pos}[d]
+              =
+              \sum_{j=0}^{d-1}\operatorname{count}[j].
+              \]</div>
+          </li>
+          <li>Ещё раз просмотреть текущий массив слева направо. Число с байтом <span
+              class="math-inline">\(d\)</span> записать в <code>buffer[pos[d]]</code>, после чего увеличить
+            <code>pos[d]</code>.</li>
+          <li>Обменять <code>nums</code> и <code>buffer</code>.</li>
+        </ol>
+        <p>После восьмого прохода <code>nums</code> содержит окончательно отсортированный массив.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="counting-sort-title">
+        <p class="section-kicker">Корректность</p>
+        <h2 id="counting-sort-title">Корректность одного прохода counting sort</h2>
+        <p>Рассмотрим фиксированный байт <span class="math-inline">\(b\)</span>.</p>
+        <p>После подсчёта <code>count[d]</code> равно числу элементов с текущим байтом <span
+            class="math-inline">\(d\)</span>. Следовательно,</p>
+        <div class="math-display">\[
+          \operatorname{start}[d]
+          =
+          \sum_{j&lt;d}\operatorname{count}[j]
+          \]</div>
+        <p>является индексом начала блока элементов с байтом <span class="math-inline">\(d\)</span> в выходном массиве.
+        </p>
+        <p>Массив <code>pos</code> сначала содержит эти начала. При записи очередного элемента с байтом <span
+            class="math-inline">\(d\)</span>, <code>pos[d]</code> указывает на первую ещё не занятую позицию его блока.
+          После записи указатель увеличивается.</p>
+        <p>Отсюда следуют два свойства.</p>
+
+        <h3>Сортировка по текущему байту</h3>
+        <p>Блок байта <span class="math-inline">\(0\)</span> расположен раньше блока байта <span
+            class="math-inline">\(1\)</span>, блок байта <span class="math-inline">\(1\)</span> — раньше блока байта
+          <span class="math-inline">\(2\)</span>, и так далее. Поэтому выходной массив отсортирован по <span
+            class="math-inline">\(d_b\)</span>.</p>
+
+        <h3>Устойчивость</h3>
+        <p>Исходный массив просматривается слева направо. Два элемента с одинаковым байтом <span
+            class="math-inline">\(d\)</span> записываются в последовательные позиции одного блока в том же порядке, в
+          котором были встречены.</p>
+        <p>Следовательно, один реализованный проход является устойчивой сортировкой по текущему байту.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="invariant-title">
+        <p class="section-kicker">Инвариант</p>
+        <h2 id="invariant-title">Инвариант LSD</h2>
+        <p>Для <span class="math-inline">\(t\in\{1,\ldots,8\}\)</span> определим младший <span
+            class="math-inline">\(t\)</span>-байтовый ключ:</p>
+        <div class="math-display">\[
+          K_t(x)=x\bmod 256^t.
+          \]</div>
+        <p>После завершения первых <span class="math-inline">\(t\)</span> проходов массив отсортирован по неубыванию
+          <span class="math-inline">\(K_t(x)\)</span>.</p>
+        <p>Иными словами, после обработки байтов</p>
+        <div class="math-display">\[
+          d_0,d_1,\ldots,d_{t-1}
+          \]</div>
+        <p>элементы расположены в правильном порядке по числу, составленному из этих байтов.</p>
+
+        <h3>База: <span class="math-inline">\(t=1\)</span></h3>
+        <p>Первый проход устойчиво сортирует массив по младшему байту <span class="math-inline">\(d_0\)</span>. Но</p>
+        <div class="math-display">\[
+          K_1(x)=x\bmod256=d_0(x),
+          \]</div>
+        <p>поэтому инвариант выполнен.</p>
+
+        <h3>Индукционный переход</h3>
+        <p>Предположим, после <span class="math-inline">\(t\)</span> проходов массив отсортирован по <span
+            class="math-inline">\(K_t\)</span>. На следующем проходе выполняется устойчивая сортировка по байту <span
+            class="math-inline">\(d_t\)</span>.</p>
+        <p>При этом</p>
+        <div class="math-display">\[
+          K_{t+1}(x)
+          =
+          d_t(x)\cdot256^t+K_t(x).
+          \]</div>
+        <p>Рассмотрим два элемента <span class="math-inline">\(x\)</span> и <span
+            class="math-inline">\(y\)</span>.</p>
+        <ul>
+          <li>Если <span class="math-inline">\(d_t(x)&lt;d_t(y)\)</span>, то новый counting sort помещает <span
+              class="math-inline">\(x\)</span> раньше <span class="math-inline">\(y\)</span>. Это совпадает с порядком
+            их ключей <span class="math-inline">\(K_{t+1}\)</span>, поскольку текущий байт является старшей частью этих
+            ключей.</li>
+          <li>Если <span class="math-inline">\(d_t(x)=d_t(y)\)</span>, то устойчивость сохраняет прежний взаимный
+            порядок <span class="math-inline">\(x\)</span> и <span class="math-inline">\(y\)</span>. По индукционному
+            предположению этот порядок уже является порядком по младшей части <span
+              class="math-inline">\(K_t\)</span>.</li>
+        </ul>
+        <p>Следовательно, после нового прохода массив отсортирован по <span class="math-inline">\(K_{t+1}\)</span>.
+          Инвариант доказан по индукции.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="proof-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="proof-title">Доказательство корректности всей сортировки</h2>
+        <p>После восьми проходов из инварианта следует, что массив отсортирован по ключу</p>
+        <div class="math-display">\[
+          K_8(x)=x\bmod256^8=x\bmod2^{64}.
+          \]</div>
+        <p>Для каждого допустимого входного числа</p>
+        <div class="math-display">\[
+          0\le x&lt;2^{64},
+          \]</div>
+        <p>поэтому</p>
+        <div class="math-display">\[
+          x\bmod2^{64}=x.
+          \]</div>
+        <p>Значит, порядок по <span class="math-inline">\(K_8\)</span> совпадает с обычным числовым порядком значений
+          <code>uint64_t</code>. Следовательно, алгоритм выводит исходные элементы в порядке неубывания.</p>
+        <p>Алгоритм только переставляет элементы и на каждом проходе записывает каждый из них ровно один раз. Поэтому ни
+          одно значение не теряется и не добавляется: результат является перестановкой исходного массива.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="stability-title">
+        <p class="section-kicker">Устойчивость</p>
+        <h2 id="stability-title">Почему сортировка должна быть устойчивой</h2>
+        <p>После обработки младших байтов их порядок должен сохраняться внутри группы элементов с одинаковым следующим
+          байтом.</p>
+        <p>Например, рассмотрим два числа:</p>
+        <div class="math-display">\[
+          256=(01\,00)_{16},
+          \qquad
+          257=(01\,01)_{16}.
+          \]</div>
+        <p>После сортировки по младшему байту правильный порядок равен</p>
+        <div class="math-display">\[
+          256,\ 257.
+          \]</div>
+        <p>Их следующий байт одинаков и равен <span class="math-inline">\(1\)</span>. Если сортировка по этому байту
+          поменяет равные элементы местами, получится</p>
+        <div class="math-display">\[
+          257,\ 256,
+          \]</div>
+        <p>и уже достигнутый порядок по младшему байту будет разрушен.</p>
+        <p>Текущая реализация избегает этой ошибки: элементы читаются из <code>nums</code> слева направо и помещаются в
+          очередную свободную позицию своего блока.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Один байтовый проход выполняет:</p>
+        <ul>
+          <li><span class="math-inline">\(\Theta(n)\)</span> операций для подсчёта цифр;</li>
+          <li><span class="math-inline">\(\Theta(256)\)</span> операций для вычисления начал блоков;</li>
+          <li><span class="math-inline">\(\Theta(n)\)</span> операций для устойчивого распределения.</li>
+        </ul>
+        <p>Поэтому его стоимость равна</p>
+        <div class="math-display">\[
+          \Theta(n+256).
+          \]</div>
+        <p>Проходов ровно восемь:</p>
+        <div class="math-display">\[
+          T(n)=8\Theta(n+256).
+          \]</div>
+        <p>Так как <span class="math-inline">\(8\)</span> и <span class="math-inline">\(256\)</span> — константы, при
+          <span class="math-inline">\(n\ge1\)</span></p>
+        <div class="math-display">\[
+          \boxed{T(n)=\Theta(n)}.
+          \]</div>
+        <p>Это худшая, а не ожидаемая оценка: расположение входных элементов не меняет число проходов и число
+          обработанных элементов.</p>
+        <p>Вспомогательный <code>buffer</code> содержит <span class="math-inline">\(n\)</span> значений
+          <code>uint64_t</code>, а массивы <code>count</code> и <code>pos</code> содержат по <span
+            class="math-inline">\(256\)</span> целых чисел. Дополнительная память равна</p>
+        <div class="math-display">\[
+          8n+O(256)\text{ байт}
+          \]</div>
+        <p>без учёта служебных данных <code>vector</code>, то есть асимптотически</p>
+        <div class="math-display">\[
+          \boxed{O(n)}.
+          \]</div>
+        <p>Вместе с исходным массивом одновременно хранится примерно <span class="math-inline">\(16n\)</span> байт
+          данных чисел: при <span class="math-inline">\(n=10^6\)</span> это около <span
+            class="math-inline">\(16\)</span> MB.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверка</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li>Один элемент: каждый проход переписывает его в позицию <span class="math-inline">\(0\)</span>.</li>
+          <li>Все элементы равны: стабильность сохраняет их порядок, значения остаются неизменными.</li>
+          <li>Все числа равны нулю: каждый байт каждого числа равен нулю.</li>
+          <li>Максимальное значение:
+            <div class="math-display">\[
+              2^{64}-1,
+              \]</div>
+            у которого все восемь байтов равны <span class="math-inline">\(255\)</span>.</li>
+          <li>Числа отличаются только старшим байтом: правильный порядок устанавливается на последнем проходе.</li>
+          <li>Числа отличаются только младшим байтом: порядок устанавливается на первом проходе и сохраняется всеми
+            последующими.</li>
+          <li>Дубликаты: они не требуют специальной обработки.</li>
+          <li>Уже отсортированный и обратно отсортированный массивы: время остаётся <span
+              class="math-inline">\(\Theta(n)\)</span>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="integer-safety-title">
+        <p class="section-kicker">Безопасность</p>
+        <h2 id="integer-safety-title">Безопасность целочисленных операций</h2>
+        <p>Все битовые операции выполняются над беззнаковым типом <code>uint64_t</code>.</p>
+        <ul>
+          <li>Максимальный сдвиг равен
+            <div class="math-display">\[
+              8\cdot7=56&lt;64,
+              \]</div>
+            поэтому правый сдвиг определён.</li>
+          <li>Маска <code>255</code> оставляет ровно младшие восемь бит после сдвига.</li>
+          <li>Извлечённый разряд всегда лежит в диапазоне <span class="math-inline">\([0,255]\)</span>, поэтому является
+            корректным индексом массива размера <span class="math-inline">\(256\)</span>.</li>
+          <li>Значения <code>count[d]</code> и <code>pos[d]</code> не превосходят <span
+              class="math-inline">\(n\le10^6\)</span>, поэтому помещаются в <code>int</code>.</li>
+          <li>Над самими входными числами не выполняются сложение или умножение, которые могли бы вызвать переполнение.
+          </li>
+        </ul>
+        <p>Таким образом, значение <span class="math-inline">\(2^{64}-1\)</span> обрабатывается так же корректно, как
+          любое другое допустимое число.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="buffer-title">
+        <p class="section-kicker">Буфер</p>
+        <h2 id="buffer-title">Почему <code>buffer</code> не нужно очищать</h2>
+        <p>На каждом проходе блоки всех <span class="math-inline">\(256\)</span> значений байта:</p>
+        <div class="math-display">\[
+          [0,\operatorname{count}[0]),
+          \quad
+          [\operatorname{count}[0],
+          \operatorname{count}[0]+\operatorname{count}[1]),
+          \quad\ldots
+          \]</div>
+        <p>попарно не пересекаются и вместе покрывают весь диапазон индексов <span
+            class="math-inline">\([0,n)\)</span>.</p>
+        <p>Каждый входной элемент записывается ровно в одну позицию соответствующего блока. Поэтому все <span
+            class="math-inline">\(n\)</span> ячеек <code>buffer</code> перезаписываются на каждом проходе, и старое
+          содержимое после <code>nums.swap(buffer)</code> не влияет на следующий проход.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="implementation-title">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="implementation-title">Замечания к реализации</h2>
+
+        <h3>Вычисление сдвига</h3>
+        <p>В коде используется:</p>
+        <pre><code class="language-cpp">const int cKBytes = 8;
+int shift = cKBytes * byte;</code></pre>
+        <p>Результат численно правилен: сдвиги равны</p>
+        <div class="math-display">\[
+          0,8,16,\ldots,56.
+          \]</div>
+        <p>Однако одна и та же константа одновременно интерпретируется как число 8-битных разрядов и как число бит в
+          одном разряде. Эти величины равны восьми только случайно.</p>
+        <p>Семантически точнее разделить их:</p>
+        <pre><code class="language-cpp">constexpr int cDigitCount = 8;
+constexpr int cBitsPerDigit = 8;
+int shift = cBitsPerDigit * digit_index;</code></pre>
+        <p>Это <strong>clarification</strong>, а не ошибка результата текущей программы.</p>
+
+        <h3>Имена констант</h3>
+        <p>Названия <code>cKBase</code> и <code>cKBytes</code> затрудняют чтение: буква <code>K</code> не добавляет
+          семантики. Более точные имена:</p>
+        <pre><code class="language-cpp">cBase
+cDigitCount
+cBitsPerDigit</code></pre>
+
+        <h3>Квалификация типа</h3>
+        <p>После подключения <code>&lt;cstdint&gt;</code> переносимая C++-форма имени имеет вид
+          <code>std::uint64_t</code>. На используемой платформе неквалифицированное <code>uint64_t</code> доступно и код
+          компилируется, но явная квалификация лучше показывает источник типа.</p>
+
+        <h3>Типы индексов</h3>
+        <p>При ограничении <span class="math-inline">\(n\le10^6\)</span> тип <code>int</code> достаточен для
+          <code>count</code>, <code>pos</code> и индексов входного массива. Переход на <code>std::size_t</code> здесь не
+          требуется для корректности, хотя может быть полезен в переиспользуемой библиотечной версии.</p>
+
+        <h3>Функциональных ошибок не найдено</h3>
+        <p>При ограничениях из условия все восемь байтов обрабатываются, counting sort является устойчивой, индексы
+          остаются допустимыми, а итоговая сложность линейна. Замечания выше относятся к ясности и переносимости, но не
+          меняют результат решения.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="failure-title">
+        <p class="section-kicker">Failure mode</p>
+        <h2 id="failure-title">Главный failure mode</h2>
+        <p>Личный тупик до Accepted не был описан, поэтому он не приписывается автору. Главная логическая опасность LSD
+          radix sort — реализовать неустойчивый внутренний проход.</p>
+        <p>Сам факт, что после очередного counting sort элементы сгруппированы по текущему байту, недостаточен.
+          Необходимо также доказать, что внутри каждой группы сохранён порядок по уже обработанным младшим байтам.</p>
+        <p>Вторая частая ошибка — обработать байты в обратном порядке. Проход от старшего байта к младшему с тем же
+          простым последовательным алгоритмом оставит младший байт главным ключом. Для LSD порядок проходов обязан быть
+        </p>
+        <div class="math-display">\[
+          \text{младший}\longrightarrow\text{старший}.
+          \]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="alternatives-title">
+        <p class="section-kicker">Сравнение</p>
+        <h2 id="alternatives-title">Почему близкие подходы здесь хуже</h2>
+
+        <h3>Сортировка сравнениями</h3>
+        <p><code>std::sort</code>, merge sort и heap sort требуют</p>
+        <div class="math-display">\[
+          \Omega(n\log n)
+          \]</div>
+        <p>сравнений в общей модели сортировки сравнениями. Они не используют тот факт, что ключ имеет фиксированную
+          длину <span class="math-inline">\(64\)</span> бита и разбивается на разряды из малого алфавита.</p>
+        <p>Кроме того, условие прямо требует реализовать LSD radix sort.</p>
+
+        <h3>Counting sort по всему значению</h3>
+        <p>Диапазон ключей имеет размер</p>
+        <div class="math-display">\[
+          2^{64}.
+          \]</div>
+        <p>Массив счётчиков такого размера невозможен. Radix sort заменяет один огромный алфавит восемью проходами по
+          алфавиту размера <span class="math-inline">\(256\)</span>.</p>
+
+        <h3>MSD radix sort</h3>
+        <p>Сортировка от старшего разряда также возможна, но обычно требует рекурсивно разбивать массив на группы и
+          отдельно обрабатывать каждую группу. Для фиксированных 64-битных чисел итеративный LSD-вариант проще:
+          достаточно одного буфера и восьми одинаковых устойчивых проходов.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Признаки похожих задач</h2>
+        <p>LSD radix sort стоит рассматривать, когда:</p>
+        <ul>
+          <li>ключи имеют фиксированную небольшую битовую длину;</li>
+          <li>значения целые и их разряды можно извлечь за <span class="math-inline">\(O(1)\)</span>;</li>
+          <li>алфавит одного разряда мал;</li>
+          <li>требуется сортировка большого массива быстрее общей <span
+              class="math-inline">\(O(n\log n)\)</span>-сортировки сравнением;</li>
+          <li>доступна линейная дополнительная память;</li>
+          <li>можно реализовать устойчивую сортировку по одному разряду.</li>
+        </ul>
+        <p>Перед применением необходимо уточнить:</p>
+        <ul>
+          <li>числа знаковые или беззнаковые;</li>
+          <li>сколько разрядов нужно обработать;</li>
+          <li>каков порядок разрядов;</li>
+          <li>является ли внутренний проход устойчивым;</li>
+          <li>помещается ли массив счётчиков выбранного основания в память.</li>
+        </ul>
+        <p>Для знаковых целых обычный беззнаковый порядок битов не совпадает с числовым порядком: знаковый разряд требует
+          отдельной обработки. В текущей задаче все числа неотрицательны и хранятся в <code>uint64_t</code>, поэтому
+          этой проблемы нет.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="changes-title">
+        <p class="section-kicker">Post-Accepted</p>
+        <h2 id="changes-title">Явно отмеченные содержательные изменения</h2>
+        <p>Отдельный post-Accepted пересказ не передавался; лог полностью восстановлен из условия на скриншоте и
+          Accepted-кода.</p>
+        <ol>
+          <li><strong>ADDITION:</strong> сформулирован инвариант сортировки по младшим <span
+              class="math-inline">\(t\)</span> байтам и доказан индукционный переход.</li>
+          <li><strong>ADDITION:</strong> отдельно доказаны сортировка и устойчивость одного прохода counting sort.</li>
+          <li><strong>CLARIFICATION:</strong> объяснено, почему <code>nums.swap(buffer)</code> не требует очистки
+            вспомогательного массива.</li>
+          <li><strong>CLARIFICATION:</strong> выражение <code>cKBytes * byte</code> численно корректно, но смешивает
+            число разрядов и число бит в разряде.</li>
+          <li><strong>CLARIFICATION:</strong> оценка <span class="math-inline">\(\Theta(n)\)</span> является
+            гарантированной худшей оценкой, а не ожидаемой.</li>
+          <li><strong>PORTABILITY:</strong> рекомендовано использовать <code>std::uint64_t</code>.</li>
+          <li><strong>VERIFICATION:</strong> при данных ограничениях функциональных ошибок в решении не найдено.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Accepted-код: <a
+              href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_1/Task_D/D.cpp"
+              download><code>D.cpp</code> — локальная копия</a>.</li>
+          <li>Теория: <a href="/conspecta/1/pdfs/algosi-1.pdf" target="_blank" rel="noreferrer">Алгоритмы и структуры
+              данных I (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL when available. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
