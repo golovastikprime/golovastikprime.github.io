@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи A из контеста 1 первого семестра: сортировка и объединение пересекающихся отрезков.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача A — объединение отрезков — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_1/">← Контест 1</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 1</p>
+      <h1>Задача A — объединение отрезков</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-23">23 июля 2026</time></p>
+      <p class="study-lead">Именно сортировка превращает глобальную задачу об объединении всех отрезков в локальное
+        сравнение с одним объектом <code>curr</code>.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_1/Task_A">
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Условие</h2>
+        <p>Даны <span class="math-inline">\(n\)</span> отрезков на числовой прямой:</p>
+        <div class="math-display">\[
+          [l_1,r_1], [l_2,r_2],\ldots,[l_n,r_n],
+          \qquad l_i\le r_i.
+          \]</div>
+        <p>Нужно представить их объединение в виде минимального набора попарно не пересекающихся отрезков и вывести
+          полученные отрезки в порядке слева направо.</p>
+        <p>Вход содержит число <span class="math-inline">\(n\)</span>, а затем <span
+            class="math-inline">\(n\)</span> пар границ <span class="math-inline">\(l_i,r_i\)</span>. В выходе сначала
+          печатается число компонент объединения, после чего — их границы.</p>
+        <p>В переданном решении координаты хранятся в <code>long long</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Подход</p>
+        <h2 id="observation-title">Ключевое наблюдение</h2>
+        <p>Если расположить отрезки по неубыванию левой границы, то очередной отрезок может взаимодействовать только с
+          последней ещё не завершённой компонентой объединения.</p>
+        <p>Пусть эта компонента равна</p>
+        <div class="math-display">\[
+          \texttt{curr}=[L,R],
+          \]</div>
+        <p>а следующий отрезок после сортировки равен</p>
+        <div class="math-display">\[
+          [l,r].
+          \]</div>
+        <p>Возможны ровно два случая.</p>
+
+        <h3>Отрезки пересекаются или соприкасаются</h3>
+        <p>Если</p>
+        <div class="math-display">\[
+          l\le R,
+          \]</div>
+        <p>то новый отрезок начинается не правее конца текущей компоненты. Их объединение снова является одним
+          отрезком:</p>
+        <div class="math-display">\[
+          [L,R]\cup[l,r]=[L,\max(R,r)].
+          \]</div>
+        <p>Левая граница не меняется, а правую необходимо заменить на максимум.</p>
+
+        <h3>Между отрезками есть разрыв</h3>
+        <p>Если</p>
+        <div class="math-display">\[
+          l&gt;R,
+          \]</div>
+        <p>то текущую компоненту уже невозможно расширить. Действительно, у всех ещё не рассмотренных отрезков левая
+          граница не меньше <span class="math-inline">\(l\)</span>, а значит, строго больше <span
+            class="math-inline">\(R\)</span>.</p>
+        <p>Поэтому <span class="math-inline">\([L,R]\)</span> можно окончательно добавить в ответ, а новый отрезок
+          сделать текущей компонентой.</p>
+        <p>Именно сортировка превращает глобальную задачу об объединении всех отрезков в локальное сравнение с одним
+          объектом <code>curr</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="left-sort-title">
+        <p class="section-kicker">Сортировка</p>
+        <h2 id="left-sort-title">Почему достаточно сортировать только по левой границе</h2>
+        <p>Решение сравнивает точки только по полю <code>x</code>, то есть по левой границе отрезка. Специальный порядок
+          правых границ при равных левых границах не требуется.</p>
+        <p>Пусть несколько отрезков начинаются в одной точке <span class="math-inline">\(l\)</span>. Какой бы из них ни
+          обрабатывался первым, каждый следующий удовлетворяет</p>
+        <div class="math-display">\[
+          l\le \texttt{curr.right},
+          \]</div>
+        <p>поскольку для корректного отрезка <span class="math-inline">\(\texttt{curr.right}\ge l\)</span>.
+          Следовательно, все такие отрезки попадут в одну компоненту, а её правая граница станет максимумом их правых
+          границ.</p>
+        <p>Стабильность реализованного merge sort сохраняет исходный порядок при равных левых границах, но корректность
+          алгоритма от этого свойства не зависит.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="algorithm-title">
+        <p class="section-kicker">Алгоритм</p>
+        <h2 id="algorithm-title">Алгоритм</h2>
+        <ol>
+          <li>Считать все отрезки.</li>
+          <li>Отсортировать их по неубыванию левой границы.</li>
+          <li>Сделать первый отрезок текущей компонентой <code>curr</code>.</li>
+          <li>Последовательно рассматривать остальные отрезки:
+            <ul>
+              <li>если <code>next.x &lt;= curr.y</code>, расширить правую границу:
+                <pre><code class="language-cpp">curr.y = std::max(curr.y, next.y);</code></pre>
+              </li>
+              <li>иначе добавить <code>curr</code> в ответ и присвоить <code>curr = next</code>.</li>
+            </ul>
+          </li>
+          <li>После цикла добавить последнюю компоненту <code>curr</code>.</li>
+          <li>Вывести число компонент и сами компоненты.</li>
+        </ol>
+        <p>Последнее добавление выполняется отдельно, поскольку внутри цикла компонента попадает в ответ только после
+          обнаружения следующего разрыва.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="invariant-title">
+        <p class="section-kicker">Инвариант</p>
+        <h2 id="invariant-title">Инвариант прохода</h2>
+        <p>После обработки отсортированных отрезков</p>
+        <div class="math-display">\[
+          a_0,a_1,\ldots,a_{i-1},
+          \]</div>
+        <p>но перед обработкой <span class="math-inline">\(a_i\)</span>, выполняются следующие свойства:</p>
+        <ol>
+          <li><code>ans</code> содержит все уже завершённые компоненты объединения обработанных отрезков, кроме самой
+            правой компоненты;</li>
+          <li><code>curr</code> в точности равен самой правой компоненте объединения обработанных отрезков;</li>
+          <li>отрезки в <code>ans</code> расположены слева направо и попарно разделены строгими промежутками;</li>
+          <li>каждый отрезок из <code>ans</code> лежит строго левее <code>curr</code>;</li>
+          <li>объединение отрезков из <code>ans</code> вместе с <code>curr</code> совпадает с объединением <span
+              class="math-inline">\(a_0,\ldots,a_{i-1}\)</span>.</li>
+        </ol>
+
+        <h3>База</h3>
+        <p>Перед первой итерацией цикла обработан только <span class="math-inline">\(a_0\)</span>:</p>
+        <div class="math-display">\[
+          \texttt{curr}=a_0,\qquad \texttt{ans}=\varnothing.
+          \]</div>
+        <p>Единственный обработанный отрезок является самой правой компонентой, поэтому все свойства инварианта
+          выполнены.</p>
+
+        <h3>Сохранение: <span class="math-inline">\(a_i\)</span> пересекает <code>curr</code></h3>
+        <p>Пусть <span class="math-inline">\(a_i=[l_i,r_i]\)</span> и <span
+            class="math-inline">\(l_i\le\texttt{curr.right}\)</span>.</p>
+        <p>Из сортировки следует</p>
+        <div class="math-display">\[
+          l_i\ge\texttt{curr.left}.
+          \]</div>
+        <p>Поэтому <span class="math-inline">\(a_i\)</span> пересекает текущую компоненту или соприкасается с ней, а их
+          объединение равно</p>
+        <div class="math-display">\[
+          [\texttt{curr.left},
+          \max(\texttt{curr.right},r_i)].
+          \]</div>
+        <p>Операция с <code>std::max</code> в точности вычисляет новую правую компоненту. Ранее завершённые компоненты
+          не меняются, поэтому инвариант сохраняется.</p>
+
+        <h3>Сохранение: перед <span class="math-inline">\(a_i\)</span> есть разрыв</h3>
+        <p>Пусть <span class="math-inline">\(l_i&gt;\texttt{curr.right}\)</span>. Тогда <span
+            class="math-inline">\(a_i\)</span> отделён от <code>curr</code> разрывом.</p>
+        <p>Кроме того, для каждого будущего <span class="math-inline">\(a_j\)</span>, где <span
+            class="math-inline">\(j&gt;i\)</span>, из сортировки следует</p>
+        <div class="math-display">\[
+          l_j\ge l_i&gt;\texttt{curr.right}.
+          \]</div>
+        <p>Значит, ни текущий, ни какой-либо будущий отрезок уже не сможет соединиться с <code>curr</code>. Добавление
+          <code>curr</code> в <code>ans</code> окончательно фиксирует очередную компоненту, а <span
+            class="math-inline">\(a_i\)</span> становится новой самой правой компонентой. Инвариант снова сохраняется.
+        </p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="proof-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="proof-title">Доказательство корректности</h2>
+        <p>Докажем, что алгоритм выводит в точности компоненты объединения всех входных отрезков.</p>
+        <p>По доказанному инварианту после завершения цикла:</p>
+        <ul>
+          <li><code>ans</code> содержит все завершённые компоненты объединения;</li>
+          <li><code>curr</code> равен последней, самой правой компоненте;</li>
+          <li>вместе они образуют объединение всех <span class="math-inline">\(n\)</span> входных отрезков.</li>
+        </ul>
+        <p>Алгоритм добавляет <code>curr</code> в <code>ans</code>, поэтому после этого объединение выведенных отрезков
+          совпадает с объединением входных.</p>
+        <p>Остаётся доказать минимальность представления. Две соседние компоненты добавляются раздельно только в случае
+        </p>
+        <div class="math-display">\[
+          \texttt{next.left}&gt;\texttt{curr.right},
+          \]</div>
+        <p>то есть между ними существует непустой промежуток, не принадлежащий ни одному из уже обработанных отрезков.
+          По сортировке будущие отрезки также начинаются правее этого разрыва, поэтому заполнить его невозможно.
+          Следовательно, такие компоненты нельзя объединить в один отрезок без добавления лишних точек.</p>
+        <p>Итак, алгоритм выводит точное объединение и использует минимально возможное число попарно разделённых
+          отрезков.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="merge-sort-title">
+        <p class="section-kicker">Сортировка</p>
+        <h2 id="merge-sort-title">Корректность merge sort</h2>
+        <p>Функция <code>MergeSort(array, l, r)</code> сортирует включительный диапазон <span
+            class="math-inline">\([l,r]\)</span>.</p>
+        <ul>
+          <li>При <span class="math-inline">\(l\ge r\)</span> диапазон содержит не более одного элемента и уже
+            отсортирован.</li>
+          <li>Иначе диапазон разбивается на <span class="math-inline">\([l,m]\)</span> и <span
+              class="math-inline">\([m+1,r]\)</span>.</li>
+          <li>По индукции рекурсивные вызовы сортируют обе половины.</li>
+          <li><code>Merge</code> каждый раз выбирает элемент с меньшей левой границей из начал двух отсортированных
+            половин, а затем дописывает оставшийся хвост.</li>
+        </ul>
+        <p>Следовательно, после <code>Merge</code> весь диапазон <span class="math-inline">\([l,r]\)</span>
+          отсортирован по неубыванию <code>x</code>.</p>
+        <p>При равных <code>x</code> выбирается элемент из левой половины, поэтому реализация также является стабильной.
+        </p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Пусть дано <span class="math-inline">\(n\)</span> отрезков, а в ответе получилось <span
+            class="math-inline">\(k\le n\)</span> компонент.</p>
+        <p>Для merge sort:</p>
+        <div class="math-display">\[
+          T(n)=2T(n/2)+\Theta(n)=\Theta(n\log n).
+          \]</div>
+        <p>Последующий проход и вывод занимают</p>
+        <div class="math-display">\[
+          \Theta(n)+\Theta(k)=\Theta(n).
+          \]</div>
+        <p>Итоговая временная сложность:</p>
+        <div class="math-display">\[
+          \boxed{\Theta(n\log n)}.
+          \]</div>
+        <p>Во время одного слияния временные массивы суммарно содержат столько элементов, сколько находится в текущем
+          диапазоне. Пиковая дополнительная память merge sort равна <span class="math-inline">\(O(n)\)</span>, глубина
+          рекурсии — <span class="math-inline">\(O(\log n)\)</span>, а массив ответа занимает <span
+            class="math-inline">\(O(k)\subseteq O(n)\)</span>.</p>
+        <p>Итоговая память:</p>
+        <div class="math-display">\[
+          \boxed{O(n)}.
+          \]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверка</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li>Один отрезок: он сразу становится единственной компонентой ответа.</li>
+          <li>Все отрезки попарно разделены: в ответ попадут все <span class="math-inline">\(n\)</span> отрезков.</li>
+          <li>Все отрезки пересекаются: получится одна компонента.</li>
+          <li>Один отрезок вложен в другой: <span class="math-inline">\([1,10]\)</span>, <span
+              class="math-inline">\([2,3]\)</span>; правая граница не должна уменьшиться.</li>
+          <li>Одинаковые отрезки: дубликаты не меняют объединение.</li>
+          <li>Равные левые границы: <span class="math-inline">\([1,3]\)</span>, <span
+              class="math-inline">\([1,10]\)</span>; порядок между ними не влияет на результат.</li>
+          <li>Соприкосновение в одной точке: <span class="math-inline">\([1,2]\)</span>, <span
+              class="math-inline">\([2,5]\)</span>; условие <code>&lt;=</code> объединяет их в <span
+              class="math-inline">\([1,5]\)</span>.</li>
+          <li>Отрезок-точка: <span class="math-inline">\([4,4]\)</span>; он корректно обрабатывается как вырожденный
+            отрезок.</li>
+          <li>Отрицательные координаты: порядок и сравнения остаются теми же.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="necessity-title">
+        <p class="section-kicker">Failure modes</p>
+        <h2 id="necessity-title">Почему нужны именно сортировка и <code>max</code></h2>
+
+        <h3>Без сортировки</h3>
+        <p>Для порядка</p>
+        <div class="math-display">\[
+          [5,6],\ [1,10]
+          \]</div>
+        <p>локальный проход начал бы <code>curr</code> с <span class="math-inline">\([5,6]\)</span>. Простая проверка
+          пересечения уже не смогла бы восстановить потерянную левую границу <span class="math-inline">\(1\)</span>.</p>
+        <p>Сортировка гарантирует, что левая граница <code>curr</code> всегда является самой левой границей текущей
+          компоненты.</p>
+
+        <h3>Нельзя присваивать <code>curr.y = next.y</code></h3>
+        <p>На отрезках</p>
+        <div class="math-display">\[
+          [1,10],\ [2,3]
+          \]</div>
+        <p>такое присваивание ошибочно уменьшило бы компоненту до <span class="math-inline">\([1,3]\)</span>.
+          Правильное обновление обязано сохранять наиболее далёкую достигнутую правую границу:</p>
+        <div class="math-display">\[
+          \texttt{curr.y}=\max(\texttt{curr.y},\texttt{next.y}).
+          \]</div>
+
+        <h3>Нельзя забывать последнюю компоненту</h3>
+        <p>Компонента добавляется внутри цикла только при обнаружении следующего разрыва. После последнего входного
+          отрезка такого события уже нет, поэтому финальный <code>ans.push_back(curr)</code> обязателен.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="implementation-title">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="implementation-title">Замечания к реализации</h2>
+
+        <h3>Отсутствует <code>&lt;algorithm&gt;</code></h3>
+        <p>Код использует <code>std::max</code>, но явно не подключает стандартный заголовок:</p>
+        <pre><code class="language-cpp">#include &lt;algorithm&gt;</code></pre>
+        <p>Некоторые реализации стандартной библиотеки могут случайно предоставить объявление через транзитивные
+          включения, однако стандарт C++ этого не гарантирует. Это portability defect, даже если конкретный компилятор
+          принял программу.</p>
+
+        <h3>Предусловие <span class="math-inline">\(n\ge 1\)</span></h3>
+        <p>Строка</p>
+        <pre><code class="language-cpp">Point curr = a[0];</code></pre>
+        <p>требует непустого входного массива. Если условие гарантирует <span class="math-inline">\(n\ge1\)</span>, всё
+          корректно. Если <span class="math-inline">\(n=0\)</span> допустимо, перед обращением к <code>a[0]</code> нужен
+          отдельный случай.</p>
+
+        <h3>Предусловие <span class="math-inline">\(l_i\le r_i\)</span></h3>
+        <p>Доказательство использует стандартное представление отрезка, в котором левая граница не превосходит правую.
+          Если вход не гарантирует этот порядок, каждую пару необходимо предварительно нормализовать:</p>
+        <div class="math-display">\[
+          (l_i,r_i)\leftarrow
+          (\min(l_i,r_i),\max(l_i,r_i)).
+          \]</div>
+
+        <h3>Семантика соприкасающихся отрезков</h3>
+        <p>Условие <code>next.x &lt;= curr.y</code> соответствует объединению замкнутых отрезков и выдаёт компоненты без
+          разрывов. Если в другой задаче требуется считать соприкасающиеся объекты разными, сравнение должно быть
+          строгим. Выбор <code>&lt;=</code> или <code>&lt;</code> всегда должен следовать из точного определения
+          интервала и требуемого формата ответа.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="failure-title">
+        <p class="section-kicker">Failure mode</p>
+        <h2 id="failure-title">Главный failure mode</h2>
+        <p>Личный тупик до Accepted не был описан, поэтому он не приписывается автору. Главная логическая опасность этого
+          решения — завершить <code>curr</code> раньше, чем доказано, что ни один будущий отрезок не сможет его
+          расширить.</p>
+        <p>Такое доказательство появляется только после сортировки: как только очередная левая граница стала больше
+          <code>curr.y</code>, все будущие левые границы также будут больше <code>curr.y</code>. Без монотонного порядка
+          тот же локальный шаг некорректен.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Признаки похожих задач</h2>
+        <p>Подход «sort + one pass» стоит проверять, когда:</p>
+        <ul>
+          <li>объекты являются отрезками на одной прямой;</li>
+          <li>требуется найти объединение, число компонент или суммарную покрытую длину;</li>
+          <li>после упорядочивания по одной границе будущие объекты уже не могут вернуться в завершённую область;</li>
+          <li>для текущей группы достаточно хранить только левую границу и наиболее далёкую правую границу;</li>
+          <li>решение должно объединять цепочки пересечений, даже если первый и последний отрезки напрямую не
+            пересекаются.</li>
+        </ul>
+        <p>Например,</p>
+        <div class="math-display">\[
+          [1,4],\ [3,7],\ [6,9]
+          \]</div>
+        <p>образуют одну компоненту <span class="math-inline">\([1,9]\)</span>: текущая правая граница последовательно
+          расширяется с <span class="math-inline">\(4\)</span> до <span class="math-inline">\(7\)</span>, а затем до
+          <span class="math-inline">\(9\)</span>.</p>
+        <p>Тот же шаблон используется для:</p>
+        <ul>
+          <li>подсчёта суммарной длины объединения отрезков;</li>
+          <li>вставки нового отрезка в уже отсортированный набор;</li>
+          <li>поиска промежутков, не покрытых ни одним отрезком;</li>
+          <li>объединения временных окон;</li>
+          <li>группировки событий в пересекающиеся временные блоки.</li>
+        </ul>
+        <p>Главный сигнал: после сортировки существует одна <strong>текущая компонента</strong>, и решение о её
+          завершении становится необратимым.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="changes-title">
+        <p class="section-kicker">Post-Accepted</p>
+        <h2 id="changes-title">Явно отмеченные содержательные изменения</h2>
+        <p>Отдельный post-Accepted пересказ не передавался; лог полностью восстановлен из условия на скриншоте и
+          Accepted-кода.</p>
+        <ol>
+          <li><strong>ADDITION:</strong> сформулирован полный инвариант <code>ans + curr</code> и доказано его
+            сохранение в обоих случаях.</li>
+          <li><strong>CLARIFICATION:</strong> сортировки только по левой границе достаточно; tie-break по правой границе
+            и стабильность не нужны для корректности.</li>
+          <li><strong>CLARIFICATION:</strong> <code>std::max</code> необходим из-за вложенных отрезков и не позволяет
+            правой границе уменьшаться.</li>
+          <li><strong>CORRECTION:</strong> для переносимого использования <code>std::max</code> требуется явно
+            подключить <code>&lt;algorithm&gt;</code>.</li>
+          <li><strong>PRECONDITION:</strong> обращение к <code>a[0]</code> корректно только при <span
+              class="math-inline">\(n\ge1\)</span>.</li>
+          <li><strong>PRECONDITION:</strong> доказательство предполагает нормализованные границы <span
+              class="math-inline">\(l_i\le r_i\)</span>.</li>
+          <li><strong>CLARIFICATION:</strong> сравнение <code>&lt;=</code> объединяет отрезки, соприкасающиеся в одной
+            точке.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Accepted-код: <a
+              href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_1/Task_A/A.cpp"
+              download><code>A.cpp</code> — локальная копия</a>.</li>
+          <li>Теория: <a href="/conspecta/1/pdfs/algosi-1.pdf" target="_blank" rel="noreferrer">Алгоритмы и структуры
+              данных I (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add exact contest constraints and the problem URL when available. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
