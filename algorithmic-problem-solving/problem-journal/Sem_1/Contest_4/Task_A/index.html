@@ -142,4 +142,476 @@ int value;</code></pre>
         <p>Положительный balance factor означает перевес влево, отрицательный — вправо.</p>
       </section>
 
-      <!-- TASK_A_CONTENT_CONTINUES -->
+      <section class="entry-section" aria-labelledby="insert-title">
+        <p class="section-kicker">Операция дерева</p>
+        <h2 id="insert-title">Вставка</h2>
+
+        <h3>Спуск как в обычном BST</h3>
+        <p>Из корня выполняется спуск:</p>
+        <ul>
+          <li>если новый ключ меньше текущего, переходим влево;</li>
+          <li>если больше — вправо;</li>
+          <li>если ключи равны, завершаем операцию без вставки.</li>
+        </ul>
+        <p>Во время спуска сохраняются будущий родитель и сторона присоединения:</p>
+        <pre><code class="language-cpp">BaseNode* parent;
+bool was_left;</code></pre>
+        <p><code>was_left</code> нужно определить сравнением ключей <strong>до</strong> перехода к ребёнку. Вычислять
+          сторону после перехода выражением</p>
+        <pre><code class="language-cpp">parent-&gt;left_child == node</code></pre>
+        <p>нельзя: если <code>node == nullptr</code> и оба ребёнка <code>parent</code> пусты, сравнение ошибочно
+          сообщит, что был выбран левый ребёнок.</p>
+        <p>В найденное пустое место добавляется лист высоты <span class="math-inline">\(1\)</span> с корректным
+          указателем <code>parent</code>.</p>
+
+        <h3>Подъём и локальный инвариант <code>Rebalance</code></h3>
+        <p>Измениться могут только вершины на пути от родителя нового листа к корню. Перед вызовом
+          <code>Rebalance(v)</code> выполняется следующий локальный инвариант:</p>
+        <ol>
+          <li>оба дочерних поддерева <span class="math-inline">\(v\)</span> уже являются корректными
+            AVL-деревьями;</li>
+          <li>их сохранённые высоты верны;</li>
+          <li>BST-порядок и родительские связи внутри них корректны;</li>
+          <li>нарушиться могли только высота и баланс самой вершины <span class="math-inline">\(v\)</span>.</li>
+        </ol>
+        <p><code>Rebalance(v)</code> пересчитывает высоту <span class="math-inline">\(v\)</span>, при необходимости
+          выполняет одинарный или двойной поворот и возвращает новый корень того же множества ключей. Затем вызывающий
+          код присоединяет возвращённую вершину к прежнему родителю <span class="math-inline">\(v\)</span>.</p>
+        <p>После этого всё обработанное поддерево снова удовлетворяет четырём инвариантам. Следующей потенциально
+          некорректной вершиной остаётся только его родитель, поэтому подъём можно продолжить.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="rotations-title">
+        <p class="section-kicker">Балансировка</p>
+        <h2 id="rotations-title">Повороты</h2>
+        <p>Поворот должен одновременно сохранить:</p>
+        <ol>
+          <li>inorder-порядок ключей;</li>
+          <li>все поддеревья;</li>
+          <li>двустороннюю согласованность <code>child</code>/<code>parent</code>;</li>
+          <li>правильные высоты изменившихся вершин.</li>
+        </ol>
+
+        <h3>Правый поворот</h3>
+        <p>Пусть старый корень поддерева — <span class="math-inline">\(y\)</span>, его левый ребёнок — <span
+            class="math-inline">\(x\)</span>, а <span class="math-inline">\(P\)</span> — прежний родитель <span
+            class="math-inline">\(y\)</span>.</p>
+        <p>До поворота:</p>
+        <pre><code class="language-text">          P
+          |
+          y
+         / \
+        x   C
+       / \
+      A   B</code></pre>
+        <p>После поворота:</p>
+        <pre><code class="language-text">          P
+          |
+          x
+         / \
+        A   y
+           / \
+          B   C</code></pre>
+        <p>Из BST-инварианта до поворота</p>
+        <div class="math-display">\[
+          A \lt x \lt B \lt y \lt C,
+          \]</div>
+        <p>поэтому после перестановки тот же inorder-порядок сохраняется.</p>
+        <p>Необходимые изменения указателей:</p>
+        <pre><code class="language-cpp">y-&gt;left_child = b;
+if (b != nullptr) {
+  b-&gt;parent = y;
+}
+
+x-&gt;right_child = y;
+y-&gt;parent = x;
+x-&gt;parent = old_parent;</code></pre>
+        <p>После возврата <code>x</code> вызывающий код устанавливает соответствующий указатель ребёнка у <span
+            class="math-inline">\(P\)</span> равным <code>x</code>. Поддерево <span
+            class="math-inline">\(B\)</span> обязательно переносится: без этого оно было бы потеряно.</p>
+        <p>Высоты пересчитываются снизу вверх:</p>
+        <pre><code class="language-cpp">UpdateHeight(y);
+UpdateHeight(x);</code></pre>
+        <p>Сначала меняются данные <span class="math-inline">\(y\)</span>, затем <span
+            class="math-inline">\(x\)</span>, чья новая высота зависит от уже обновлённой высоты <span
+            class="math-inline">\(y\)</span>.</p>
+
+        <h3>Левый поворот</h3>
+        <p>Левый поворот симметричен. Для структуры</p>
+        <pre><code class="language-text">      x
+     / \
+    A   y
+       / \
+      B   C</code></pre>
+        <p>получаем</p>
+        <pre><code class="language-text">        y
+       / \
+      x   C
+     / \
+    A   B</code></pre>
+        <p>Поддерево <span class="math-inline">\(B\)</span> становится правым ребёнком <span
+            class="math-inline">\(x\)</span>; его <code>parent</code> меняется на <span
+            class="math-inline">\(x\)</span>. Старый корень <span class="math-inline">\(x\)</span> становится левым
+          ребёнком <span class="math-inline">\(y\)</span>, а новый корень <span
+            class="math-inline">\(y\)</span> получает прежнего родителя <span class="math-inline">\(x\)</span>.
+          Высоты обновляются в порядке <code>x</code>, затем <code>y</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="balance-cases-title">
+        <p class="section-kicker">Выбор поворота</p>
+        <h2 id="balance-cases-title">Четыре случая нарушения баланса</h2>
+        <p>После одной вставки у рассматриваемой вершины возможны только значения</p>
+        <div class="math-display">\[
+          bf(v)\in\{-2,-1,0,1,2\}.
+          \]</div>
+        <p>Выбор поворота определяется направлением перевеса вершины и её тяжёлого ребёнка.</p>
+        <div class="table-wrap">
+          <table class="entry-table">
+            <thead>
+              <tr>
+                <th scope="col">Случай</th>
+                <th scope="col">Условие</th>
+                <th scope="col">Восстановление</th>
+                <th scope="col">Минимальная вставка</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>LL</td>
+                <td><span class="math-inline">\(bf(v)=2\)</span>, <span
+                    class="math-inline">\(bf(v_{\mathrm{left}})\ge 0\)</span></td>
+                <td><code>RotateRight(v)</code></td>
+                <td><code>3, 2, 1</code></td>
+              </tr>
+              <tr>
+                <td>RR</td>
+                <td><span class="math-inline">\(bf(v)=-2\)</span>, <span
+                    class="math-inline">\(bf(v_{\mathrm{right}})\le 0\)</span></td>
+                <td><code>RotateLeft(v)</code></td>
+                <td><code>1, 2, 3</code></td>
+              </tr>
+              <tr>
+                <td>LR</td>
+                <td><span class="math-inline">\(bf(v)=2\)</span>, <span
+                    class="math-inline">\(bf(v_{\mathrm{left}})\lt 0\)</span></td>
+                <td>левый поворот ребёнка, затем правый поворот <span class="math-inline">\(v\)</span></td>
+                <td><code>3, 1, 2</code></td>
+              </tr>
+              <tr>
+                <td>RL</td>
+                <td><span class="math-inline">\(bf(v)=-2\)</span>, <span
+                    class="math-inline">\(bf(v_{\mathrm{right}})\gt 0\)</span></td>
+                <td>правый поворот ребёнка, затем левый поворот <span class="math-inline">\(v\)</span></td>
+                <td><code>1, 3, 2</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Для двойного LR-поворота промежуточный корень сначала нужно вернуть на место:</p>
+        <pre><code class="language-cpp">v-&gt;left_child = RotateLeft(v-&gt;left_child);
+return RotateRight(v);</code></pre>
+        <p>RL-случай симметричен.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="rotation-proof-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="rotation-proof-title">Почему повороты восстанавливают AVL-инвариант</h2>
+
+        <h3>Одинарный LL-поворот</h3>
+        <p>Используем обозначения правого поворота выше и положим <span class="math-inline">\(h(C)=t\)</span>. Из
+          <span class="math-inline">\(bf(y)=2\)</span> следует</p>
+        <div class="math-display">\[
+          h(x)=t+2.
+          \]</div>
+        <p>Так как <span class="math-inline">\(x\)</span> до поворота сбалансирована и <span
+            class="math-inline">\(bf(x)\ge 0\)</span>,</p>
+        <div class="math-display">\[
+          h(A)=t+1,
+          \qquad
+          h(B)\in\{t,t+1\}.
+          \]</div>
+        <p>После поворота у <span class="math-inline">\(y\)</span> дети <span class="math-inline">\(B,C\)</span>,
+          высоты которых отличаются не более чем на единицу. Поэтому <span class="math-inline">\(y\)</span>
+          сбалансирована.</p>
+        <ul>
+          <li>Если <span class="math-inline">\(h(B)=t\)</span>, то новая высота <span
+              class="math-inline">\(y\)</span> равна <span class="math-inline">\(t+1\)</span>, как и высота <span
+              class="math-inline">\(A\)</span>.</li>
+          <li>Если <span class="math-inline">\(h(B)=t+1\)</span>, то новая высота <span
+              class="math-inline">\(y\)</span> равна <span class="math-inline">\(t+2\)</span>, то есть на единицу
+            больше высоты <span class="math-inline">\(A\)</span>.</li>
+        </ul>
+        <p>Следовательно, новый корень <span class="math-inline">\(x\)</span> также сбалансирован. RR-случай
+          доказывается симметрично.</p>
+
+        <h3>Двойной LR-поворот</h3>
+        <p>Пусть структура имеет вид</p>
+        <pre><code class="language-text">          y
+         / \
+        x   D
+       / \
+      A   z
+         / \
+        B   C</code></pre>
+        <p>Здесь <span class="math-inline">\(bf(y)=2\)</span>, а <span class="math-inline">\(bf(x)\lt 0\)</span>.
+          Поскольку <span class="math-inline">\(x\)</span> сама является AVL-вершиной, фактически <span
+            class="math-inline">\(bf(x)=-1\)</span>.</p>
+        <p>Положим <span class="math-inline">\(h(D)=t\)</span>. Тогда</p>
+        <div class="math-display">\[
+          h(x)=t+2,
+          \qquad
+          h(z)=t+1,
+          \qquad
+          h(A)=t.
+          \]</div>
+        <p>Из сбалансированности <span class="math-inline">\(z\)</span> следует</p>
+        <div class="math-display">\[
+          h(B),h(C)\in\{t-1,t\}.
+          \]</div>
+        <p>После левого поворота вокруг <span class="math-inline">\(x\)</span> и правого вокруг <span
+            class="math-inline">\(y\)</span> получается</p>
+        <pre><code class="language-text">          z
+         / \
+        x   y
+       / \ / \
+      A  B C  D</code></pre>
+        <p>У <span class="math-inline">\(x\)</span> оба ребёнка имеют высоту не больше <span
+            class="math-inline">\(t\)</span>, причём <span class="math-inline">\(h(A)=t\)</span>; поэтому новая высота
+          <span class="math-inline">\(x\)</span> равна <span class="math-inline">\(t+1\)</span>, и <span
+            class="math-inline">\(x\)</span> сбалансирована. Симметрично новая высота <span
+            class="math-inline">\(y\)</span> равна <span class="math-inline">\(t+1\)</span>, и <span
+            class="math-inline">\(y\)</span> сбалансирована. Дети нового корня <span
+            class="math-inline">\(z\)</span> имеют одинаковую высоту <span class="math-inline">\(t+1\)</span>, значит
+          <span class="math-inline">\(bf(z)=0\)</span>.</p>
+        <p>RL-случай доказывается зеркально.</p>
+        <p>Таким образом, каждый выбранный поворот сохраняет BST-порядок и восстанавливает AVL-инвариант во всём
+          рассматриваемом поддереве.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="lower-bound-title">
+        <p class="section-kicker">Корректность запроса</p>
+        <h2 id="lower-bound-title">Корректность <code>lower_bound</code></h2>
+        <p>Нужно найти</p>
+        <div class="math-display">\[
+          \min\{k\in S\mid k\ge x\}.
+          \]</div>
+        <p>Во время спуска хранятся текущая вершина <code>v</code> и указатель <code>candidate</code>.</p>
+
+        <h3>Инвариант цикла</h3>
+        <p>В начале каждой итерации правильный ответ, если он существует, находится либо в текущем поддереве
+          <code>v</code>, либо равен <code>candidate</code>; при этом <code>candidate == nullptr</code> или ключ
+          кандидата не меньше <span class="math-inline">\(x\)</span>.</p>
+        <p>Изначально текущим является всё дерево, а <code>candidate == nullptr</code>, поэтому инвариант выполнен.</p>
+
+        <h3>Сохранение</h3>
+        <ul>
+          <li>Если <code>Value(v) &gt;= x</code>, вершина <span class="math-inline">\(v\)</span> допустима. Она
+            становится новым кандидатом. Всё правое поддерево содержит ключи больше <code>Value(v)</code> и потому не
+            может дать меньший ответ; продолжаем поиск слева.</li>
+          <li>Если <code>Value(v) &lt; x</code>, сама вершина и всё её левое поддерево содержат слишком маленькие
+            ключи; продолжаем поиск справа, не меняя кандидата.</li>
+        </ul>
+        <p>В обоих случаях отбрасываются только вершины, которые не могут быть правильным ответом, поэтому инвариант
+          сохраняется.</p>
+
+        <h3>Завершение</h3>
+        <p>Когда <code>v == nullptr</code>, текущее поддерево пусто. По инварианту единственным возможным ответом
+          остаётся <code>candidate</code>.</p>
+        <ul>
+          <li>Если кандидат существует, его ключ является минимальным ключом, не меньшим <span
+              class="math-inline">\(x\)</span>.</li>
+          <li>Если <code>candidate == nullptr</code>, подходящего ключа в дереве нет и возвращается <code>-1</code>.
+          </li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="correctness-title">Доказательство корректности всей структуры</h2>
+
+        <h3>Лемма 1. <code>Insert</code> сохраняет представляемое множество и BST-инвариант</h3>
+        <p>Спуск сравнивает новый ключ с текущими ключами. При равенстве структура не меняется. Иначе новый лист
+          присоединяется в первое пустое место на единственном пути поиска, поэтому все ключи слева от каждой вершины
+          остаются меньше неё, а справа — больше. В дерево добавляется ровно требуемый новый ключ.</p>
+        <p>Повороты не меняют inorder-последовательность, следовательно, последующая балансировка также сохраняет
+          множество ключей и BST-инвариант.</p>
+
+        <h3>Лемма 2. <code>Insert</code> восстанавливает структурные инварианты</h3>
+        <p>Перед обработкой очередной вершины её дети уже являются корректными AVL-поддеревьями.
+          <code>Rebalance</code> выбирает один из исчерпывающих случаев по двум balance factor. По доказательству выше
+          выбранный поворот восстанавливает баланс и пересчитывает высоты снизу вверх.</p>
+        <p>Каждое изменённое ребро получает согласованный обратный <code>parent</code>, а возвращённый корень поддерева
+          присоединяется к прежнему родителю. Поэтому после подъёма до <code>dummy_root_</code> высоты, баланс и
+          родительские указатели корректны во всём дереве.</p>
+
+        <h3>Лемма 3. <code>LowerBound</code> возвращает требуемый ключ</h3>
+        <p>Это непосредственно следует из доказанного инварианта его цикла.</p>
+
+        <h3>Теорема</h3>
+        <p>После любого префикса запросов AVL-дерево содержит ровно все различные фактически вставленные значения.
+          Каждый запрос <code>? x</code> возвращает минимальное из них, не меньшее <span
+            class="math-inline">\(x\)</span>, либо <code>-1</code>, если такого значения нет. Значит, вся
+          последовательность запросов обрабатывается корректно.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="height-title">
+        <p class="section-kicker">Оценка высоты</p>
+        <h2 id="height-title">Почему высота логарифмическая</h2>
+        <p>Пусть <span class="math-inline">\(N(h)\)</span> — минимальное число вершин в AVL-дереве высоты <span
+            class="math-inline">\(h\)</span>. Чтобы получить высоту <span class="math-inline">\(h\)</span> при разности
+          высот детей не более единицы, минимальные высоты детей должны быть <span
+            class="math-inline">\(h-1\)</span> и <span class="math-inline">\(h-2\)</span>. Поэтому</p>
+        <div class="math-display">\[
+          N(0)=0,
+          \qquad
+          N(1)=1,
+          \qquad
+          N(h)=1+N(h-1)+N(h-2).
+          \]</div>
+        <p>Отсюда</p>
+        <div class="math-display">\[
+          N(h)\ge F_{h+2}-1,
+          \]</div>
+        <p>где <span class="math-inline">\(F_k\)</span> — числа Фибоначчи. Поскольку <span
+            class="math-inline">\(F_k\)</span> растут экспоненциально, из <span
+            class="math-inline">\(n\ge N(h)\)</span> следует</p>
+        <div class="math-display">\[
+          h=O(\log(n+1)).
+          \]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка ресурсов</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Пусть в дереве находится <span class="math-inline">\(n\)</span> различных ключей.</p>
+        <ul>
+          <li><code>Insert</code> выполняет один спуск и один подъём, затрачивая <span
+              class="math-inline">\(O(1)\)</span> работы в каждой посещённой вершине:
+            <div class="math-display">\[
+              O(\log(n+1)).
+              \]</div>
+          </li>
+          <li><code>LowerBound</code> выполняет один спуск:
+            <div class="math-display">\[
+              O(\log(n+1)).
+              \]</div>
+          </li>
+          <li>дерево хранит одну вершину на каждый различный ключ:
+            <div class="math-display">\[
+              O(n)
+              \]</div>
+            памяти.</li>
+        </ul>
+        <p>Для <span class="math-inline">\(q\)</span> запросов в худшем случае</p>
+        <div class="math-display">\[
+          T(q)=O(q\log(q+1)),
+          \qquad
+          M(q)=O(q).
+          \]</div>
+        <p>Рекурсивный <code>Clear</code> использует <span class="math-inline">\(O(\log(n+1))\)</span> дополнительной
+          памяти стека, потому что глубина рекурсии равна высоте AVL-дерева.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="failure-modes-title">
+        <p class="section-kicker">История поиска</p>
+        <h2 id="failure-modes-title">Failure modes реализации</h2>
+        <p>В исходном post-Accepted разборе не выделен единственный главный тупик; зафиксировано несколько связанных
+          ошибок указателей и инвариантов.</p>
+
+        <h3>Несогласованное присоединение после поворота</h3>
+        <p>Поворот меняет корень поддерева. Если изменить только локальные <code>left_child</code> и
+          <code>right_child</code>, но не вернуть новый корень и не присоединить его к прежнему родителю, часть дерева
+          станет недостижимой или родительские связи разойдутся.</p>
+        <p>Безопасная схема:</p>
+        <ol>
+          <li>поворот возвращает новый корень поддерева;</li>
+          <li>вызывающий код заменяет соответствующего ребёнка прежнего родителя;</li>
+          <li>для каждого перенесённого ребёнка обновляется <code>parent</code>;</li>
+          <li>высоты пересчитываются снизу вверх.</li>
+        </ol>
+
+        <h3>Другие зафиксированные ошибки</h3>
+        <ul>
+          <li>сторона вставки определялась после перехода в <code>nullptr</code>;</li>
+          <li>при повороте могло потеряться промежуточное поддерево <span class="math-inline">\(B\)</span>;</li>
+          <li>знаки LR и RL путались относительно определения <span
+              class="math-inline">\(bf=h(left)-h(right)\)</span>;</li>
+          <li>вместо отдельного кандидата <code>LowerBound</code> использовался последний родитель;</li>
+          <li>высоты после поворота могли пересчитываться в неверном порядке;</li>
+          <li>удаление <code>Node</code> через <code>BaseNode*</code> требует виртуального деструктора базового класса.
+          </li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Признаки похожих задач</h2>
+        <p>AVL-дерево стоит рассматривать, когда:</p>
+        <ul>
+          <li>запросы действительно зависят от предыдущих ответов и должны обрабатываться онлайн;</li>
+          <li>требуется поддерживать изменяемое упорядоченное множество;</li>
+          <li>нужны операции <code>insert</code>, <code>find</code>, <code>lower_bound</code>,
+            <code>upper_bound</code>, predecessor или successor;</li>
+          <li>обычное BST может выродиться на специально подобранном порядке вставок;</li>
+          <li>требуется гарантированное, а не ожидаемое, <span class="math-inline">\(O(\log n)\)</span> на операцию;
+          </li>
+          <li>готовый <code>std::set</code> использовать нельзя или задача требует собственной реализации дерева.</li>
+        </ul>
+        <p>Близкие структуры:</p>
+        <ul>
+          <li>red-black tree — более слабая балансировка, обычно с меньшим числом поворотов;</li>
+          <li>treap — более простые <code>split</code>/<code>merge</code>, но ожидаемая, а не детерминированная,
+            логарифмическая высота;</li>
+          <li><code>std::set</code> — готовое сбалансированное дерево, если собственная реализация не является частью
+            задачи.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="changes-title">
+        <p class="section-kicker">Post-Accepted</p>
+        <h2 id="changes-title">Явно отмеченные содержательные изменения</h2>
+        <p>Ниже перечислены изменения относительно приложенного post-Accepted файла.</p>
+        <ol>
+          <li><strong>CORRECTION:</strong> <code>std::max</code> стандартно объявлен в <code>&lt;algorithm&gt;</code>,
+            а не в <code>&lt;iostream&gt;</code>. Компиляция только с <code>&lt;iostream&gt;</code> может работать
+            из-за транзитивных внутренних подключений конкретной реализации, но стандарт C++ этого не гарантирует.
+          </li>
+          <li><strong>CLARIFICATION:</strong> причина неприменимости обычного coordinate compression — не просто слово
+            «онлайн», а зависимость фактически вставляемого ключа от предыдущего ответа.</li>
+          <li><strong>PROOF FIX:</strong> инвариант <code>LowerBound</code> усилен: он учитывает не только посещённые
+            вершины, но и корректность отбрасывания целых поддеревьев.</li>
+          <li><strong>PROOF ADDITION:</strong> для одинарного и двойного поворотов явно выведены соотношения высот, из
+            которых следует восстановление AVL-инварианта.</li>
+          <li><strong>IMPLEMENTATION ADDITION:</strong> явно перечислены все изменения <code>parent</code>-указателей
+            и присоединение нового корня поддерева к прежнему родителю.</li>
+          <li><strong>FORMAT:</strong> полный исходный код удалён из учебной заметки; оставлены только локальные
+            фрагменты, необходимые для объяснения инвариантов и поворотов. Accepted-код должен быть доступен по
+            отдельной ссылке.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Accepted-код: <a
+              href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_4/Task_A/A.cpp"
+              download><code>A.cpp</code> — локальная копия</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и структуры
+              данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>

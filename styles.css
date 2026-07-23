@@ -79,6 +79,8 @@
 .entry-section a{color:var(--ink);text-underline-offset:3px}
 .entry-section a:hover{color:var(--accent)}
 .entry-section code,.path-diagram code{padding:2px 5px;border:1px solid #dedad0;border-radius:3px;background:#ece9e1;color:#3e3f3b;font:600 11px/1.6 Consolas,"Courier New",monospace;overflow-wrap:anywhere}
+.entry-section pre{max-width:100%;margin:16px 0;padding:16px 18px;overflow-x:auto;border:1px solid #dedad0;border-radius:3px;background:#f3f0e8;color:#3e3f3b;font:500 12px/1.6 Consolas,"Courier New",monospace;tab-size:2;-webkit-overflow-scrolling:touch}
+.entry-section pre code{padding:0;border:0;background:transparent;color:inherit;font:inherit;overflow-wrap:normal;white-space:pre}
 .math-inline,.entry-section .math-display{color:var(--ink);font-family:"MathJax_Newcm","Cambria Math","STIX Two Math","Source Serif 4","Times New Roman",serif;font-weight:400;letter-spacing:normal}
 .math-inline{display:inline;font-size:1.02em}
 .entry-section .math-display{max-width:100%;margin:20px 0 24px;padding:6px 0 8px;overflow-x:auto;font-size:clamp(16px,2vw,19px);line-height:1.6;text-align:center;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
