@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи D из контеста 4 первого семестра: заправки на трассах, lazy segment tree и композиция тегов.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача D — Заправки на трассах — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_4/">← Контест 4</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 4</p>
+      <h1>Задача D — Заправки на трассах</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-24">24 июля 2026</time></p>
+      <p class="study-lead">События сортируются по координате, а последовательность обновлений диапазона хранится в lazy segment tree как композиция преобразований.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_4/Task_D">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Основная техника — сортировка событий и lazy propagation; lazy-тег рассматривается как элемент моноида преобразований.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Краткое условие</h2>
+        <p>Есть трассы с номерами</p>
+        <div class="math-display">\[
+0,1,\ldots,h.
+\]</div>
+        <p>Длина каждой трассы равна <span class="math-inline">\(w\)</span>. Заправка описывается тройкой <span class="math-inline">\((x,l,r)\)</span>, где <span class="math-inline">\(x\)</span> — координата, а <span class="math-inline">\([l,r]\)</span> — включительный диапазон пересекаемых трасс.</p>
+        <p>Для каждой трассы требуется найти минимальный объём бака. Он равен максимальному расстоянию:</p>
+        <ul>
+          <li>от начала трассы до первой заправки;</li>
+          <li>между соседними заправками;</li>
+          <li>от последней заправки до конца трассы.</li>
+        </ul>
+        <p>Если заправок нет, ответ равен <span class="math-inline">\(w\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="naive-title">
+        <p class="section-kicker">Отправная точка</p>
+        <h2 id="naive-title">Наивное решение</h2>
+        <p>После сортировки заправок по координате <span class="math-inline">\(x\)</span> для каждой трассы достаточно хранить:</p>
+        <ul>
+          <li><code>last</code> — координату последней обработанной заправки;</li>
+          <li><code>answer</code> — максимальный завершённый промежуток.</li>
+        </ul>
+        <p>При обработке заправки в точке <span class="math-inline">\(x\)</span>:</p>
+        <div class="math-display">\[
+\text{answer}\leftarrow\max(\text{answer},x-\text{last}),
+\qquad
+\text{last}\leftarrow x.
+\]</div>
+        <p>Но обновление всех трасс из <span class="math-inline">\([l,r]\)</span> может затронуть <span class="math-inline">\(\Theta(h)\)</span> объектов, поэтому худшая оценка равна <span class="math-inline">\(O(nh)\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Подход</p>
+        <h2 id="observation-title">Ключевое наблюдение</h2>
+        <p>Состояния трасс различаются, но ко всем трассам диапазона применяется одно преобразование. Обозначим состояние одной трассы через <span class="math-inline">\((M,p)\)</span>, где <span class="math-inline">\(p\)</span> — последняя заправка, а <span class="math-inline">\(M\)</span> — максимальный завершённый промежуток.</p>
+        <p>Заправка в точке <span class="math-inline">\(x\)</span> действует так:</p>
+        <div class="math-display">\[
+(M,p)\longmapsto \bigl(\max(M,x-p),x\bigr).
+\]</div>
+        <p>Для последовательности <span class="math-inline">\(x_1\le x_2\le\ldots\le x_k\)</span> действие имеет вид</p>
+        <div class="math-display">\[
+(M,p)\longmapsto
+\left(
+\max\left(M,x_1-p,x_2-x_1,\ldots,x_k-x_{k-1}\right),
+x_k
+\right).
+\]</div>
+        <p>Всю последовательность можно сжать до тега <span class="math-inline">\((a,b,t)\)</span>:</p>
+        <ul>
+          <li><span class="math-inline">\(a=x_1\)</span> — первая заправка;</li>
+          <li><span class="math-inline">\(b=x_k\)</span> — последняя заправка;</li>
+          <li><span class="math-inline">\(t=\max_{2\le i\le k}(x_i-x_{i-1})\)</span> — максимальный внутренний промежуток.</li>
+        </ul>
+        <p>Тег действует на произвольное состояние по формуле</p>
+        <div class="math-display">\[
+(M,p)\longmapsto \bigl(\max(M,a-p,t),b\bigr).
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="composition-title">
+        <p class="section-kicker">Алгебра тегов</p>
+        <h2 id="composition-title">Композиция тегов</h2>
+        <p>Пусть <span class="math-inline">\(A=(a_1,b_1,t_1)\)</span> был обработан раньше <span class="math-inline">\(B=(a_2,b_2,t_2)\)</span>. Тогда композиция «сначала <span class="math-inline">\(A\)</span>, затем <span class="math-inline">\(B\)</span>» равна</p>
+        <div class="math-display">\[
+A*B=
+\left(
+a_1,
+b_2,
+\max(t_1,t_2,a_2-b_1)
+\right).
+\]</div>
+        <p>Величина <span class="math-inline">\(a_2-b_1\)</span> — промежуток между двумя группами.</p>
+        <h3>Почему формула верна</h3>
+        <div class="math-display">\[
+(M,p)
+\xrightarrow{A}
+\bigl(\max(M,a_1-p,t_1),b_1\bigr)
+\xrightarrow{B}
+\left(
+\max(M,a_1-p,t_1,a_2-b_1,t_2),
+b_2
+\right).
+\]</div>
+        <p>Это в точности действие объединённого тега.</p>
+        <h3>Нейтральный элемент</h3>
+        <p>Пустую последовательность кодируем тегом</p>
+        <div class="math-display">\[
+E=(-1,-1,-1).
+\]</div>
+        <p>Для него отдельно определяем <span class="math-inline">\(E*A=A\)</span> и <span class="math-inline">\(A*E=A\)</span>. Подставлять маркер в обычную формулу нельзя.</p>
+        <h3>Ассоциативность и порядок</h3>
+        <p>Операция <code>*</code> описывает композицию преобразований, поэтому она ассоциативна:</p>
+        <div class="math-display">\[
+(A*B)*C=A*(B*C).
+\]</div>
+        <p>Теги с операцией <code>*</code> и элементом <span class="math-inline">\(E\)</span> образуют моноид. Операция некоммутативна, поэтому хронологический порядок принципиален.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="lazy-title">
+        <p class="section-kicker">Структура данных</p>
+        <h2 id="lazy-title">Lazy propagation</h2>
+        <p>Вершина <span class="math-inline">\(v\)</span> отвечает за диапазон трасс <span class="math-inline">\(I_v\)</span>. Значение <code>lazy[v]</code> хранит в правильном хронологическом порядке композицию обновлений, которые полностью покрыли этот диапазон, но ещё не были переданы детям.</p>
+        <h3>Полное покрытие</h3>
+        <div class="math-display">\[
+\text{lazy}[v]\leftarrow \text{lazy}[v]*\text{newTag}.
+\]</div>
+        <p>Старый тег стоит слева, потому что применяется раньше нового.</p>
+        <h3>Частичное покрытие</h3>
+        <p>Перед спуском обязательно выполняется <code>Push</code>. Если у ребёнка хранится старый тег <span class="math-inline">\(C\)</span>, а у родителя — более поздний тег <span class="math-inline">\(A\)</span>, ребёнок должен получить</p>
+        <div class="math-display">\[
+C*A.
+\]</div>
+        <p>Если сначала добавить частичное обновление <span class="math-inline">\(B\)</span>, а потом протолкнуть родителя, получится неверный порядок <span class="math-inline">\(C*B*A\)</span> вместо <span class="math-inline">\(C*A*B\)</span>.</p>
+        <h3>Почему <code>Pull</code> не нужен</h3>
+        <p>Промежуточных запросов по диапазонам нет. Нужны только итоговые состояния листьев, поэтому агрегат вершины и пересчёт родителя по детям не требуются.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="answers-title">
+        <p class="section-kicker">Финализация</p>
+        <h2 id="answers-title">Получение ответов</h2>
+        <p>После всех обновлений один DFS проталкивает теги до листьев. Если итоговый тег трассы равен <span class="math-inline">\((a,b,t)\)</span>, ответ равен</p>
+        <div class="math-display">\[
+F=\max(a,t,w-b).
+\]</div>
+        <p>Здесь учитываются начальный, внутренний и конечный промежутки. Для тега <span class="math-inline">\(E\)</span> заправок нет, поэтому <span class="math-inline">\(F=w\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="correctness-title">Корректность алгоритма</h2>
+        <h3>Лемма 1. Тег содержит достаточно информации</h3>
+        <p>Первая новая заправка завершает промежуток длины <span class="math-inline">\(a-p\)</span>, максимум внутренних промежутков равен <span class="math-inline">\(t\)</span>, а последней заправкой становится <span class="math-inline">\(b\)</span>. Поэтому тег переводит состояние в <span class="math-inline">\(\bigl(\max(M,a-p,t),b\bigr)\)</span>; другие сведения о последовательности не влияют на результат.</p>
+        <h3>Лемма 2. Композиция тегов корректна</h3>
+        <p>В объединённой последовательности первая координата равна <span class="math-inline">\(a_1\)</span>, последняя — <span class="math-inline">\(b_2\)</span>, а максимальный внутренний промежуток является максимумом из <span class="math-inline">\(t_1\)</span>, <span class="math-inline">\(t_2\)</span> и промежутка между группами <span class="math-inline">\(a_2-b_1\)</span>.</p>
+        <h3>Лемма 3. Инвариант lazy propagation сохраняется</h3>
+        <p>При полном покрытии новый тег добавляется справа: <span class="math-inline">\(\text{old}*\text{new}\)</span>. При частичном покрытии дети сначала получают свою старую историю, затем более позднюю историю родителя. После сброса родителя рекурсивное обновление добавляется ещё позже.</p>
+        <h3>Теорема</h3>
+        <p>После финального DFS каждый лист содержит все и только те заправки, которые пересекают соответствующую трассу, в неубывающем порядке координаты. Тег правильно хранит первую, последнюю и максимальный внутренний промежуток, а формула <span class="math-inline">\(\max(a,t,w-b)\)</span> учитывает все промежутки без заправок. Поэтому найденный объём бака необходим и достаточен.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Сортировка занимает <span class="math-inline">\(O(n\log n)\)</span>, все range-update — <span class="math-inline">\(O(n\log(h+1))\)</span>, финальный DFS — <span class="math-inline">\(O(h)\)</span>.</p>
+        <div class="math-display">\[
+O\bigl(n\log n+n\log(h+1)+h\bigr).
+\]</div>
+        <p>Память:</p>
+        <div class="math-display">\[
+O(n+h).
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistake-title">
+        <p class="section-kicker">Разбор ошибки</p>
+        <h2 id="mistake-title">Количество трасс и границы дерева</h2>
+        <p>Трассы нумеруются от <span class="math-inline">\(0\)</span> до <span class="math-inline">\(h\)</span>, поэтому существует <span class="math-inline">\(h+1\)</span> трасса. Диапазоны <span class="math-inline">\([l,r]\)</span> уже нулевые, вычитать единицу не нужно.</p>
+        <p>Ошибочный код:</p>
+        <pre><code class="language-cpp">SegmentTree tree(h);</code></pre>
+        <p>Правильно:</p>
+        <pre><code class="language-cpp">SegmentTree tree(h + 1);</code></pre>
+        <p>Внутреннее дерево построено на включительном диапазоне <span class="math-inline">\([0,N_-1]\)</span>, поэтому обёртка вызывает</p>
+        <pre><code class="language-cpp">Update(1, 0, N_ - 1, ql, qr, item);</code></pre>
+        <p>Важно различать максимальный номер трассы <span class="math-inline">\(h\)</span>, количество трасс <span class="math-inline">\(h+1\)</span> и округлённое до степени двойки число листьев <span class="math-inline">\(N_\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Признаки похожих задач</h2>
+        <p>Подход стоит проверять, если:</p>
+        <ol>
+          <li>события можно отсортировать по времени или координате;</li>
+          <li>событие одинаково воздействует на диапазон объектов;</li>
+          <li>состояния объектов различаются, поэтому простое присваивание диапазону не подходит;</li>
+          <li>последовательность воздействий сжимается до малого набора параметров;</li>
+          <li>сжатые описания можно ассоциативно компоновать;</li>
+          <li>ответы нужны после всех обновлений или структура умеет поддерживать нужные агрегаты.</li>
+        </ol>
+        <blockquote>
+          <p>Представить range-update не как новое значение, а как преобразование. Затем найти компактное представление композиции преобразований и хранить его как lazy-тег.</p>
+        </blockquote>
+      </section>
+
+      <section class="entry-section" aria-labelledby="final-code">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="final-code">Финальный код</h2>
+        <pre><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+struct Item {
+  int a;
+  int b;
+  int t;
+
+  static Item Identity() { return {-1, -1, -1}; }
+
+  bool operator==(const Item&amp; rhs) const {
+    return a == rhs.a &amp;&amp; b == rhs.b &amp;&amp; t == rhs.t;
+  }
+};
+
+Item operator*(const Item&amp; lhs, const Item&amp; rhs) {
+  if (lhs == Item::Identity()) {
+    return rhs;
+  }
+
+  if (rhs == Item::Identity()) {
+    return lhs;
+  }
+
+  return {
+      lhs.a,
+      rhs.b,
+      std::max(std::max(lhs.t, rhs.t), rhs.a - lhs.b),
+  };
+}
+
+class SegmentTree {
+ public:
+  explicit SegmentTree(int size) : size_(size) {
+    while (N_ &lt; size_) {
+      N_ *= 2;
+    }
+    lazy_.assign(N_ * 2, Item::Identity());
+  }
+
+  void Update(int ql, int qr, const Item&amp; item) {
+    Update(1, 0, N_ - 1, ql, qr, item);
+  }
+
+  void PushAll() { PushAll(1, 0, N_ - 1); }
+
+  std::vector&lt;Item&gt; GetItems() const {
+    std::vector&lt;Item&gt; result(size_);
+
+    for (int i = 0; i &lt; size_; ++i) {
+      result[i] = lazy_[N_ + i];
+    }
+
+    return result;
+  }
+
+ private:
+  void Update(int v, int left, int right, int ql, int qr,
+              const Item&amp; item) {
+    if (right &lt; ql || qr &lt; left) {
+      return;
+    }
+
+    if (ql &lt;= left &amp;&amp; right &lt;= qr) {
+      Apply(v, item);
+      return;
+    }
+
+    Push(v, left, right);
+
+    int mid = left + (right - left) / 2;
+    Update(LeftChild(v), left, mid, ql, qr, item);
+    Update(RightChild(v), mid + 1, right, ql, qr, item);
+  }
+
+  void Apply(int v, const Item&amp; item) {
+    lazy_[v] = lazy_[v] * item;
+  }
+
+  void Push(int v, int left, int right) {
+    if (left == right || lazy_[v] == Item::Identity()) {
+      return;
+    }
+
+    Apply(LeftChild(v), lazy_[v]);
+    Apply(RightChild(v), lazy_[v]);
+    lazy_[v] = Item::Identity();
+  }
+
+  void PushAll(int v, int left, int right) {
+    if (left == right) {
+      return;
+    }
+
+    Push(v, left, right);
+
+    int mid = left + (right - left) / 2;
+    PushAll(LeftChild(v), left, mid);
+    PushAll(RightChild(v), mid + 1, right);
+  }
+
+  static int LeftChild(int v) { return 2 * v; }
+  static int RightChild(int v) { return 2 * v + 1; }
+
+  std::vector&lt;Item&gt; lazy_;
+  int N_{1};
+  int size_{};
+};
+
+struct GasStation {
+  int x;
+  int l;
+  int r;
+};
+
+bool operator&lt;(const GasStation&amp; lhs, const GasStation&amp; rhs) {
+  return lhs.x &lt; rhs.x;
+}
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  int n;
+  int h;
+  int w;
+  std::cin &gt;&gt; n &gt;&gt; h &gt;&gt; w;
+
+  std::vector&lt;GasStation&gt; stations(n);
+  for (int i = 0; i &lt; n; ++i) {
+    std::cin &gt;&gt; stations[i].x
+             &gt;&gt; stations[i].l
+             &gt;&gt; stations[i].r;
+  }
+
+  std::sort(stations.begin(), stations.end());
+
+  SegmentTree tree(h + 1);
+
+  for (const auto&amp; [x, l, r] : stations) {
+    tree.Update(l, r, {x, x, 0});
+  }
+
+  tree.PushAll();
+  std::vector&lt;Item&gt; result = tree.GetItems();
+
+  for (const auto&amp; [a, b, t] : result) {
+    if (a == -1) {
+      std::cout &lt;&lt; w &lt;&lt; '\n';
+    } else {
+      std::cout &lt;&lt; std::max(std::max(a, t), w - b) &lt;&lt; '\n';
+    }
+  }
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="summary-title">
+        <p class="section-kicker">Вывод</p>
+        <h2 id="summary-title">Итог</h2>
+        <p>Главная идея — хранить в lazy-теге не состояние трасс, а компактное преобразование их состояний. Ассоциативная композиция сохраняет хронологию событий и позволяет обновлять целые диапазоны за логарифмическое время.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="#final-code">финальный post-Accepted листинг на этой странице</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и структуры данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL only after it is supplied. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
