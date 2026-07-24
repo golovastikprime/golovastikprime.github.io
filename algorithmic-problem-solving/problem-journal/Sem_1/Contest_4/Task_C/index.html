@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи C из контеста 4 первого семестра: splay tree, split/merge и сумма на отрезке.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача C — Splay tree: сумма на отрезке — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_4/">← Контест 4</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 4</p>
+      <h1>Задача C — Splay tree: сумма на отрезке</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-24">24 июля 2026</time></p>
+      <p class="study-lead">Главная идея решения — хранить сумму поддерева и двумя <code>Split</code> изолировать ключи из требуемого диапазона.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_4/Task_C">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Все тесты пройдены.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Краткое условие</h2>
+        <p>Изначально множество целых чисел <span class="math-inline">\(S\)</span> пусто. Требуется обрабатывать два вида запросов:</p>
+        <ul>
+          <li><code>+ x</code> — добавить число <span class="math-inline">\(x\)</span> в множество; повторная вставка ничего не меняет;</li>
+          <li><code>? l r</code> — вывести сумму всех <span class="math-inline">\(x\in S\)</span>, для которых <span class="math-inline">\(l\le x\le r\)</span>.</li>
+        </ul>
+        <p>Если операция <code>+ x</code> идёт непосредственно после запроса суммы с ответом <span class="math-inline">\(y\)</span>, то фактически вставляется</p>
+        <div class="math-display">\[
+ (x+y)\bmod 10^9.
+\]</div>
+        <p>Поэтому операции необходимо обрабатывать online: значение следующей вставки может зависеть от уже вычисленного ответа.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Подход</p>
+        <h2 id="observation-title">Ключевое наблюдение</h2>
+        <p>В вершине бинарного дерева поиска можно хранить сумму всего её поддерева:</p>
+        <div class="math-display">\[
+\operatorname{sum}(v)
+=
+\operatorname{key}(v)
++\operatorname{sum}(v.left)
++\operatorname{sum}(v.right).
+\]</div>
+        <p>Тогда запрос суммы на отрезке сводится не к обходу всех подходящих вершин, а к выделению соответствующего поддерева двумя операциями <code>Split</code>.</p>
+        <p>Определим</p>
+        <div class="math-display">\[
+\operatorname{Split}(T,k)=(A,B),
+\]</div>
+        <p>где</p>
+        <div class="math-display">\[
+A=\{x\in T:x&lt;k\},
+\qquad
+B=\{x\in T:x\ge k\}.
+\]</div>
+        <p>Для запроса <span class="math-inline">\([l,r]\)</span>:</p>
+        <ol>
+          <li><span class="math-inline">\((A,BC)=\operatorname{Split}(T,l)\)</span>;</li>
+          <li><span class="math-inline">\((B,C)=\operatorname{Split}(BC,r+1)\)</span>;</li>
+          <li>теперь <span class="math-inline">\(B\)</span> содержит в точности ключи из <span class="math-inline">\([l,r]\)</span>;</li>
+          <li>ответ равен <span class="math-inline">\(\operatorname{sum}(B)\)</span>;</li>
+          <li>дерево восстанавливается:</li>
+        </ol>
+        <div class="math-display">\[
+T=\operatorname{Merge}\bigl(A,\operatorname{Merge}(B,C)\bigr).
+\]</div>
+        <p>Splay tree позволяет выполнять <code>Split</code> и <code>Merge</code> через подъём выбранной вершины в корень. Баланс явно не хранится: эффективность обеспечивается амортизированным анализом последовательности операций.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="stored-data-title">
+        <p class="section-kicker">Структура данных</p>
+        <h2 id="stored-data-title">Что хранится в вершине</h2>
+        <p>Для каждой настоящей вершины <span class="math-inline">\(v\)</span> хранятся:</p>
+        <ul>
+          <li><code>value</code> — ключ;</li>
+          <li><code>left_child</code>, <code>right_child</code> — дети;</li>
+          <li><code>parent</code> — родитель;</li>
+          <li><code>sum</code> — сумма ключей поддерева;</li>
+          <li><code>size</code> — число вершин в поддереве.</li>
+        </ul>
+        <p>Используется служебная вершина <code>dummy_root_</code>. Корень активного дерева хранится в <code>dummy_root_.left_child</code>.</p>
+        <h3>Основные инварианты</h3>
+        <h4>1. Инвариант BST</h4>
+        <p>Для каждой настоящей вершины <span class="math-inline">\(v\)</span>:</p>
+        <div class="math-display">\[
+\forall x\in v.left:\ x&lt;v.value,
+\qquad
+\forall y\in v.right:\ v.value&lt;y.
+\]</div>
+        <p>Неравенства строгие, потому что структура хранит множество, а не multiset.</p>
+        <h4>2. Инвариант агрегатов</h4>
+        <div class="math-display">\[
+\operatorname{size}(v)
+=
+1+\operatorname{size}(v.left)+\operatorname{size}(v.right),
+\]</div>
+        <div class="math-display">\[
+\operatorname{sum}(v)
+=
+v.value+\operatorname{sum}(v.left)+\operatorname{sum}(v.right).
+\]</div>
+        <p>Для <code>nullptr</code> обе величины считаются равными нулю.</p>
+        <p>После любого изменения дочернего указателя агрегаты соответствующей вершины нужно пересчитать. Одних обновлений, выполненных ранее во время поворотов, недостаточно.</p>
+        <h4>3. Инвариант активного дерева</h4>
+        <p>Перед вызовом <code>SplayRotate</code>:</p>
+        <pre><code class="language-cpp">dummy_root_.left_child == root;
+root == nullptr || root-&gt;parent == &amp;dummy_root_;</code></pre>
+        <p>Если после <code>Split</code> одновременно существуют несколько отдельных деревьев, то перед <code>splay</code> одного из них оно сначала делается активным с помощью <code>ActivateTree</code>.</p>
+        <h4>4. Инвариант родительских указателей</h4>
+        <p>Для каждого ребра <span class="math-inline">\(v\to u\)</span>:</p>
+        <pre><code class="language-cpp">u-&gt;parent == v</code></pre>
+        <p>Корни двух деревьев, возвращённых <code>Split</code>, не должны оставаться связанными ни дочерним, ни родительским указателем.</p>
+        <h4>5. Инвариант множества</h4>
+        <p>Каждый ключ присутствует не более одного раза. Если при вставке ключ уже найден, новая вершина не создаётся; найденная вершина только поднимается в корень.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="rotation-title">
+        <p class="section-kicker">Механика</p>
+        <h2 id="rotation-title">Обычный поворот</h2>
+        <h3>Правый поворот</h3>
+        <p>Пусть <span class="math-inline">\(v\)</span> — левый ребёнок <span class="math-inline">\(p\)</span>. Обозначим поддеревья:</p>
+        <div class="math-display">\[
+v.left=A,\qquad v.right=B,\qquad p.right=C.
+\]</div>
+        <p>До поворота порядок ключей имеет вид</p>
+        <div class="math-display">\[
+A&lt;v&lt;B&lt;p&lt;C.
+\]</div>
+        <p>После правого поворота:</p>
+        <div class="math-display">\[
+v.left=A,\qquad
+v.right=p,\qquad
+p.left=B,\qquad
+p.right=C.
+\]</div>
+        <p>Следовательно, порядок ключей остаётся</p>
+        <div class="math-display">\[
+A&lt;v&lt;B&lt;p&lt;C,
+\]</div>
+        <p>то есть инвариант BST сохраняется.</p>
+        <p>Помимо дочерних указателей необходимо:</p>
+        <ol>
+          <li>сделать <span class="math-inline">\(v\)</span> ребёнком прежнего родителя <span class="math-inline">\(p\)</span>;</li>
+          <li>установить <code>p-&gt;parent = v</code>;</li>
+          <li>если <span class="math-inline">\(B\ne\varnothing\)</span>, установить <code>B-&gt;parent = p</code>;</li>
+          <li>присоединить <span class="math-inline">\(v\)</span> к прежнему родителю <span class="math-inline">\(g\)</span> вершины <span class="math-inline">\(p\)</span>.</li>
+        </ol>
+        <p>После поворота <span class="math-inline">\(p\)</span> становится ребёнком <span class="math-inline">\(v\)</span>, поэтому агрегаты обновляются снизу вверх:</p>
+        <pre><code class="language-cpp">UpdateSize(p);
+UpdateSum(p);
+UpdateSize(v);
+UpdateSum(v);</code></pre>
+        <p>Если сначала пересчитать <span class="math-inline">\(v\)</span>, вычисление использует ещё не обновлённые агрегаты <span class="math-inline">\(p\)</span>.</p>
+        <h3>Левый поворот</h3>
+        <p>Левый поворот полностью симметричен. Если <span class="math-inline">\(v\)</span> — правый ребёнок <span class="math-inline">\(p\)</span>, то левое поддерево <span class="math-inline">\(v\)</span> переносится в <code>p-&gt;right_child</code>, после чего <span class="math-inline">\(p\)</span> становится левым ребёнком <span class="math-inline">\(v\)</span>.</p>
+        <p>Направление определяется положением поднимаемой вершины:</p>
+        <pre><code class="language-cpp">if (parent-&gt;left_child == v) {
+  RotateRight(v);
+} else {
+  RotateLeft(v);
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="splay-title">
+        <p class="section-kicker">Механика</p>
+        <h2 id="splay-title">Splay: подъём вершины в корень</h2>
+        <p>Пусть <span class="math-inline">\(v\)</span> — поднимаемая вершина, <span class="math-inline">\(p\)</span> — её родитель, <span class="math-inline">\(g\)</span> — родитель <span class="math-inline">\(p\)</span>.</p>
+        <h3>Zig</h3>
+        <p>Если <span class="math-inline">\(p\)</span> уже является корнем активного дерева, выполняется один поворот между <span class="math-inline">\(v\)</span> и <span class="math-inline">\(p\)</span>.</p>
+        <h3>Zig-zig</h3>
+        <p>Вершины <span class="math-inline">\(v\)</span> и <span class="math-inline">\(p\)</span> находятся с одной стороны от своих родителей:</p>
+        <ul>
+          <li>обе являются левыми детьми; или</li>
+          <li>обе являются правыми детьми.</li>
+        </ul>
+        <p>Сначала <span class="math-inline">\(p\)</span> поднимается над <span class="math-inline">\(g\)</span>, затем <span class="math-inline">\(v\)</span> поднимается над <span class="math-inline">\(p\)</span>:</p>
+        <pre><code class="language-cpp">Rotate(p);
+Rotate(v);</code></pre>
+        <h3>Zig-zag</h3>
+        <p>Вершины <span class="math-inline">\(v\)</span> и <span class="math-inline">\(p\)</span> находятся с разных сторон. Вершина <span class="math-inline">\(v\)</span> дважды поворачивается вверх:</p>
+        <pre><code class="language-cpp">Rotate(v);
+Rotate(v);</code></pre>
+        <p>После каждого случая глубина <span class="math-inline">\(v\)</span> уменьшается, а после завершения</p>
+        <pre><code class="language-cpp">v-&gt;parent == &amp;dummy_root_;</code></pre>
+        <p>и <code>dummy_root_.left_child == v</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="lower-bound-title">
+        <p class="section-kicker">Операция дерева</p>
+        <h2 id="lower-bound-title"><code>LowerBound</code></h2>
+        <p><code>LowerBound(key)</code> ищет вершину с минимальным ключом, не меньшим <code>key</code>.</p>
+        <p>Во время обычного спуска по BST поддерживается кандидат:</p>
+        <ul>
+          <li>если <code>current-&gt;value &gt;= key</code>, текущая вершина подходит, но слева может быть меньший подходящий ключ;</li>
+          <li>иначе ответ может находиться только справа.</li>
+        </ul>
+        <p>Если кандидат найден, <code>Split</code> поднимает его в корень. Если кандидата нет, все ключи меньше <code>key</code>; последняя посещённая вершина всё равно поднимается, чтобы сохранить splay-свойство доступа.</p>
+        <p>Важно: <code>dummy_root_</code> не является <code>Node</code>. Функцию <code>GetValue</code> можно вызывать только для настоящих вершин дерева.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="split-correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="split-correctness-title">Корректность <code>Split</code></h2>
+        <p>Рассмотрим</p>
+        <div class="math-display">\[
+(A,B)=\operatorname{Split}(T,key).
+\]</div>
+        <h3>Случай 1: <code>LowerBound(key)</code> существует</h3>
+        <p>Пусть</p>
+        <div class="math-display">\[
+v=\min\{x\in T:x\ge key\}.
+\]</div>
+        <p>После <code>SplayRotate(v)</code> вершина <span class="math-inline">\(v\)</span> находится в корне.</p>
+        <p>По инварианту BST все ключи левого поддерева меньше <span class="math-inline">\(v\)</span>. Среди них не может быть ключа <span class="math-inline">\(x\ge key\)</span>, иначе <span class="math-inline">\(x&lt;v\)</span> был бы меньшим подходящим кандидатом, что противоречит выбору <span class="math-inline">\(v\)</span>. Поэтому</p>
+        <div class="math-display">\[
+\forall x\in v.left:\ x&lt;key.
+\]</div>
+        <p>Вершина <span class="math-inline">\(v\)</span> и всё её правое поддерево имеют ключи не меньше <code>key</code>. Значит, после отсоединения <code>v-&gt;left_child</code> получаются именно требуемые множества:</p>
+        <div class="math-display">\[
+A=\{x:x&lt;key\},\qquad B=\{x:x\ge key\}.
+\]</div>
+        <p>После отсоединения:</p>
+        <ul>
+          <li><code>B-&gt;left_child</code> устанавливается в <code>nullptr</code>;</li>
+          <li>корень <span class="math-inline">\(A\)</span>, если он существует, получает родителя <code>&amp;dummy_root_</code>;</li>
+          <li><code>size</code> и <code>sum</code> корня <span class="math-inline">\(B\)</span> пересчитываются.</li>
+        </ul>
+        <h3>Случай 2: <code>LowerBound(key)</code> не существует</h3>
+        <p>Тогда для всех <span class="math-inline">\(x\in T\)</span> выполнено <span class="math-inline">\(x&lt;key\)</span>, поэтому</p>
+        <div class="math-display">\[
+\operatorname{Split}(T,key)=(T,\varnothing).
+\]</div>
+        <p>Активный корень <code>dummy_root_.left_child</code> обнуляется, поскольку правая часть, с которой должна работать следующая операция, пуста.</p>
+        <p>Следовательно, <code>Split</code> корректен в обоих случаях.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="merge-correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="merge-correctness-title">Корректность <code>Merge</code></h2>
+        <p>Операция</p>
+        <div class="math-display">\[
+\operatorname{Merge}(L,R)
+\]</div>
+        <p>вызывается при условии</p>
+        <div class="math-display">\[
+\forall x\in L,\ \forall y\in R:\ x&lt;y.
+\]</div>
+        <p>Если одно дерево пусто, результатом является второе дерево, которое сразу делается активным.</p>
+        <p>Пусть оба дерева непусты. Сначала активируется <span class="math-inline">\(L\)</span>, затем находится</p>
+        <div class="math-display">\[
+v=\max(L)
+\]</div>
+        <p>и поднимается в корень.</p>
+        <p>У <span class="math-inline">\(v\)</span> не может быть правого ребёнка: в <span class="math-inline">\(L\)</span> нет ключа больше максимума. Поэтому <span class="math-inline">\(R\)</span> можно целиком присоединить как правое поддерево <span class="math-inline">\(v\)</span>. По предусловию все ключи <span class="math-inline">\(R\)</span> больше <span class="math-inline">\(v\)</span>, следовательно, инвариант BST сохраняется.</p>
+        <p>После присоединения обязательно выполняются</p>
+        <pre><code class="language-cpp">UpdateSize(v);
+UpdateSum(v);</code></pre>
+        <p>поскольку сам указатель <code>v-&gt;right_child</code> был изменён уже после завершения <code>SplayRotate</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="insert-correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="insert-correctness-title">Корректность вставки</h2>
+        <p>Обычный спуск по BST находит:</p>
+        <ul>
+          <li>уже существующую вершину с таким ключом; или</li>
+          <li><code>nullptr</code> в единственной допустимой позиции для новой вершины.</li>
+        </ul>
+        <p>В первом случае множество не меняется, а найденная вершина поднимается в корень.</p>
+        <p>Во втором случае создаётся лист с</p>
+        <div class="math-display">\[
+\operatorname{size}=1,\qquad
+\operatorname{sum}=value,
+\]</div>
+        <p>после чего он присоединяется к найденному родителю и поднимается в корень. Повороты пересчитывают агрегаты снизу вверх, поэтому после завершения агрегаты всего дерева снова корректны.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="range-sum-correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="range-sum-correctness-title">Корректность запроса суммы</h2>
+        <p>После первого разделения</p>
+        <div class="math-display">\[
+(A,BC)=\operatorname{Split}(T,l)
+\]</div>
+        <p>имеем</p>
+        <div class="math-display">\[
+A=\{x:x&lt;l\},\qquad BC=\{x:x\ge l\}.
+\]</div>
+        <p>После второго разделения</p>
+        <div class="math-display">\[
+(B,C)=\operatorname{Split}(BC,r+1)
+\]</div>
+        <p>имеем</p>
+        <div class="math-display">\[
+B=\{x:l\le x&lt;r+1\}=\{x:l\le x\le r\},
+\]</div>
+        <div class="math-display">\[
+C=\{x:x&gt;r\}.
+\]</div>
+        <p>По инварианту агрегатов <code>GetSum(B)</code> равен сумме всех и только тех ключей, которые принадлежат <span class="math-inline">\([l,r]\)</span>.</p>
+        <p>Порядок между частями:</p>
+        <div class="math-display">\[
+\forall a\in A,\ \forall b\in B,\ \forall c\in C:
+\qquad a&lt;b&lt;c.
+\]</div>
+        <p>Поэтому оба последующих <code>Merge</code> допустимы и восстанавливают исходное множество. Следовательно, <code>RangeSum(left, right)</code> возвращает правильный ответ и не меняет множество хранимых ключей.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="online-transform-title">
+        <p class="section-kicker">Корректность</p>
+        <h2 id="online-transform-title">Online-преобразование вставки</h2>
+        <p>Одного значения последней суммы недостаточно: нужно помнить тип предыдущей операции.</p>
+        <p>В коде используется флаг <code>last_was_insert</code>:</p>
+        <ul>
+          <li>после <code>+</code> устанавливается <code>true</code>;</li>
+          <li>после <code>?</code> устанавливается <code>false</code>;</li>
+          <li>если при обработке <code>+</code> флаг равен <code>false</code>, вставляется <span class="math-inline">\((x+y)\bmod 10^9\)</span>;</li>
+          <li>иначе вставляется исходный <span class="math-inline">\(x\)</span>.</li>
+        </ul>
+        <p>Обновление этого флага является частью корректности алгоритма, а не технической деталью ввода.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Анализ</p>
+        <h2 id="complexity-title">Оценка сложности</h2>
+        <p>Один поворот работает за <span class="math-inline">\(O(1)\)</span>.</p>
+        <p>Один конкретный вызов <code>SplayRotate</code> в худшем случае может выполнить <span class="math-inline">\(O(n)\)</span> поворотов. Поэтому splay tree <strong>не гарантирует</strong> worst-case <span class="math-inline">\(O(\log n)\)</span> на каждую отдельную операцию.</p>
+        <p>По access lemma суммарная стоимость последовательности splay-операций логарифмична амортизированно. В частности:</p>
+        <ul>
+          <li><code>Insert</code> — <span class="math-inline">\(O(\log n)\)</span> амортизированно;</li>
+          <li><code>Split</code> — <span class="math-inline">\(O(\log n)\)</span> амортизированно;</li>
+          <li><code>Merge</code> — <span class="math-inline">\(O(\log n)\)</span> амортизированно;</li>
+          <li><code>RangeSum</code> использует константное число <code>Split</code> и <code>Merge</code>, поэтому также работает за <span class="math-inline">\(O(\log n)\)</span> амортизированно.</li>
+        </ul>
+        <p>Для <span class="math-inline">\(q\)</span> запросов:</p>
+        <div class="math-display">\[
+T(q)=O(q\log q)
+\]</div>
+        <p>амортизированно.</p>
+        <p>Память:</p>
+        <div class="math-display">\[
+O(n),
+\]</div>
+        <p>где <span class="math-inline">\(n\)</span> — число различных вставленных ключей. Рекурсивный <code>Clear</code> использует дополнительно <span class="math-inline">\(O(h)\)</span> стековой памяти, где <span class="math-inline">\(h\)</span> — текущая высота дерева.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistakes-title">
+        <p class="section-kicker">Разбор ошибок</p>
+        <h2 id="mistakes-title">Основные ошибки при реализации</h2>
+        <h3>1. Неверный выбор направления поворота</h3>
+        <p>Направление определяется положением <span class="math-inline">\(v\)</span> относительно родителя:</p>
+        <ul>
+          <li><span class="math-inline">\(v\)</span> слева — правый поворот;</li>
+          <li><span class="math-inline">\(v\)</span> справа — левый поворот.</li>
+        </ul>
+        <h3>2. Неправильный пересчёт после поворота</h3>
+        <p>После поворота сначала пересчитывается бывший родитель, затем новая вершина поддерева. Кроме того, <code>UpdateSum(v)</code> нельзя случайно заменить повторным <code>UpdateSize(v)</code>.</p>
+        <h3>3. Две части <code>Split</code> оставались связанными</h3>
+        <p>Недостаточно вернуть</p>
+        <pre><code class="language-cpp">{lower_bound-&gt;left_child, lower_bound}</code></pre>
+        <p>Нужно физически отсоединить левое поддерево и исправить его <code>parent</code>.</p>
+        <h3>4. Служебная вершина использовалась как пустое дерево</h3>
+        <p>Пустое дерево представляется только <code>nullptr</code>. Возврат <code>&amp;dummy_root_</code> как обычной вершины приводит к некорректному <code>static_cast&lt;Node*&gt;</code> и undefined behavior.</p>
+        <h3>5. Терялся инвариант активного дерева</h3>
+        <p>После <code>Split</code> поле <code>dummy_root_.left_child</code> могло указывать не на то дерево, над которым выполнялся следующий <code>splay</code>. Поэтому перед работой с отдельным деревом нужен <code>ActivateTree</code>, включая граничные случаи <code>Merge</code> с <code>nullptr</code>.</p>
+        <h3>6. Агрегаты не обновлялись после <code>Merge</code></h3>
+        <p>Повороты обновляют состояние до присоединения правого дерева. После</p>
+        <pre><code class="language-cpp">maximum-&gt;right_child = right_tree;</code></pre>
+        <p>структура снова изменилась, поэтому агрегаты корня нужно пересчитать ещё раз.</p>
+        <h3>7. Новая вершина создавалась внутри цикла поиска</h3>
+        <p>Сначала цикл должен полностью найти <code>nullptr</code>, и лишь затем можно присоединять новый лист. Иначе пустое дерево ничего не вставляет, а в непустом дереве можно перезаписать существующее поддерево.</p>
+        <h3>8. Несогласованные типы и имена функций</h3>
+        <p>Сигнатура определения <code>Insert</code> должна совпадать с объявлением, а обращение к ключу должно использовать существующую функцию <code>GetValue</code>.</p>
+        <h3>9. Не обновлялся тип последней операции</h3>
+        <p>Если <code>last_was_insert</code> никогда не менять, online-преобразование после запроса не выполняется. Это давало неверный ответ уже на примере:</p>
+        <pre><code class="language-text">4
++ 1
+? 0 2
++ 2
+? 2 2</code></pre>
+        <p>После первого ответа <span class="math-inline">\(y=1\)</span> должна вставиться <span class="math-inline">\(3\)</span>, а не <span class="math-inline">\(2\)</span>.</p>
+        <h3>Корневая причина большинства ошибок</h3>
+        <p>Структурная операция над деревом должна завершаться восстановлением трёх связанных инвариантов:</p>
+        <ol>
+          <li>корректны дочерние и родительские указатели;</li>
+          <li>корректен активный корень;</li>
+          <li>корректны агрегаты изменённых вершин.</li>
+        </ol>
+        <p>Проверка только формы BST недостаточна.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Как распознать похожую задачу</h2>
+        <p>Характерные признаки:</p>
+        <ul>
+          <li>поддерживается динамическое множество упорядоченных ключей;</li>
+          <li>запрос зависит от диапазона значений ключей, а не от времени их вставки;</li>
+          <li>нужно хранить агрегат поддерева: сумму, количество, минимум или другую ассоциативную величину;</li>
+          <li>диапазон удобно выделяется двумя разрезами по ключу;</li>
+          <li>после запроса части структуры нужно быстро соединить обратно;</li>
+          <li>операции должны обрабатываться online;</li>
+          <li>допустима амортизированная, а не обязательно worst-case гарантия.</li>
+        </ul>
+        <p>Общий паттерн:</p>
+        <div class="math-display">\[
+\text{augmented BST}
++\text{Split/Merge}
++\text{subtree aggregate}.
+\]</div>
+        <p>Близкие альтернативы:</p>
+        <ul>
+          <li>AVL/Red-Black tree с суммами поддеревьев;</li>
+          <li>randomized treap с <code>Split</code>/<code>Merge</code>;</li>
+          <li>динамическое дерево отрезков по большому диапазону координат.</li>
+        </ul>
+        <p>Splay tree особенно естественен, когда <code>Split</code> и <code>Merge</code> строятся через подъём граничной вершины в корень.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="final-code">
+        <p class="section-kicker">Post-Accepted</p>
+        <h2 id="final-code">Финальный код</h2>
+        <p>В приведённой ниже записи сделаны только технические правки, не меняющие принятый алгоритм: удалены неиспользуемые заголовки, явно подключён <code>&lt;utility&gt;</code>, а параметр <code>LowerBound</code> приведён к общему типу <code>Type</code>.</p>
+        <pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;utility&gt;
+
+class Splay {
+  using Type = long long;
+
+  struct BaseNode {
+    Type sum{0};
+    Type size{0};
+
+    BaseNode() = default;
+    virtual ~BaseNode() = default;
+    BaseNode(Type sum, Type size) : sum(sum), size(size) {}
+
+    BaseNode* parent = this;
+    BaseNode* left_child = nullptr;
+    BaseNode* right_child = nullptr;
+  };
+
+  struct Node : BaseNode {
+    explicit Node(Type value) : BaseNode(value, 1), value(value) {}
+
+    Type value;
+  };
+
+  static Type GetSum(BaseNode* v) {
+    if (v == nullptr) {
+      return 0;
+    }
+    return v-&gt;sum;
+  }
+
+  static Type GetSize(BaseNode* v) {
+    if (v == nullptr) {
+      return 0;
+    }
+    return v-&gt;size;
+  }
+
+  static Type GetValue(BaseNode* v) {
+    return static_cast&lt;Node*&gt;(v)-&gt;value;
+  }
+
+  static void UpdateSum(BaseNode* v) {
+    v-&gt;sum =
+        GetValue(v) + GetSum(v-&gt;left_child) + GetSum(v-&gt;right_child);
+  }
+
+  static void UpdateSize(BaseNode* v) {
+    v-&gt;size =
+        1 + GetSize(v-&gt;left_child) + GetSize(v-&gt;right_child);
+  }
+
+ public:
+  Splay() = default;
+
+  ~Splay() { Clear(dummy_root_.left_child); }
+
+  void Insert(Type value) {
+    BaseNode* current = dummy_root_.left_child;
+    BaseNode* parent = &amp;dummy_root_;
+    bool was_left = true;
+
+    while (current != nullptr) {
+      if (GetValue(current) == value) {
+        SplayRotate(current);
+        return;
+      }
+
+      parent = current;
+      if (GetValue(current) &lt; value) {
+        current = current-&gt;right_child;
+        was_left = false;
+      } else {
+        current = current-&gt;left_child;
+        was_left = true;
+      }
+    }
+
+    BaseNode* new_node = new Node(value);
+    new_node-&gt;parent = parent;
+
+    if (was_left) {
+      parent-&gt;left_child = new_node;
+    } else {
+      parent-&gt;right_child = new_node;
+    }
+
+    SplayRotate(new_node);
+  }
+
+  Type RangeSum(Type left, Type right) {
+    auto [a, bc] = Split(left);
+    auto [b, c] = Split(right + 1);
+
+    Type result = GetSum(b);
+
+    BaseNode* restored_bc = Merge(b, c);
+    Merge(a, restored_bc);
+
+    return result;
+  }
+
+ private:
+  BaseNode dummy_root_;
+
+  void Clear(BaseNode* v) {
+    if (v == nullptr) {
+      return;
+    }
+
+    Clear(v-&gt;left_child);
+    Clear(v-&gt;right_child);
+    delete v;
+  }
+
+  static void RotateRight(BaseNode* v) {
+    BaseNode* parent = v-&gt;parent;
+    BaseNode* right_child = v-&gt;right_child;
+
+    v-&gt;right_child = parent;
+    parent-&gt;left_child = right_child;
+    parent-&gt;parent = v;
+
+    if (right_child != nullptr) {
+      right_child-&gt;parent = parent;
+    }
+  }
+
+  static void RotateLeft(BaseNode* v) {
+    BaseNode* parent = v-&gt;parent;
+    BaseNode* left_child = v-&gt;left_child;
+
+    v-&gt;left_child = parent;
+    parent-&gt;right_child = left_child;
+    parent-&gt;parent = v;
+
+    if (left_child != nullptr) {
+      left_child-&gt;parent = parent;
+    }
+  }
+
+  static void Rotate(BaseNode* v) {
+    BaseNode* parent = v-&gt;parent;
+    BaseNode* granny = parent-&gt;parent;
+    bool was_left = granny-&gt;left_child == parent;
+
+    if (parent-&gt;left_child == v) {
+      RotateRight(v);
+    } else {
+      RotateLeft(v);
+    }
+
+    v-&gt;parent = granny;
+    if (was_left) {
+      granny-&gt;left_child = v;
+    } else {
+      granny-&gt;right_child = v;
+    }
+
+    UpdateSize(parent);
+    UpdateSum(parent);
+    UpdateSize(v);
+    UpdateSum(v);
+  }
+
+  void SplayRotate(BaseNode* v) {
+    while (v-&gt;parent != &amp;dummy_root_) {
+      BaseNode* parent = v-&gt;parent;
+      BaseNode* granny = parent-&gt;parent;
+
+      bool is_zig_zig =
+          (granny-&gt;left_child == parent &amp;&amp;
+           parent-&gt;left_child == v) ||
+          (granny-&gt;right_child == parent &amp;&amp;
+           parent-&gt;right_child == v);
+
+      if (granny == &amp;dummy_root_) {
+        Rotate(v);
+      } else if (is_zig_zig) {
+        Rotate(parent);
+        Rotate(v);
+      } else {
+        Rotate(v);
+        Rotate(v);
+      }
+    }
+  }
+
+  BaseNode* LowerBound(Type x) {
+    BaseNode* current = dummy_root_.left_child;
+    BaseNode* candidate = nullptr;
+    BaseNode* last = &amp;dummy_root_;
+
+    while (current != nullptr) {
+      last = current;
+
+      if (GetValue(current) &gt;= x) {
+        candidate = current;
+        current = current-&gt;left_child;
+      } else {
+        current = current-&gt;right_child;
+      }
+    }
+
+    SplayRotate(last);
+    return candidate;
+  }
+
+  static BaseNode* Maximum(BaseNode* v) {
+    if (v == nullptr) {
+      return nullptr;
+    }
+
+    while (v-&gt;right_child != nullptr) {
+      v = v-&gt;right_child;
+    }
+
+    return v;
+  }
+
+  std::pair&lt;BaseNode*, BaseNode*&gt; Split(Type key) {
+    BaseNode* lower_bound = LowerBound(key);
+
+    if (lower_bound == nullptr) {
+      BaseNode* left_tree = dummy_root_.left_child;
+      dummy_root_.left_child = nullptr;
+      return {left_tree, nullptr};
+    }
+
+    SplayRotate(lower_bound);
+
+    BaseNode* left_tree = lower_bound-&gt;left_child;
+    lower_bound-&gt;left_child = nullptr;
+
+    if (left_tree != nullptr) {
+      left_tree-&gt;parent = &amp;dummy_root_;
+    }
+
+    UpdateSize(lower_bound);
+    UpdateSum(lower_bound);
+
+    return {left_tree, lower_bound};
+  }
+
+  void ActivateTree(BaseNode* tree) {
+    dummy_root_.left_child = tree;
+
+    if (tree != nullptr) {
+      tree-&gt;parent = &amp;dummy_root_;
+    }
+  }
+
+  BaseNode* Merge(BaseNode* left_tree, BaseNode* right_tree) {
+    if (left_tree == nullptr) {
+      ActivateTree(right_tree);
+      return right_tree;
+    }
+
+    if (right_tree == nullptr) {
+      ActivateTree(left_tree);
+      return left_tree;
+    }
+
+    ActivateTree(left_tree);
+
+    BaseNode* maximum = Maximum(left_tree);
+    SplayRotate(maximum);
+
+    maximum-&gt;right_child = right_tree;
+    right_tree-&gt;parent = maximum;
+
+    UpdateSize(maximum);
+    UpdateSum(maximum);
+
+    return maximum;
+  }
+};
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  const long long cMod = 1'000'000'000LL;
+
+  int query_count;
+  std::cin &gt;&gt; query_count;
+
+  Splay tree;
+  bool last_was_insert = true;
+  long long last_sum = 0;
+
+  for (int i = 0; i &lt; query_count; ++i) {
+    char command;
+    std::cin &gt;&gt; command;
+
+    if (command == '+') {
+      long long x;
+      std::cin &gt;&gt; x;
+
+      if (!last_was_insert) {
+        x = (x + last_sum) % cMod;
+      }
+
+      tree.Insert(x);
+      last_was_insert = true;
+    } else if (command == '?') {
+      long long left;
+      long long right;
+      std::cin &gt;&gt; left &gt;&gt; right;
+
+      last_sum = tree.RangeSum(left, right);
+      std::cout &lt;&lt; last_sum &lt;&lt; '\n';
+      last_was_insert = false;
+    }
+  }
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="summary-title">
+        <p class="section-kicker">Вывод</p>
+        <h2 id="summary-title">Итог</h2>
+        <p>Главная идея решения — хранить сумму поддерева и двумя <code>Split</code> изолировать ключи из требуемого диапазона. Главная реализационная трудность — не сами повороты, а одновременное сохранение структуры, активного корня и агрегатов после каждой операции.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="#final-code">финальный post-Accepted листинг на этой странице</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и структуры данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL only after it is supplied. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>

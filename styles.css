@@ -74,6 +74,7 @@
 .entry-section:first-child{padding-top:0;border-top:0}
 .entry-section h2{margin-bottom:17px;font:700 30px/1.12 "Source Serif 4",serif;letter-spacing:-.025em}
 .entry-section h3{margin:24px 0 10px;font:700 20px/1.15 "Source Serif 4",serif}
+.entry-section h4{margin:18px 0 8px;font:700 15px/1.2 "Source Serif 4",serif}
 .entry-section p,.entry-section li{color:#565751;font-size:13px;line-height:1.75}
 .entry-section ul,.entry-section ol{padding-left:21px}
 .entry-section a{color:var(--ink);text-underline-offset:3px}
