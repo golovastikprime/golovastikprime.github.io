@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи B из контеста 1 второго семестра: размещение m колодцев, медианы, префиксные суммы и partition DP.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача B — Размещение m колодцев на прямой — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_2/Contest_1/">← Контест 1</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 2 · Контест 1</p>
+      <h1>Задача B — Размещение <span class="math-inline">\(m\)</span> колодцев на прямой</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-27">27 июля 2026</time></p>
+      <p class="study-lead">Непрерывные классы домов превращают задачу одномерного <span class="math-inline">\(k\)</span>-median в разбиение на сегменты с медианной стоимостью.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_2/Contest_1/Task_B">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Решение использует partition DP, медиану одного сегмента, префиксные суммы и восстановление границ.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Краткое условие</h2>
+        <p>На прямой расположены <span class="math-inline">\(n\)</span> домов с различными координатами</p>
+        <div class="math-display">\[
+x_0&lt;x_1&lt;\dots&lt;x_{n-1}.
+\]</div>
+        <p>Нужно выбрать ровно <span class="math-inline">\(m\)</span> координат домов для колодцев, минимизировать сумму расстояний до ближайшего колодца и восстановить выбранные координаты:</p>
+        <div class="math-display">\[
+\operatorname{cost}(Y)
+=
+\sum_{i=0}^{n-1}\min_{1\le t\le m}|x_i-y_t|.
+\]</div>
+        <p>По условию все арифметические значения помещаются в <code>int</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Подход</p>
+        <h2 id="observation-title">Ключевое наблюдение</h2>
+        <ul>
+          <li>дома одного колодца образуют непрерывный отрезок отсортированной последовательности;</li>
+          <li>оптимальная позиция колодца для отрезка — его медиана;</li>
+          <li>задача сводится к разбиению домов на <span class="math-inline">\(m\)</span> непустых сегментов.</li>
+        </ul>
+        <p>Искомое разбиение имеет вид</p>
+        <div class="math-display">\[
+0=j_0&lt;j_1&lt;\dots&lt;j_m=n.
+\]</div>
+        <p>Состояние динамики задаёт число использованных сегментов и длину обработанного префикса, а переход перебирает начало последнего сегмента.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="continuity-title">
+        <p class="section-kicker">Геометрия</p>
+        <h2 id="continuity-title">Почему классы домов непрерывны</h2>
+        <p>Для соседних колодцев <span class="math-inline">\(a&lt;b\)</span> дом не дальше от <span class="math-inline">\(a\)</span>, чем от <span class="math-inline">\(b\)</span>, тогда и только тогда, когда</p>
+        <div class="math-display">\[
+\begin{aligned}
+|x-a|&amp;\le |x-b|,\\
+(x-a)^2&amp;\le(x-b)^2,\\
+2(b-a)x&amp;\le(b-a)(a+b),
+\end{aligned}
+\qquad
+\boxed{x\le\frac{a+b}{2}}.
+\]</div>
+        <p>Середина между колодцами — единственная граница их зон. Для упорядоченных колодцев <span class="math-inline">\(y_1&lt;\dots&lt;y_m\)</span> зона внутреннего колодца <span class="math-inline">\(y_t\)</span> задаётся промежутком</p>
+        <div class="math-display">\[
+\left[
+\frac{y_{t-1}+y_t}{2},
+\frac{y_t+y_{t+1}}2
+\right].
+\]</div>
+        <p>Сравнения с соседями достаточно: любой более дальний колодец лежит за соответствующим соседом. Пересечение зоны с возрастающей последовательностью домов является непрерывным отрезком индексов. При равных расстояниях дом можно согласованно отнести к одному из соседей без изменения стоимости.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="equivalence-title">
+        <p class="section-kicker">Сведение</p>
+        <h2 id="equivalence-title">Эквивалентность разбиению</h2>
+        <p>Обозначим через <span class="math-inline">\(D\)</span> оптимальную стоимость разбиения на <span class="math-inline">\(m\)</span> непрерывных сегментов с оптимальным колодцем в каждом.</p>
+        <p>Из любого расположения колодцев границы Вороного дают непрерывное разбиение. Замена колодца каждого сегмента на его медиану не увеличивает стоимость, поэтому</p>
+        <div class="math-display">\[
+D\le\operatorname{OPT}.
+\]</div>
+        <p>Обратно, поставим колодец в медиане каждого сегмента оптимального разбиения. Каждый дом может выбрать медиану своего сегмента, а соседний более близкий колодец способен только уменьшить реальную стоимость:</p>
+        <div class="math-display">\[
+\operatorname{OPT}\le D.
+\]</div>
+        <p>Следовательно,</p>
+        <div class="math-display">\[
+\boxed{\operatorname{OPT}=D}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="segment-cost-title">
+        <p class="section-kicker">Локальная стоимость</p>
+        <h2 id="segment-cost-title">Стоимость одного сегмента</h2>
+        <p>Для пары <span class="math-inline">\(a\le b\)</span> и любой точки <span class="math-inline">\(z\)</span></p>
+        <div class="math-display">\[
+|a-z|+|b-z|\ge b-a,
+\]</div>
+        <p>причём равенство достигается при <span class="math-inline">\(z\in[a,b]\)</span>. Попарно сопоставляя крайние дома сегмента, получаем оптимальность медианы. В реализации выбирается левая медиана</p>
+        <div class="math-display">\[
+q=\left\lfloor\frac{l+r}{2}\right\rfloor.
+\]</div>
+        <h3>Префиксные суммы</h3>
+        <div class="math-display">\[
+P[0]=0,
+\qquad
+P[i]=\sum_{t=0}^{i-1}x_t,
+\qquad
+\operatorname{Sum}(l,r)=P[r+1]-P[l].
+\]</div>
+        <p>Разделяя расстояния слева и справа от <span class="math-inline">\(x_q\)</span>, получаем</p>
+        <div class="math-display">\[
+\boxed{
+C(l,r)
+=
+x_q(2q-l-r+1)
+-\operatorname{Sum}(l,q)
++\operatorname{Sum}(q+1,r)
+}.
+\]</div>
+        <p>Функция <code>sum(l, r)</code> возвращает ноль при <span class="math-inline">\(l&gt;r\)</span>. После preprocessing стоимость сегмента вычисляется за <span class="math-inline">\(O(1)\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="dp-title">
+        <p class="section-kicker">Динамика</p>
+        <h2 id="dp-title">Partition DP</h2>
+        <p>Определим</p>
+        <div class="math-display">\[
+dp[k][i]
+=
+\text{минимальная стоимость первых \(i\) домов при ровно \(k\) колодцах}.
+\]</div>
+        <h3>Базовые состояния</h3>
+        <div class="math-display">\[
+dp[0][0]=0,
+\qquad
+dp[0][i]=+\infty\ (i&gt;0),
+\qquad
+dp[k][0]=+\infty\ (k&gt;0).
+\]</div>
+        <p>Состояния <span class="math-inline">\(k&gt;i\)</span> невозможны. В коде сразу строится слой</p>
+        <div class="math-display">\[
+\boxed{dp[1][i]=C(0,i-1)}.
+\]</div>
+        <h3>Переход</h3>
+        <p>Если последний сегмент начинается с <span class="math-inline">\(j\)</span>, первые <span class="math-inline">\(j\)</span> домов обслуживаются <span class="math-inline">\(k-1\)</span> колодцами, а последний сегмент равен <span class="math-inline">\([j,i-1]\)</span>:</p>
+        <div class="math-display">\[
+\boxed{
+dp[k][i]
+=
+\min_{k-1\le j&lt;i}
+\left(dp[k-1][j]+C(j,i-1)\right)
+}.
+\]</div>
+        <p>Нижняя граница <span class="math-inline">\(j\ge k-1\)</span> оставляет хотя бы по одному дому в первых сегментах.</p>
+        <h3>Послойное вычисление</h3>
+        <p>Перед слоем <span class="math-inline">\(k\)</span> массив <code>prev</code> хранит <span class="math-inline">\(dp[k-1][i]\)</span>, а <code>cur</code> строит <span class="math-inline">\(dp[k][i]\)</span>. После слоя выполняется <code>std::swap(cur, prev)</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="correctness-title">Корректность динамики</h2>
+        <h3>Полнота перехода</h3>
+        <p>У любого разбиения первых <span class="math-inline">\(i\)</span> домов на <span class="math-inline">\(k\)</span> сегментов есть начало последнего сегмента <span class="math-inline">\(j\)</span>, где <span class="math-inline">\(k-1\le j&lt;i\)</span>. Значит, оно представлено одним из кандидатов.</p>
+        <h3>Допустимость кандидатов</h3>
+        <p>Оптимальное решение <span class="math-inline">\(dp[k-1][j]\)</span> и непустой сегмент <span class="math-inline">\([j,i-1]\)</span> образуют допустимое разбиение на <span class="math-inline">\(k\)</span> частей.</p>
+        <h3>Оптимальность</h3>
+        <p>Префикс оптимального разбиения до последней границы обязан иметь стоимость <span class="math-inline">\(dp[k-1][j]\)</span>; иначе его можно заменить более дешёвым. Стоимость оптимума присутствует среди кандидатов, а каждый кандидат допустим, поэтому минимум равен <span class="math-inline">\(dp[k][i]\)</span>.</p>
+        <p>По индукции <span class="math-inline">\(dp[m][n]\)</span> равно оптимальной стоимости разбиения, а по доказанной эквивалентности — оптимуму исходной задачи.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="reconstruction-title">
+        <p class="section-kicker">Восстановление</p>
+        <h2 id="reconstruction-title">Координаты колодцев</h2>
+        <p>При улучшении перехода сохраняется граница</p>
+        <div class="math-display">\[
+\operatorname{parent}[k][i]
+=
+\arg\min_{k-1\le j&lt;i}
+\left(dp[k-1][j]+C(j,i-1)\right).
+\]</div>
+        <p>Это именно начало последнего сегмента, а не позиция медианы. Для базового слоя <span class="math-inline">\(\operatorname{parent}[1][i]=0\)</span>.</p>
+        <p>Обратный проход начинается с <span class="math-inline">\(r=n,\ k=m\)</span>. На каждом шаге:</p>
+        <div class="math-display">\[
+l=\operatorname{parent}[k][r],
+\qquad
+p=l+\left\lfloor\frac{r-l-1}{2}\right\rfloor.
+\]</div>
+        <p>Колодец ставится в <span class="math-inline">\(x_p\)</span>, затем выполняется <span class="math-inline">\(r\gets l,\ k\gets k-1\)</span>. Сегменты находятся справа налево, поэтому ответ разворачивается перед выводом.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Состояний <span class="math-inline">\(O(mn)\)</span>, одно состояние перебирает до <span class="math-inline">\(O(n)\)</span> границ, а <span class="math-inline">\(C(l,r)\)</span> вычисляется за <span class="math-inline">\(O(1)\)</span>:</p>
+        <div class="math-display">\[
+\boxed{T(n,m)=O(mn^2)}.
+\]</div>
+        <p>Два слоя стоимости занимают <span class="math-inline">\(O(n)\)</span>, но таблица <code>parent</code> для восстановления требует</p>
+        <div class="math-display">\[
+\boxed{M(n,m)=O(mn)}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="example-title">
+        <p class="section-kicker">Пример</p>
+        <h2 id="example-title">Два колодца</h2>
+        <p>Для</p>
+        <div class="math-display">\[
+x=(0,2,3,9,10,11),
+\qquad m=2
+\]</div>
+        <p>разбиение <span class="math-inline">\((0,2,3)\mid(9,10,11)\)</span> выбирает медианы <span class="math-inline">\(2\)</span> и <span class="math-inline">\(10\)</span>. Стоимость равна</p>
+        <div class="math-display">\[
+(2+0+1)+(1+0+1)=5.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверки</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li><span class="math-inline">\(m=1\)</span>: один сегмент и медиана всех домов;</li>
+          <li><span class="math-inline">\(m=n\)</span>: по колодцу в каждом доме, стоимость нулевая;</li>
+          <li>сегмент из одного дома имеет нулевую стоимость;</li>
+          <li>при чётной длине обе медианы оптимальны, код выбирает левую;</li>
+          <li>строгое сравнение сохраняет первое из нескольких оптимальных разбиений;</li>
+          <li>пустая правая половина стоимости должна давать сумму ноль;</li>
+          <li>невозможные состояния <span class="math-inline">\(k&gt;i\)</span> не участвуют в переходах.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="final-code">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="final-code">Accepted-код</h2>
+        <pre><code class="language-cpp">#include &lt;climits&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+  std::cout.tie(nullptr);
+
+  int n;
+  int m;
+
+  std::cin &gt;&gt; n &gt;&gt; m;
+
+  std::vector&lt;int&gt; xs(n);
+  std::vector&lt;int&gt; pref_sum(n + 1, 0);
+  for (int i = 0; i &lt; n; ++i) {
+    std::cin &gt;&gt; xs[i];
+    pref_sum[i + 1] = pref_sum[i] + xs[i];
+  }
+
+  auto sum = [&amp;pref_sum](int l, int r) {
+    if (l &gt; r) {
+      return 0;
+    }
+
+    return pref_sum[r + 1] - pref_sum[l];
+  };
+
+  auto cost = [&amp;xs, &amp;sum](int l, int r) {
+    int q = l + ((r - l) / 2);
+    int x_q = xs[q];
+
+    return (x_q * ((2 * q) - l - r + 1)) - sum(l, q) +
+           sum(q + 1, r);
+  };
+
+  std::vector&lt;int&gt; cur(n + 1, INT_MAX);
+  std::vector&lt;int&gt; prev(n + 1, INT_MAX);
+  cur[0] = 0;
+
+  std::vector&lt;std::vector&lt;int&gt;&gt; pos(
+      m + 1, std::vector&lt;int&gt;(n + 1, -1));
+
+  for (int i = 1; i &lt;= n; ++i) {
+    prev[i] = cost(0, i - 1);
+    pos[1][i] = 0;
+  }
+
+  for (int k = 2; k &lt;= m; ++k) {
+    for (int i = 1; i &lt;= n; ++i) {
+      int min = INT_MAX;
+      for (int j = k - 1; j &lt; i; ++j) {
+        int value = prev[j] + cost(j, i - 1);
+        if (value &lt; min) {
+          pos[k][i] = j;
+          cur[i] = value;
+          min = value;
+        }
+      }
+    }
+    std::swap(cur, prev);
+  }
+
+  std::cout &lt;&lt; prev[n] &lt;&lt; '\n';
+
+  std::vector&lt;int&gt; ans;
+  ans.reserve(m);
+
+  int r = n;
+  int k = m;
+  while (r &gt; 0) {
+    int l = pos[k][r];
+    int p = l + ((r - l - 1) / 2);
+    ans.push_back(xs[p]);
+    r = l;
+    --k;
+  }
+
+  for (int i = static_cast&lt;int&gt;(ans.size()) - 1; i &gt;= 0; --i) {
+    std::cout &lt;&lt; ans[i] &lt;&lt; ' ';
+  }
+  std::cout &lt;&lt; '\n';
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistakes-title">
+        <p class="section-kicker">Разбор ошибок</p>
+        <h2 id="mistakes-title">Failure modes</h2>
+        <ol>
+          <li><strong>Структура классов.</strong> Без доказательства непрерывности задача выглядит как произвольная кластеризация; границы Вороного превращают её в DP по префиксам.</li>
+          <li><strong>Смысл состояния.</strong> <code>dp[k][i]</code> хранит стоимость первых <span class="math-inline">\(i\)</span> домов, а не границу или позицию колодца.</li>
+          <li><strong>Невозможные состояния.</strong> Они имеют стоимость <span class="math-inline">\(+\infty\)</span>, а не ноль.</li>
+          <li><strong>Восстановление.</strong> <code>parent[k][i]</code> хранит границу <span class="math-inline">\(j\)</span>; медиана сама не указывает на предыдущее состояние.</li>
+          <li><strong>Префиксные суммы.</strong> Для <span class="math-inline">\([l,r]\)</span> нужна формула <code>pref_sum[r + 1] - pref_sum[l]</code>; пустой отрезок определяется условием <code>l &gt; r</code>.</li>
+          <li><strong>Внутренний цикл.</strong> При переборе границ увеличивается <code>j</code>, а не <code>i</code>.</li>
+          <li><strong>Базовый слой.</strong> Для восстановления обязательно заполнить <code>pos[1][i] = 0</code>.</li>
+          <li><strong>Медиана полуоткрытого сегмента.</strong> Для <span class="math-inline">\([l,r)\)</span> индекс равен <code>l + ((r - l - 1) / 2)</code>.</li>
+          <li><strong>Вывод.</strong> Вектор содержит <span class="math-inline">\(m\)</span>, а не <span class="math-inline">\(n\)</span> координат; минимальная стоимость выводится отдельно до них.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Как распознать похожую задачу</h2>
+        <ul>
+          <li>объекты расположены на прямой и отсортированы;</li>
+          <li>нужно выбрать фиксированное число центров;</li>
+          <li>стоимость использует абсолютное расстояние;</li>
+          <li>оптимальные классы являются непрерывными;</li>
+          <li>представитель сегмента — медиана;</li>
+          <li>стоимость сегмента быстро вычисляется после preprocessing;</li>
+          <li>нужно восстановить границы или центры.</li>
+        </ul>
+        <div class="math-display">\[
+\text{порядок на прямой}
+\Longrightarrow
+\text{непрерывные классы}
+\Longrightarrow
+\text{медиана}
+\Longrightarrow
+C(l,r)
+\Longrightarrow
+\text{partition DP}.
+\]</div>
+        <p>Независимый выбор медиан не определяет границы сегментов. Greedy по крупнейшим разрывам не учитывает все расстояния внутри групп. Пересчёт стоимости сегмента циклом увеличил бы время до <span class="math-inline">\(O(mn^3)\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="summary-title">
+        <p class="section-kicker">Вывод</p>
+        <h2 id="summary-title">Итоговый шаблон</h2>
+        <ol>
+          <li>Упорядочить точки и доказать непрерывность классов.</li>
+          <li>Доказать оптимальность медианы одного сегмента.</li>
+          <li>Построить префиксные суммы и реализовать <span class="math-inline">\(C(l,r)\)</span> за <span class="math-inline">\(O(1)\)</span>.</li>
+          <li>Вычислить partition DP по числу сегментов и длине префикса.</li>
+          <li>Сохранять оптимальные границы и восстановить сегменты справа налево.</li>
+          <li>Поставить колодец в медиане каждого восстановленного сегмента.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="#final-code">Accepted-листинг на этой странице</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и структуры данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL only after it is supplied. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
