@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи G из контеста 1 второго семестра: подсчёт множеств враждующих чисел, динамика по максимуму и префиксные суммы.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача G — Множества враждующих чисел — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_2/Contest_1/">← Контест 1</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 2 · Контест 1</p>
+      <h1>Задача G — Множества враждующих чисел</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-28">28 июля 2026</time></p>
+      <p class="study-lead">Фиксация максимального элемента превращает попарное ограничение в верхнюю границу
+        для остатка, а префиксное состояние ускоряет подсчёт с кубического до квадратичного времени.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_2/Contest_1/Task_G">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Решение использует динамическое программирование по сумме и верхней
+          границе максимального элемента.</p>
+        <ul>
+          <li>время: <span class="math-inline">\(\Theta(n^2)\)</span>;</li>
+          <li>память: <span class="math-inline">\(\Theta(n^2)\)</span>;</li>
+          <li>тип значений: <code>long long</code>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Математическая формулировка</h2>
+        <p>Для натуральных чисел <span class="math-inline">\(a&lt;b\)</span></p>
+        <div class="math-display">\[
+a,b\text{ дружат}
+\iff
+b&lt;2a,
+\qquad
+a,b\text{ враждуют}
+\iff
+b\ge2a.
+\]</div>
+        <p>Нужно посчитать множества <span class="math-inline">\(A\)</span>, в которых любые два различных
+          элемента враждуют, а сумма равна заданному <span class="math-inline">\(n\)</span>:</p>
+        <div class="math-display">\[
+\sum_{a\in A}a=n,
+\qquad
+1\le n\le2000.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Наблюдение</p>
+        <h2 id="observation-title">Достаточно соседних элементов</h2>
+        <p>Пусть элементы множества упорядочены:</p>
+        <div class="math-display">\[
+m_1&lt;m_2&lt;\dots&lt;m_k.
+\]</div>
+        <p>Попарная вражда равносильна системе</p>
+        <div class="math-display">\[
+\boxed{m_{i+1}\ge2m_i}
+\qquad
+(1\le i&lt;k).
+\]</div>
+        <p>Необходимость очевидна для соседних пар. Обратно, при <span class="math-inline">\(i&lt;j\)</span>
+          имеем <span class="math-inline">\(m_j\ge m_{i+1}\ge2m_i\)</span>, поэтому любая пара тоже враждует.
+        </p>
+        <p>Если максимум множества равен <span class="math-inline">\(y\)</span>, после его удаления все
+          оставшиеся элементы не превосходят</p>
+        <div class="math-display">\[
+\left\lfloor\frac y2\right\rfloor.
+\]</div>
+        <p>Получается задача того же вида, но с меньшей суммой.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="initial-dp-title">
+        <p class="section-kicker">Первое состояние</p>
+        <h2 id="initial-dp-title">Подсчёт по точному максимуму</h2>
+        <p>Определим</p>
+        <div class="math-display">\[
+f(y,s)
+=
+\#\left\{
+A:
+\sum_{a\in A}a=s,\ 
+\max A=y,\ 
+A\text{ допустимо}
+\right\}.
+\]</div>
+        <p>После удаления максимума <span class="math-inline">\(y\)</span> максимум остатка должен быть не
+          больше <span class="math-inline">\(\lfloor y/2\rfloor\)</span>. Поэтому</p>
+        <div class="math-display">\[
+f(y,s)=
+\begin{cases}
+0,
+&amp;s&lt;y,\\[2mm]
+1,
+&amp;s=y,\\[2mm]
+\displaystyle
+\sum_{x=1}^{\lfloor y/2\rfloor}f(x,s-y),
+&amp;s&gt;y.
+\end{cases}
+\]</div>
+        <p>Случай <span class="math-inline">\(s=y\)</span> соответствует множеству <span
+            class="math-inline">\(\{y\}\)</span>. Ответ можно записать как</p>
+        <div class="math-display">\[
+\operatorname{Answer}(n)
+=
+\sum_{y=1}^{n}f(y,n).
+\]</div>
+        <p>Прямое суммирование перехода требует <span class="math-inline">\(O(n)\)</span> на каждое из <span
+            class="math-inline">\(O(n^2)\)</span> состояний, то есть <span
+            class="math-inline">\(O(n^3)\)</span> времени.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="prefix-title">
+        <p class="section-kicker">Оптимизация</p>
+        <h2 id="prefix-title">Префикс по максимуму</h2>
+        <p>Введём агрегированное состояние</p>
+        <div class="math-display">\[
+G(y,s)
+=
+\sum_{x=1}^{y}f(x,s).
+\]</div>
+        <p>Оно равно числу допустимых множеств суммы <span class="math-inline">\(s\)</span>, максимальный элемент
+          которых не превосходит <span class="math-inline">\(y\)</span>. Именно это значение хранит
+          <code>dp[y][s]</code>.</p>
+        <p>Разделим множества на не содержащие <span class="math-inline">\(y\)</span> и содержащие его:</p>
+        <div class="math-display">\[
+\boxed{
+G(y,s)=G(y-1,s)+
+\begin{cases}
+0,
+&amp;s&lt;y,\\[1mm]
+1,
+&amp;s=y,\\[1mm]
+G\left(\left\lfloor y/2\right\rfloor,s-y\right),
+&amp;s&gt;y.
+\end{cases}
+}
+\]</div>
+        <p>База и ответ:</p>
+        <div class="math-display">\[
+G(0,s)=0
+\quad(s\ge1),
+\qquad
+\boxed{\operatorname{Answer}(n)=G(n,n)}.
+\]</div>
+        <p>Ограничение на максимум <span class="math-inline">\(n\)</span> ничего не исключает: элемент множества
+          суммы <span class="math-inline">\(n\)</span> не может превосходить <span
+            class="math-inline">\(n\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="correctness-title">Биекция после удаления максимума</h2>
+        <p>Для случая <span class="math-inline">\(s&gt;y\)</span> рассмотрим отображение</p>
+        <div class="math-display">\[
+\Phi(A)=A\setminus\{y\}.
+\]</div>
+        <p>Если допустимое множество <span class="math-inline">\(A\)</span> суммы <span
+            class="math-inline">\(s\)</span> содержит максимум <span class="math-inline">\(y\)</span>, то
+          остаток:</p>
+        <ul>
+          <li>имеет сумму <span class="math-inline">\(s-y\)</span>;</li>
+          <li>остаётся допустимым;</li>
+          <li>содержит только элементы не больше <span
+              class="math-inline">\(\lfloor y/2\rfloor\)</span>.</li>
+        </ul>
+        <p>Значит, остаток учитывается в <span
+            class="math-inline">\(G(\lfloor y/2\rfloor,s-y)\)</span>.</p>
+        <p>Обратно, к любому множеству из этого состояния можно добавить <span class="math-inline">\(y\)</span>.
+          Для любого его элемента <span class="math-inline">\(z\le\lfloor y/2\rfloor\)</span>, следовательно
+          <span class="math-inline">\(y\ge2z\)</span>, и новый максимум враждует со всем остатком. Добавление и
+          удаление <span class="math-inline">\(y\)</span> взаимно обратны, поэтому переход считает множества
+          точно.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="order-title">
+        <p class="section-kicker">Вычисление</p>
+        <h2 id="order-title">Порядок заполнения</h2>
+        <p>Внешний цикл проходит по сумме, внутренний — по границе максимума:</p>
+        <pre><code>for s = 1..n:
+    for y = 1..n:</code></pre>
+        <p>Для вычисления <span class="math-inline">\(G(y,s)\)</span> нужны:</p>
+        <ul>
+          <li><span class="math-inline">\(G(y-1,s)\)</span>, уже вычисленное на предыдущей итерации внутреннего
+            цикла;</li>
+          <li><span class="math-inline">\(G(\lfloor y/2\rfloor,s-y)\)</span>, лежащее в строке меньшей суммы,
+            поскольку <span class="math-inline">\(s-y&lt;s\)</span>.</li>
+        </ul>
+        <h3>Инвариант циклов</h3>
+        <p>Перед обработкой суммы <span class="math-inline">\(s\)</span> корректно вычислены все <span
+            class="math-inline">\(G(y,t)\)</span> для <span class="math-inline">\(t&lt;s\)</span>. Перед парой
+          <span class="math-inline">\((y,s)\)</span> дополнительно готовы <span
+            class="math-inline">\(G(z,s)\)</span> для <span class="math-inline">\(z&lt;y\)</span>. Переход
+          читает только эти состояния и сохраняет инвариант.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="example-title">
+        <p class="section-kicker">Пример</p>
+        <h2 id="example-title">Сумма 5</h2>
+        <p>Для <span class="math-inline">\(n=5\)</span> подходят ровно два множества:</p>
+        <div class="math-display">\[
+\{5\},
+\qquad
+\{1,4\}.
+\]</div>
+        <p>В паре <span class="math-inline">\(\{1,4\}\)</span> выполняется <span
+            class="math-inline">\(4\ge2\cdot1\)</span>. Множество <span
+            class="math-inline">\(\{2,3\}\)</span> не подходит, поскольку <span
+            class="math-inline">\(3&lt;2\cdot2\)</span>. Поэтому</p>
+        <div class="math-display">\[
+\operatorname{Answer}(5)=2.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="final-code">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="final-code">Accepted-код</h2>
+        <pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+  std::cout.tie(nullptr);
+
+  int n;
+  std::cin &gt;&gt; n;
+
+  std::vector&lt;std::vector&lt;long long&gt;&gt; dp(
+      n + 1, std::vector&lt;long long&gt;(n + 1, 0));
+
+  auto f = [&amp;dp](int y, int s) -&gt; long long {
+    if (s == y) {
+      return 1;
+    }
+
+    if (s &lt; y) {
+      return 0;
+    }
+
+    return dp[y / 2][s - y];
+  };
+
+  for (int s = 1; s &lt;= n; ++s) {
+    for (int y = 1; y &lt;= n; ++y) {
+      dp[y][s] = dp[y - 1][s] + f(y, s);
+    }
+  }
+
+  std::cout &lt;&lt; dp[n][n];
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="type-title">
+        <p class="section-kicker">Тип данных</p>
+        <h2 id="type-title">Почему нужен <code>long long</code></h2>
+        <p>При верхней границе входа ответ уже не помещается в 32-битный знаковый тип:</p>
+        <div class="math-display">\[
+\operatorname{Answer}(2000)
+=
+3\,364\,745\,671
+&gt;
+2\,147\,483\,647
+=
+\texttt{INT\_MAX}.
+\]</div>
+        <p>Использование <code>int</code> приводит к signed integer overflow, поэтому вся таблица хранится в
+          <code>long long</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Таблица содержит <span class="math-inline">\((n+1)^2\)</span> ячеек, каждое состояние вычисляется за
+          константное время:</p>
+        <div class="math-display">\[
+\boxed{T(n)=\Theta(n^2)},
+\qquad
+\boxed{W(n)=\Theta(n^2)}.
+\]</div>
+        <p>При <span class="math-inline">\(n=2000\)</span> значения <code>long long</code> занимают примерно 32
+          МБ без небольших накладных расходов контейнеров.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistakes-title">
+        <p class="section-kicker">Разбор ошибок</p>
+        <h2 id="mistakes-title">Ошибки и тупики</h2>
+        <ol>
+          <li><strong>Неравенство в обратную сторону.</strong> Верно <span
+              class="math-inline">\(b\ge2a\)</span> для <span class="math-inline">\(a&lt;b\)</span>. Множество
+            <span class="math-inline">\(\{2,3\}\)</span> опровергает условие <span
+              class="math-inline">\(2a\ge b\)</span>: оно выполняется, хотя числа дружат.</li>
+          <li><strong>Интервалы между степенями двойки.</strong> Принадлежность соседним интервалам не гарантирует
+            вражду: <span class="math-inline">\(3\in[2,4)\)</span> и <span
+              class="math-inline">\(4\in[4,8)\)</span>, но <span
+              class="math-inline">\(4&lt;2\cdot3\)</span>.</li>
+          <li><strong>Только двоичное разложение.</strong> Оно даёт одно представление, но не считает все
+            множества. Для пяти кроме <span class="math-inline">\(\{1,4\}\)</span> существует <span
+              class="math-inline">\(\{5\}\)</span>.</li>
+          <li><strong>Кубический переход.</strong> Прямое суммирование по всем меньшим максимумам занимает <span
+              class="math-inline">\(O(n)\)</span> на состояние. Префиксное <span
+              class="math-inline">\(G(y,s)\)</span> заменяет сумму одним обращением.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Как распознать паттерн</h2>
+        <ul>
+          <li>у каждого подсчитываемого объекта есть единственный максимум;</li>
+          <li>после удаления максимума получается объект того же типа;</li>
+          <li>новый максимум задаёт верхнюю границу для остальных элементов;</li>
+          <li>переход суммирует состояния по всем допустимым максимумам;</li>
+          <li>эту сумму можно хранить как отдельное префиксное состояние.</li>
+        </ul>
+        <div class="math-display">\[
+\text{зафиксировать максимум}
+\Longrightarrow
+\text{удалить максимум}
+\Longrightarrow
+\text{ограничить остаток}
+\Longrightarrow
+\text{ускорить сумму префиксом}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="summary-title">
+        <p class="section-kicker">Вывод</p>
+        <h2 id="summary-title">Главный итог</h2>
+        <p>В состоянии нужны текущая сумма и верхняя граница максимального элемента. Удаление максимума <span
+            class="math-inline">\(y\)</span> уменьшает сумму на <span class="math-inline">\(y\)</span> и
+          ограничивает остаток значением <span class="math-inline">\(\lfloor y/2\rfloor\)</span>. Префиксное
+          состояние <span class="math-inline">\(G(y,s)\)</span> сразу агрегирует все возможные максимумы и
+          снижает сложность с <span class="math-inline">\(O(n^3)\)</span> до <span
+            class="math-inline">\(\Theta(n^2)\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="#final-code">Accepted-листинг на этой странице</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и
+              структуры данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the official problem title and URL only after they are supplied. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
