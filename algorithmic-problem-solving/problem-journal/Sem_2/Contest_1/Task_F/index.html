@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи F из контеста 1 второго семестра: цветной рюкзак, динамическое программирование по группам и два слоя DP.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача F — Цветной рюкзак — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_2/Contest_1/">← Контест 1</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 2 · Контест 1</p>
+      <h1>Задача F — Цветной рюкзак</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-27">27 июля 2026</time></p>
+      <p class="study-lead">Группировка предметов по цветам устраняет экспоненциальную маску и превращает
+        задачу в group knapsack с одним слоем DP на каждый цвет.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_2/Contest_1/Task_F">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Решение использует динамическое программирование по цветовым группам и
+          хранит только два слоя по вместимости.</p>
+        <ul>
+          <li>время: <span class="math-inline">\(O(nm)\)</span>;</li>
+          <li>память DP: <span class="math-inline">\(O(m)\)</span>;</li>
+          <li>полная память: <span class="math-inline">\(O(n+m)\)</span>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Краткое условие</h2>
+        <p>Даны <span class="math-inline">\(n\)</span> предметов. У предмета <span
+            class="math-inline">\(x\)</span> известны вес <span class="math-inline">\(w_x\)</span>, стоимость
+          <span class="math-inline">\(c_x\)</span> и цвет <span class="math-inline">\(f_x\)</span>. Нужно выбрать
+          набор суммарного веса не более <span class="math-inline">\(m\)</span>, в котором цвета попарно
+          различны, и максимизировать</p>
+        <div class="math-display">\[
+\sum_{x\in S}c_x
+\qquad\text{при}\qquad
+\sum_{x\in S}w_x\le m.
+\]</div>
+        <p>Ограничения:</p>
+        <div class="math-display">\[
+1\le g\le n\le300,
+\qquad
+1\le m\le10^4.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mask-title">
+        <p class="section-kicker">Неудачная идея</p>
+        <h2 id="mask-title">Почему маска цветов не подходит</h2>
+        <p>Первоначальное состояние имело вид</p>
+        <div class="math-display">\[
+F(k,s,b),
+\]</div>
+        <p>где <span class="math-inline">\(k\)</span> — число обработанных предметов, <span
+            class="math-inline">\(s\)</span> — вместимость, а <span class="math-inline">\(b\)</span> — маска
+          использованных цветов. Состояние корректно хранит ограничение, но даёт <span
+            class="math-inline">\(2^g\)</span> масок и сложность порядка</p>
+        <div class="math-display">\[
+O(nm2^g),
+\]</div>
+        <p>что неприемлемо при <span class="math-inline">\(g\le300\)</span>. Маска нужна лишь пока в будущем
+          может встретиться предмет уже использованного цвета. Значит, менять следует не состояние, а порядок
+          обработки.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Подход</p>
+        <h2 id="observation-title">Один цвет — один этап DP</h2>
+        <p>Разобьём предметы на классы одинакового цвета:</p>
+        <div class="math-display">\[
+x\sim y
+\quad\Longleftrightarrow\quad
+f_x=f_y,
+\qquad
+C_1,\ldots,C_g.
+\]</div>
+        <p>Если обработать сразу весь класс <span class="math-inline">\(C_t\)</span>, к этому цвету больше не
+          придётся возвращаться. Поэтому цвет становится этапом динамики, а маска исчезает.</p>
+        <p>Это частный случай <strong>group knapsack</strong>, или <strong>multiple-choice knapsack</strong>:
+          из каждой группы разрешено выбрать не более одного элемента.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="dp-title">
+        <p class="section-kicker">Динамика</p>
+        <h2 id="dp-title">Состояние и переход</h2>
+        <p>Определим <span class="math-inline">\(dp[t][s]\)</span> как максимальную стоимость набора из первых
+          <span class="math-inline">\(t\)</span> цветовых классов с суммарным весом не более <span
+            class="math-inline">\(s\)</span>.</p>
+        <h3>База</h3>
+        <div class="math-display">\[
+dp[0][s]=0
+\qquad
+\text{для всех }0\le s\le m.
+\]</div>
+        <p>До обработки цветов доступен только пустой набор.</p>
+        <h3>Переход</h3>
+        <p>Для очередного класса можно не брать ничего либо выбрать ровно один предмет:</p>
+        <div class="math-display">\[
+\boxed{
+dp[t][s]
+=
+\max\left(
+dp[t-1][s],
+\max_{\substack{x\in C_t\\w_x\le s}}
+\left(dp[t-1][s-w_x]+c_x\right)
+\right)
+}.
+\]</div>
+        <p>Все кандидаты читаются исключительно из слоя <span class="math-inline">\(t-1\)</span>. Если
+          использовать уже обновлённые значения слоя <span class="math-inline">\(t\)</span>, один цвет можно
+          будет выбрать несколько раз.</p>
+        <h3>Ответ</h3>
+        <div class="math-display">\[
+\boxed{dp[g][m]}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="correctness-title">Корректность перехода</h2>
+        <p>Докажем по индукции по <span class="math-inline">\(t\)</span>, что <span
+            class="math-inline">\(dp[t][s]\)</span> равно оптимальной стоимости допустимого набора из первых
+          <span class="math-inline">\(t\)</span> классов веса не более <span class="math-inline">\(s\)</span>.
+        </p>
+        <h3>База</h3>
+        <p>При <span class="math-inline">\(t=0\)</span> единственный допустимый набор пуст, поэтому его стоимость
+          равна нулю для любой вместимости.</p>
+        <h3>Индукционный переход</h3>
+        <p>Рассмотрим оптимальный набор для первых <span class="math-inline">\(t\)</span> классов.</p>
+        <ul>
+          <li>Если из <span class="math-inline">\(C_t\)</span> ничего не выбрано, его стоимость не превосходит
+            <span class="math-inline">\(dp[t-1][s]\)</span>.</li>
+          <li>Если выбран предмет <span class="math-inline">\(x\in C_t\)</span>, после его удаления остаётся
+            допустимый набор из предыдущих классов веса не более <span class="math-inline">\(s-w_x\)</span>.
+            Его стоимость не превосходит <span class="math-inline">\(dp[t-1][s-w_x]\)</span>.</li>
+        </ul>
+        <p>Переход перебирает оба случая и все допустимые предметы текущего цвета. Обратно, каждый его кандидат
+          задаёт допустимый набор: решение предыдущих классов либо остаётся без изменения, либо дополняется одним
+          предметом нового цвета. Значит, переход не пропускает оптимум и не создаёт недопустимых решений.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="memory-title">
+        <p class="section-kicker">Оптимизация</p>
+        <h2 id="memory-title">Два слоя памяти</h2>
+        <p>Слой <span class="math-inline">\(dp[t]\)</span> зависит только от <span
+            class="math-inline">\(dp[t-1]\)</span>, поэтому достаточно двух массивов:</p>
+        <ul>
+          <li><code>prev[s]</code> — ответ после уже обработанных цветов;</li>
+          <li><code>cur[s]</code> — ответ после добавления текущего цвета.</li>
+        </ul>
+        <p>Сначала весь массив <code>cur</code> вычисляется только из <code>prev</code>, затем один раз
+          выполняется</p>
+        <pre><code class="language-cpp">std::swap(prev, cur);</code></pre>
+        <p>Граница слоя проходит по цветовому классу, а не по предмету или вместимости.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="final-code">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="final-code">Accepted-код</h2>
+        <pre><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;iostream&gt;
+#include &lt;utility&gt;
+#include &lt;vector&gt;
+
+struct Item {
+  int cost;
+  int weight;
+};
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+  std::cout.tie(nullptr);
+
+  int n;
+  int g;
+  int m;
+  std::cin &gt;&gt; n &gt;&gt; g &gt;&gt; m;
+
+  std::vector&lt;std::vector&lt;Item&gt;&gt; classes(g);
+  for (int i = 0; i &lt; n; ++i) {
+    int weight;
+    int cost;
+    int color;
+    std::cin &gt;&gt; weight &gt;&gt; cost &gt;&gt; color;
+    classes[color - 1].push_back({cost, weight});
+  }
+
+  std::vector&lt;int&gt; prev(m + 1, 0);
+  std::vector&lt;int&gt; cur(m + 1, 0);
+
+  for (const auto&amp; color_class : classes) {
+    for (int capacity = 0; capacity &lt;= m; ++capacity) {
+      cur[capacity] = prev[capacity];
+
+      for (const Item&amp; item : color_class) {
+        if (item.weight &lt;= capacity) {
+          cur[capacity] =
+              std::max(cur[capacity],
+                       prev[capacity - item.weight] + item.cost);
+        }
+      }
+    }
+
+    std::swap(prev, cur);
+  }
+
+  std::cout &lt;&lt; prev[m];
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Для каждого класса перебираются все вместимости и все предметы этого класса:</p>
+        <div class="math-display">\[
+\sum_{t=1}^{g}O\bigl(m(1+|C_t|)\bigr)
+=O(gm)+O\left(m\sum_{t=1}^{g}|C_t|\right).
+\]</div>
+        <p>Поскольку <span class="math-inline">\(\sum|C_t|=n\)</span> и <span
+            class="math-inline">\(g\le n\)</span>, получаем</p>
+        <div class="math-display">\[
+\boxed{T(n,m)=O(nm)}.
+\]</div>
+        <p>Два слоя DP занимают <span class="math-inline">\(O(m)\)</span>, а хранение предметов по классам —
+          <span class="math-inline">\(O(n+g)\)</span>:</p>
+        <div class="math-display">\[
+\boxed{M(n,m)=O(n+g+m)=O(n+m)}.
+\]</div>
+        <p>Переполнение <code>int</code> невозможно при указанных ограничениях: из <span
+            class="math-inline">\(c_i\le w_i\)</span> следует <span
+            class="math-inline">\(\sum c_i\le\sum w_i\le m\le10^4\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistakes-title">
+        <p class="section-kicker">Разбор ошибок</p>
+        <h2 id="mistakes-title">Failure modes</h2>
+        <ol>
+          <li><strong>Экспоненциальная маска цветов.</strong> Ограничение хранилось явно, хотя его можно устранить
+            порядком обработки. Исправление — объединить предметы одного цвета и сделать класс этапом DP.</li>
+          <li><strong>Потерянная стоимость.</strong> В переходе использовалось <span
+              class="math-inline">\(dp[t-1][s-w_x]\)</span> без слагаемого <span
+              class="math-inline">\(c_x\)</span>. На одном предмете веса и стоимости <span
+              class="math-inline">\(1\)</span> это даёт ноль вместо единицы.</li>
+          <li><strong>Перепутанные <code>cost</code> и <code>weight</code>.</strong> Structured binding не
+            соответствовал порядку полей структуры. Явные обращения <code>item.weight</code> и
+            <code>item.cost</code> устраняют зависимость от порядка полей.</li>
+          <li><strong>Неверный порядок циклов и ранний <code>swap</code>.</strong> Обновлённое значение могло
+            повторно использоваться внутри того же цвета. Новый слой нужно полностью вычислить из старого, а
+            массивы менять местами только после завершения класса.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="invariant-title">
+        <p class="section-kicker">Самопроверка</p>
+        <h2 id="invariant-title">Инвариант реализации</h2>
+        <blockquote>
+          <p><code>prev[s]</code> хранит оптимальную стоимость допустимого набора из всех уже обработанных
+            цветовых классов с суммарным весом не более <code>s</code>.</p>
+        </blockquote>
+        <p>Во время обработки класса все чтения идут из <code>prev</code>, поэтому кандидат ещё не содержит
+          предмет текущего цвета. Добавление одного <code>item</code> сохраняет ограничение «не более одного
+          предмета каждого цвета». После вычисления всего <code>cur</code> и обмена массивов инвариант
+          выполняется уже для расширенного множества классов.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Как распознать group knapsack</h2>
+        <ul>
+          <li>объекты разбиты на независимые группы;</li>
+          <li>из каждой группы разрешено выбрать не более одного объекта;</li>
+          <li>есть общее ограничение на сумму весов;</li>
+          <li>целевая функция складывает стоимости;</li>
+          <li>вместимость достаточно мала для DP по весу.</li>
+        </ul>
+        <p>Полезный вопрос:</p>
+        <blockquote>
+          <p>Можно ли выбрать порядок обработки, после которого уже обработанное ограничение больше никогда не
+            придётся проверять явно?</p>
+        </blockquote>
+        <p>Битовая маска здесь экспоненциальна. Обычный 0/1-рюкзак запрещает повтор одного предмета, но позволяет
+          взять два разных предмета одного цвета. Жадный выбор лучшего предмета каждого цвета не учитывает
+          сочетания весов между группами.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="summary-title">
+        <p class="section-kicker">Вывод</p>
+        <h2 id="summary-title">Итоговый шаблон</h2>
+        <div class="math-display">\[
+\text{предметы}
+\Longrightarrow
+\text{классы одинакового цвета}
+\Longrightarrow
+\text{один слой DP на один класс}.
+\]</div>
+        <p>Главная идея — не усложнять состояние, а изменить порядок обработки. Это устраняет множество
+          использованных цветов из состояния и сводит задачу к <span class="math-inline">\(O(nm)\)</span>
+          времени и <span class="math-inline">\(O(m)\)</span> памяти для динамики.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="#final-code">Accepted-листинг на этой странице</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и
+              структуры данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL only after it is supplied. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
