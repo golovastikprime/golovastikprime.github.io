@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи L из контеста 1 второго семестра: максимальная чередующаяся подпоследовательность, DP по последнему элементу и восстановление ответа.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача L — Чередующаяся подпоследовательность — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_2/Contest_1/">← Контест 1</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 2 · Контест 1</p>
+      <h1>Задача L — Чередующаяся подпоследовательность</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-28">28 июля 2026</time></p>
+      <p class="study-lead">Направление последнего шага становится частью состояния DP, а сохранённые предки
+        позволяют восстановить одну максимальную лесенку.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_2/Contest_1/Task_L">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Решение использует два состояния по последнему элементу и восстанавливает
+          одну оптимальную подпоследовательность.</p>
+        <ul>
+          <li>время: <span class="math-inline">\(\Theta(n^2)\)</span>;</li>
+          <li>память: <span class="math-inline">\(\Theta(n)\)</span>;</li>
+          <li>восстановление: <span class="math-inline">\(O(k)\)</span>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Математическая формулировка</h2>
+        <p>Дана последовательность</p>
+        <div class="math-display">\[
+a_1,a_2,\ldots,a_n,
+\qquad
+1\le n\le2000.
+\]</div>
+        <p>Нужно выбрать подпоследовательность с возрастающими индексами, в которой направления соседних шагов
+          чередуются:</p>
+        <div class="math-display">\[
+a_{i_1}&lt;a_{i_2}&gt;a_{i_3}&lt;a_{i_4}&gt;\ldots
+\]</div>
+        <p>или</p>
+        <div class="math-display">\[
+a_{i_1}&gt;a_{i_2}&lt;a_{i_3}&gt;a_{i_4}&lt;\ldots.
+\]</div>
+        <p>Эквивалентное условие для каждого внутреннего элемента:</p>
+        <div class="math-display">\[
+\bigl(a_{i_t}-a_{i_{t-1}}\bigr)
+\bigl(a_{i_{t+1}}-a_{i_t}\bigr)&lt;0.
+\]</div>
+        <p>Требуется вывести максимальную длину и одну подпоследовательность этой длины. Равные соседние значения
+          использовать нельзя: между ними нет шага вверх или вниз.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="constraints-title">
+        <p class="section-kicker">Ограничения</p>
+        <h2 id="constraints-title">Почему допустим перебор пар</h2>
+        <p>При <span class="math-inline">\(n\le2000\)</span> можно перебрать все пары индексов <span
+            class="math-inline">\(j&lt;i\)</span>:</p>
+        <div class="math-display">\[
+\sum_{i=1}^{n}(i-1)
+=
+\frac{n(n-1)}2
+=
+\Theta(n^2).
+\]</div>
+        <p>Естественно зафиксировать последний индекс <span class="math-inline">\(i\)</span>, перебрать
+          предпоследний <span class="math-inline">\(j\)</span> и использовать ответы для уже обработанного
+          префикса.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Наблюдение</p>
+        <h2 id="observation-title">Нужно помнить направление шага</h2>
+        <p>Одной максимальной длины подпоследовательности, оканчивающейся в <span
+            class="math-inline">\(a_i\)</span>, недостаточно: возможность добавить следующий элемент зависит от
+          последнего направления.</p>
+        <p>Если <span class="math-inline">\(a_j&lt;a_i\)</span>, новый шаг направлен вверх, поэтому предыдущий
+          должен быть направлен вниз:</p>
+        <div class="math-display">\[
+\ldots&gt;a_j&lt;a_i.
+\]</div>
+        <p>Симметрично, шаг вниз разрешён только после шага вверх:</p>
+        <div class="math-display">\[
+\ldots&lt;a_j&gt;a_i.
+\]</div>
+        <p>На каждом переходе тип состояния меняется:</p>
+        <div class="math-display">\[
+\mathrm{down}\longrightarrow\mathrm{up},
+\qquad
+\mathrm{up}\longrightarrow\mathrm{down}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="dp-title">
+        <p class="section-kicker">Динамика</p>
+        <h2 id="dp-title">Состояния и переходы</h2>
+        <p>Для каждого индекса <span class="math-inline">\(i\)</span> определим:</p>
+        <ul>
+          <li><span class="math-inline">\(up[i]\)</span> — максимальная длина лесенки, оканчивающейся в <span
+              class="math-inline">\(a_i\)</span> шагом вверх;</li>
+          <li><span class="math-inline">\(down[i]\)</span> — максимальная длина лесенки, оканчивающейся в <span
+              class="math-inline">\(a_i\)</span> шагом вниз.</li>
+        </ul>
+        <p>Одноэлементная подпоследовательность не имеет направления, поэтому для удобства представляется обоими
+          состояниями:</p>
+        <div class="math-display">\[
+up[i]=down[i]=1.
+\]</div>
+        <h3>Переход вверх</h3>
+        <div class="math-display">\[
+\boxed{
+up[i]
+=
+1+\max_{\substack{j&lt;i\\a_j&lt;a_i}}down[j]
+}.
+\]</div>
+        <h3>Переход вниз</h3>
+        <div class="math-display">\[
+\boxed{
+down[i]
+=
+1+\max_{\substack{j&lt;i\\a_j&gt;a_i}}up[j]
+}.
+\]</div>
+        <p>Принимается соглашение <span class="math-inline">\(\max\varnothing=0\)</span>. Равенство <span
+            class="math-inline">\(a_j=a_i\)</span> не создаёт перехода.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="order-title">
+        <p class="section-kicker">Вычисление</p>
+        <h2 id="order-title">Порядок и инвариант</h2>
+        <p>Индексы обрабатываются слева направо. Перед обработкой <span class="math-inline">\(i\)</span> значения
+          <span class="math-inline">\(up[j]\)</span> и <span class="math-inline">\(down[j]\)</span> для всех
+          <span class="math-inline">\(j&lt;i\)</span> уже равны оптимальным длинам соответствующих типов.
+        </p>
+        <p>Переходы перебирают все возможные предпоследние индексы и выбирают лучший допустимый. После этого
+          инвариант становится верным и для <span class="math-inline">\(i\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="correctness-title">Корректность перехода</h2>
+        <p>Докажем формулу для <span class="math-inline">\(up[i]\)</span>; вторая доказывается симметрично.
+          Обозначим</p>
+        <div class="math-display">\[
+M=
+\max_{\substack{j&lt;i\\a_j&lt;a_i}}down[j].
+\]</div>
+        <h3>Верхняя оценка</h3>
+        <p>Удалим <span class="math-inline">\(a_i\)</span> из оптимальной лесенки состояния <span
+            class="math-inline">\(up[i]\)</span>. Если её длина больше одного, остаток оканчивается в некотором
+          <span class="math-inline">\(a_j&lt;a_i\)</span> состоянием <span
+            class="math-inline">\(down[j]\)</span>. Значит,</p>
+        <div class="math-display">\[
+up[i]-1\le down[j]\le M,
+\qquad
+up[i]\le M+1.
+\]</div>
+        <h3>Нижняя оценка</h3>
+        <p>Возьмём индекс <span class="math-inline">\(j\)</span>, на котором достигается <span
+            class="math-inline">\(M\)</span>, и добавим <span class="math-inline">\(a_i\)</span> к
+          соответствующей лесенке. Новый шаг идёт вверх, предыдущий — вниз, поэтому чередование сохраняется и
+          получается длина <span class="math-inline">\(M+1\)</span>.</p>
+        <p>При отсутствии подходящего <span class="math-inline">\(j\)</span> остаётся одноэлементная лесенка.
+          Следовательно,</p>
+        <div class="math-display">\[
+up[i]=M+1.
+\]</div>
+        <p>По индукции по <span class="math-inline">\(i\)</span> все состояния вычисляются корректно.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="answer-title">
+        <p class="section-kicker">Ответ</p>
+        <h2 id="answer-title">Финальное состояние</h2>
+        <p>Оптимальная лесенка может оканчиваться в любом индексе и любым направлением:</p>
+        <div class="math-display">\[
+\boxed{
+\operatorname{Answer}
+=
+\max_{0\le i&lt;n}\max\bigl(up[i],down[i]\bigr)
+}.
+\]</div>
+        <p>После заполнения DP программа запоминает максимальную длину, последний индекс и тип последнего
+          состояния.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="reconstruction-title">
+        <p class="section-kicker">Восстановление</p>
+        <h2 id="reconstruction-title">Указатели на предков</h2>
+        <p>Вместе с длинами хранятся:</p>
+        <ul>
+          <li><code>parent_up[i]</code> — предпоследний индекс для состояния <span
+              class="math-inline">\(up[i]\)</span>;</li>
+          <li><code>parent_down[i]</code> — предпоследний индекс для состояния <span
+              class="math-inline">\(down[i]\)</span>.</li>
+        </ul>
+        <p>Значение <code>-1</code> означает одноэлементную лесенку. Во время обратного прохода состояние
+          однозначно задаёт нужный массив:</p>
+        <div class="math-display">\[
+(i,\mathrm{up})
+\longrightarrow
+(parent\_up[i],\mathrm{down}),
+\]</div>
+        <div class="math-display">\[
+(i,\mathrm{down})
+\longrightarrow
+(parent\_down[i],\mathrm{up}).
+\]</div>
+        <p>Тип предка хранить отдельно не нужно: он всегда противоположен текущему. Индекс при каждом шаге строго
+          уменьшается, а длина состояния уменьшается на единицу. Полученная цепочка идёт справа налево, поэтому
+          перед выводом её разворачивают.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="example-title">
+        <p class="section-kicker">Пример</p>
+        <h2 id="example-title">Восстановление лесенки</h2>
+        <p>Для последовательности</p>
+        <div class="math-display">\[
+1,\ 7,\ 4,\ 9,\ 2,\ 5
+\]</div>
+        <p>максимальное состояние равно <span class="math-inline">\(up[5]=6\)</span>. Цепочка предков:</p>
+        <div class="math-display">\[
+(5,\mathrm{up})
+\to
+(4,\mathrm{down})
+\to
+(3,\mathrm{up})
+\to
+(2,\mathrm{down})
+\to
+(1,\mathrm{up})
+\to
+(0,\mathrm{down}).
+\]</div>
+        <p>После разворота:</p>
+        <div class="math-display">\[
+1&lt;7&gt;4&lt;9&gt;2&lt;5.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="final-code">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="final-code">Accepted-код</h2>
+        <pre><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+  std::cout.tie(nullptr);
+
+  int n;
+  std::cin &gt;&gt; n;
+
+  std::vector&lt;int&gt; arr(n);
+  for (int i = 0; i &lt; n; ++i) {
+    std::cin &gt;&gt; arr[i];
+  }
+
+  std::vector&lt;int&gt; parent_up(n, -1);
+  std::vector&lt;int&gt; parent_down(n, -1);
+  std::vector&lt;int&gt; down(n, 1);
+  std::vector&lt;int&gt; up(n, 1);
+
+  for (int i = 0; i &lt; n; ++i) {
+    int max_for_down = 0;
+    int max_for_up = 0;
+
+    for (int j = 0; j &lt; i; ++j) {
+      if (arr[j] &lt; arr[i] &amp;&amp; max_for_up &lt; down[j]) {
+        parent_up[i] = j;
+        max_for_up = down[j];
+      }
+
+      if (arr[j] &gt; arr[i] &amp;&amp; max_for_down &lt; up[j]) {
+        parent_down[i] = j;
+        max_for_down = up[j];
+      }
+    }
+
+    down[i] = 1 + max_for_down;
+    up[i] = 1 + max_for_up;
+  }
+
+  int ans = 0;
+  int current_idx = 0;
+  bool was_up = false;
+
+  for (int i = 0; i &lt; n; ++i) {
+    if (down[i] &gt; ans) {
+      current_idx = i;
+      was_up = false;
+      ans = down[i];
+    }
+
+    if (up[i] &gt; ans) {
+      current_idx = i;
+      was_up = true;
+      ans = up[i];
+    }
+  }
+
+  std::vector&lt;int&gt; answer;
+  answer.reserve(ans);
+
+  while (current_idx != -1) {
+    answer.push_back(arr[current_idx]);
+
+    if (was_up) {
+      current_idx = parent_up[current_idx];
+    } else {
+      current_idx = parent_down[current_idx];
+    }
+
+    was_up = !was_up;
+  }
+
+  std::cout &lt;&lt; ans &lt;&lt; '\n';
+
+  for (int i = ans - 1; i &gt;= 0; --i) {
+    std::cout &lt;&lt; answer[i] &lt;&lt; ' ';
+  }
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Для каждого <span class="math-inline">\(i\)</span> перебираются все <span
+            class="math-inline">\(j&lt;i\)</span>:</p>
+        <div class="math-display">\[
+\sum_{i=0}^{n-1}i
+=
+\frac{n(n-1)}2
+=
+\Theta(n^2).
+\]</div>
+        <p>Поиск финального состояния занимает <span class="math-inline">\(O(n)\)</span>, восстановление — <span
+            class="math-inline">\(O(k)\)</span>, поэтому</p>
+        <div class="math-display">\[
+\boxed{T(n)=\Theta(n^2)}.
+\]</div>
+        <p>Все массивы имеют линейный размер:</p>
+        <div class="math-display">\[
+\boxed{W(n)=\Theta(n)}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistakes-title">
+        <p class="section-kicker">Разбор ошибок</p>
+        <h2 id="mistakes-title">Ошибки и тупики</h2>
+        <ol>
+          <li><strong>Независимые <code>up</code> и <code>down</code>.</strong> Продолжение подъёма подъёмом
+            нарушает чередование. Верная связь: <span
+              class="math-inline">\(\mathrm{down}\to\mathrm{up}\)</span> и <span
+              class="math-inline">\(\mathrm{up}\to\mathrm{down}\)</span>.</li>
+          <li><strong>Не зафиксирован последний индекс.</strong> Для подпоследовательности важно, каким элементом
+            она оканчивается; после фиксации <span class="math-inline">\(i\)</span> появляется естественный
+            перебор <span class="math-inline">\(j&lt;i\)</span>.</li>
+          <li><strong>Нулевая база.</strong> Один элемент уже образует лесенку длины один, поэтому <span
+              class="math-inline">\(up[i]=down[i]=1\)</span>.</li>
+          <li><strong>Повторный перебор перехода.</strong> Лишний цикл заново просматривал все <span
+              class="math-inline">\(j&lt;i\)</span> и превращал алгоритм в <span
+              class="math-inline">\(\Theta(n^3)\)</span>.</li>
+          <li><strong>Раннее переключение состояния.</strong> Из состояния <code>up</code> сначала нужно перейти
+            по <code>parent_up</code> и только затем сменить тип на <code>down</code>.</li>
+          <li><strong>Обращение к <code>arr[-1]</code>.</strong> К текущему элементу можно обращаться только после
+            проверки <code>current_idx != -1</code>.</li>
+          <li><strong>Только одна оценка в доказательстве.</strong> Удаление последнего элемента даёт верхнюю
+            оценку; для равенства нужно также взять состояние, достигающее максимума, и доказать возможность
+            добавить <span class="math-inline">\(a_i\)</span>.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Как распознать паттерн</h2>
+        <ul>
+          <li>строится подпоследовательность с возрастающими индексами;</li>
+          <li>естественно зафиксировать последний выбранный индекс;</li>
+          <li>переход перебирает предпоследний индекс;</li>
+          <li>для продолжения нужна небольшая часть истории — здесь направление последнего шага;</li>
+          <li>нужно вывести объект, поэтому вместе с DP хранятся предки;</li>
+          <li>ограничение <span class="math-inline">\(n\le2000\)</span> допускает перебор пар.</li>
+        </ul>
+        <div class="math-display">\[
+\text{подпоследовательность}
+\Longrightarrow
+\text{последний индекс}
+\Longrightarrow
+\text{тип последнего шага}
+\Longrightarrow
+\text{перебор }j&lt;i
+\Longrightarrow
+\text{предок}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="summary-title">
+        <p class="section-kicker">Вывод</p>
+        <h2 id="summary-title">Главный итог</h2>
+        <p>Состояния только по последнему индексу недостаточно. Нужно хранить ровно ту часть прошлого, от которой
+          зависит следующий переход — направление последнего шага:</p>
+        <div class="math-display">\[
+up[i]\leftrightarrow down[j].
+\]</div>
+        <p>Такое разбиение даёт корректное DP за <span class="math-inline">\(\Theta(n^2)\)</span>, а сохранение
+          лучшего предка восстанавливает оптимальную лесенку за линейное время.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="#final-code">Accepted-листинг на этой странице</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и
+              структуры данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the official problem title and URL only after they are supplied. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
