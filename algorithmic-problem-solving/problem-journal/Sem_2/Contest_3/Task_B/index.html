@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи B из контеста 3 второго семестра: компоненты связности неориентированного графа с помощью DFS.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача B — Компоненты связности неориентированного графа — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_2/Contest_3/">← Контест 3</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 2 · Контест 3</p>
+      <h1>Задача B — Компоненты связности неориентированного графа</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-31">31 июля 2026</time></p>
+      <p class="study-lead">Каждый запуск DFS из ещё не посещённой вершины находит ровно одну полную компоненту
+        связности, поэтому весь граф разбирается за линейное время.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_2/Contest_3/Task_B">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Граф хранится списками смежности, а DFS запускается из каждой ещё не
+          посещённой вершины.</p>
+        <ul>
+          <li>ожидаемое время принятой реализации: <span class="math-inline">\(\Theta(n+m)\)</span>;</li>
+          <li>память: <span class="math-inline">\(\Theta(n+m)\)</span>;</li>
+          <li>порядок компонент и вершин может быть произвольным.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Разбиение на компоненты</h2>
+        <p>Дан неориентированный граф</p>
+        <div class="math-display">\[
+G=(V,E),
+\qquad
+V=\{1,2,\ldots,n\},
+\qquad
+|E|=m,
+\]</div>
+        <p>где <span class="math-inline">\(1\le n\le2\cdot10^5\)</span> и <span
+            class="math-inline">\(0\le m\le2\cdot10^5\)</span>. Нужно вывести число компонент связности, размер
+          каждой компоненты и входящие в неё вершины.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="definition-title">
+        <p class="section-kicker">Определение</p>
+        <h2 id="definition-title">Почему компоненты образуют разбиение</h2>
+        <p>Вершины <span class="math-inline">\(u\)</span> и <span class="math-inline">\(v\)</span> связаны,
+          если между ними существует путь. В неориентированном графе отношение</p>
+        <div class="math-display">\[
+u\sim v
+\quad\Longleftrightarrow\quad
+\text{существует путь из }u\text{ в }v
+\]</div>
+        <p>рефлексивно, симметрично и транзитивно. Его классы эквивалентности — максимальные множества взаимно
+          достижимых вершин, то есть компоненты связности.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Наблюдение</p>
+        <h2 id="observation-title">Один DFS — одна компонента</h2>
+        <p>DFS из ещё не посещённой вершины <span class="math-inline">\(s\)</span> посещает в точности её
+          компоненту:</p>
+        <ul>
+          <li>обход переходит только по рёбрам и не может покинуть компоненту;</li>
+          <li>до любой вершины компоненты существует путь из <span class="math-inline">\(s\)</span>, по которому
+            DFS рано или поздно пройдёт.</li>
+        </ul>
+        <p>После завершения обхода вся компонента помечена, поэтому новый DFS нужен только для белой вершины.</p>
+        <blockquote>
+          <p>Количество компонент равно числу корней DFS-леса.</p>
+        </blockquote>
+      </section>
+
+      <section class="entry-section" aria-labelledby="storage-title">
+        <p class="section-kicker">Представление</p>
+        <h2 id="storage-title">Хранимая информация</h2>
+        <h3>Списки смежности</h3>
+        <p>Каждое неориентированное ребро добавляется в обе стороны:</p>
+        <pre><code class="language-cpp">adj[u].push_back(v);
+adj[v].push_back(u);</code></pre>
+        <h3>Цвета вершин</h3>
+        <ul>
+          <li><code>0</code> — вершина ещё не посещена;</li>
+          <li><code>1</code> — DFS вошёл в вершину;</li>
+          <li><code>2</code> — все её соседи рассмотрены.</li>
+        </ul>
+        <p>Для компонент достаточно булева <code>visited</code>; три цвета в принятом коде являются универсальной,
+          но избыточной схемой.</p>
+        <h3>Компоненты</h3>
+        <p>Принятая реализация хранит каждую компоненту в <code>std::unordered_set&lt;int&gt;</code>. Множество
+          автоматически устраняет повторную вставку, а произвольный порядок разрешён условием.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="invariants-title">
+        <p class="section-kicker">Инварианты</p>
+        <h2 id="invariants-title">Корректность обхода</h2>
+        <h3>Один вызов DFS</h3>
+        <ul>
+          <li>каждая добавленная вершина связана с корнем текущего обхода;</li>
+          <li>каждая вершина вводится в DFS не более одного раза;</li>
+          <li>переход в белого соседа остаётся внутри той же компоненты;</li>
+          <li>при завершении вершины рассмотрены все её рёбра.</li>
+        </ul>
+        <h3>Внешний цикл</h3>
+        <p>Перед очередной вершиной уже созданные множества совпадают с полными попарно непересекающимися
+          компонентами. Их вершины посещены, а остальные остаются белыми. Поэтому белая вершина принадлежит
+          ровно одной ещё не найденной компоненте.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="algorithm-title">
+        <p class="section-kicker">Алгоритм</p>
+        <h2 id="algorithm-title">DFS и внешний цикл</h2>
+        <ol>
+          <li>Построить двусторонние списки смежности.</li>
+          <li>В <code>dfs(v, i)</code> пометить <span class="math-inline">\(v\)</span>, добавить её в
+            компоненту <span class="math-inline">\(i\)</span> и рекурсивно обработать всех белых соседей.</li>
+          <li>Перебрать вершины от <span class="math-inline">\(1\)</span> до <span
+              class="math-inline">\(n\)</span>.</li>
+          <li>Для каждой белой вершины создать новую компоненту и запустить DFS.</li>
+          <li>Вывести найденные множества.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="correctness-title">Почему ответ точен</h2>
+        <p>DFS не добавляет вершины из другой компоненты, потому что каждый переход идёт по ребру. С другой
+          стороны, он не пропускает вершину своей компоненты: вдоль любого пути от корня первая ещё не посещённая
+          вершина будет обнаружена при просмотре ребра из уже достигнутой.</p>
+        <p>Следовательно, один запуск создаёт ровно одну полную компоненту. Глобальная отметка не позволяет
+          создать её повторно, а внешний цикл запускает обход для каждой оставшейся белой вершины, включая
+          изолированные. Поэтому все вершины входят ровно в одну выведенную компоненту.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="final-code">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="final-code">Accepted-код</h2>
+        <pre><code class="language-cpp">#include &lt;functional&gt;
+#include &lt;iostream&gt;
+#include &lt;unordered_set&gt;
+#include &lt;vector&gt;
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  int n;
+  int m;
+  std::cin &gt;&gt; n &gt;&gt; m;
+
+  std::vector&lt;std::vector&lt;int&gt;&gt; adj(n + 1);
+  for (int i = 0; i &lt; m; ++i) {
+    int u;
+    int v;
+    std::cin &gt;&gt; u &gt;&gt; v;
+    adj[u].push_back(v);
+    adj[v].push_back(u);
+  }
+
+  std::vector&lt;int&gt; color(n + 1, 0);
+  std::vector&lt;std::unordered_set&lt;int&gt;&gt; component;
+  component.reserve(n + 1);
+
+  std::function&lt;void(int, int)&gt; dfs = [&amp;](int v, int i) {
+    color[v] = 1;
+    component[i].insert(v);
+
+    for (int u : adj[v]) {
+      if (color[u] == 0) {
+        component[i].insert(u);
+        dfs(u, i);
+      }
+    }
+
+    color[v] = 2;
+  };
+
+  for (int v = 1; v &lt;= n; ++v) {
+    if (color[v] == 0) {
+      component.push_back(std::unordered_set&lt;int&gt;());
+      dfs(v, component.size() - 1);
+    }
+  }
+
+  std::cout &lt;&lt; component.size() &lt;&lt; '\n';
+  for (const auto&amp; comp : component) {
+    std::cout &lt;&lt; comp.size() &lt;&lt; '\n';
+    for (const auto&amp; v : comp) {
+      std::cout &lt;&lt; v &lt;&lt; ' ';
+    }
+    std::cout &lt;&lt; '\n';
+  }
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Каждая вершина впервые посещается один раз. Каждое неориентированное ребро просматривается дважды —
+          по одному разу с каждого конца. Вывод всех вершин также занимает линейное время.</p>
+        <p>Для принятой реализации с <code>unordered_set</code> оценка ожидаемая:</p>
+        <div class="math-display">\[
+\boxed{T(n,m)=\Theta(n+m)}.
+\]</div>
+        <p>Списки смежности, отметки, компоненты и рекурсивный стек занимают</p>
+        <div class="math-display">\[
+\boxed{W(n,m)=\Theta(n+m)}.
+\]</div>
+        <p>При хранении компонент в обычных векторах линейная временная оценка становится гарантированной.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверки</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li>граф без рёбер состоит из <span class="math-inline">\(n\)</span> одноэлементных компонент;</li>
+          <li>связный граф создаёт одну компоненту;</li>
+          <li>изолированная вершина обрабатывается внешним циклом;</li>
+          <li>петли и кратные рёбра не создают повторных вершин в компоненте;</li>
+          <li>порядок обхода <code>unordered_set</code> не фиксирован, но условие допускает любой порядок.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistakes-title">
+        <p class="section-kicker">Разбор ошибок</p>
+        <h2 id="mistakes-title">Типичные ошибки</h2>
+        <ol>
+          <li><strong>Добавить ребро только в одну сторону.</strong> Тогда обход работает с ориентированным
+            графом и может разбить одну компоненту на несколько частей.</li>
+          <li><strong>Запустить DFS только из вершины 1.</strong> Остальные компоненты останутся необработанными.
+          </li>
+          <li><strong>Пометить вершину после рекурсивных переходов.</strong> Соседние вершины начнут бесконечно
+            вызывать друг друга.</li>
+          <li><strong>Создавать компоненту для каждой вершины.</strong> Новая запись нужна только для белой
+            вершины.</li>
+          <li><strong>Забыть изолированные вершины.</strong> Каждая из них образует компоненту размера один.</li>
+          <li><strong>Заменить множество на <code>vector</code>, сохранив две вставки.</strong> В принятом коде
+            сосед вставляется до рекурсии и повторно внутри неё; вектор сохранил бы дубликаты.</li>
+          <li><strong>Полагаться на порядок <code>unordered_set</code>.</strong> Стандарт его не гарантирует.</li>
+          <li><strong>Не учитывать вывод.</strong> Перечисление всех вершин само требует <span
+              class="math-inline">\(\Omega(n)\)</span>.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="technical-title">
+        <p class="section-kicker">Улучшения</p>
+        <h2 id="technical-title">Как упростить реализацию</h2>
+        <ul>
+          <li>убрать вставку соседа перед рекурсией: <code>dfs(u, i)</code> сам добавит вершину;</li>
+          <li>заменить <code>unordered_set</code> на <code>vector</code> и вставлять каждую вершину один раз;</li>
+          <li>заменить три цвета на булев <code>visited</code>;</li>
+          <li>при чувствительном размере стека использовать итеративный DFS.</li>
+        </ul>
+        <p>Глубина рекурсии в худшем случае равна <span class="math-inline">\(\Theta(n)\)</span>. При <span
+            class="math-inline">\(n=2\cdot10^5\)</span> явный стек делает решение переносимее.</p>
+        <p><code>component.reserve(n + 1)</code> резервирует место только во внешнем векторе и не создаёт
+          компоненты заранее.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Как распознать паттерн</h2>
+        <ul>
+          <li>дан неориентированный граф;</li>
+          <li>нужно разбить вершины на группы взаимной достижимости;</li>
+          <li>требуются число компонент, их размеры или вершины;</li>
+          <li>граф может быть несвязным и содержать изолированные вершины;</li>
+          <li>ограничения требуют линейного обхода.</li>
+        </ul>
+        <div class="math-display">\[
+\text{белая вершина}
+\Longrightarrow
+\text{новый корень DFS}
+\Longrightarrow
+\text{одна полная компонента}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="summary-title">
+        <p class="section-kicker">Вывод</p>
+        <h2 id="summary-title">Главный итог</h2>
+        <p>Компоненты не нужно строить попарными проверками. Один обход из вершины находит в точности её класс
+          достижимости, а глобальная отметка не позволяет обрабатывать его повторно:</p>
+        <div class="math-display">\[
+\boxed{
+\text{каждый новый корень DFS соответствует ровно одной компоненте}
+}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="#final-code">Accepted-листинг на этой странице</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и
+              структуры данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL only after it is supplied. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
