@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи A из контеста 3 второго семестра: поиск цикла в ориентированном графе с помощью DFS и восстановление ответа.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача A — Поиск цикла в ориентированном графе — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_2/Contest_3/">← Контест 3</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 2 · Контест 3</p>
+      <h1>Задача A — Поиск цикла в ориентированном графе</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-07-31">31 июля 2026</time></p>
+      <p class="study-lead">Серые вершины кодируют текущий путь DFS: ребро в серую вершину замыкает цикл, а
+        массив родителей восстанавливает его вершины.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_2/Contest_3/Task_A">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Использован DFS с тремя цветами и восстановлением найденного цикла по
+          массиву родителей.</p>
+        <ul>
+          <li>время: <span class="math-inline">\(\Theta(n+m)\)</span>;</li>
+          <li>память: <span class="math-inline">\(\Theta(n+m)\)</span>;</li>
+          <li>граф может содержать петли, кратные рёбра и несколько компонент.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Ориентированный цикл</h2>
+        <p>Дан ориентированный граф</p>
+        <div class="math-display">\[
+G=(V,E),
+\qquad
+V=\{1,2,\ldots,n\},
+\qquad
+|E|=m,
+\]</div>
+        <p>где <span class="math-inline">\(1\le n\le5\cdot10^5\)</span> и <span
+            class="math-inline">\(0\le m\le5\cdot10^5\)</span>. Нужно определить наличие ориентированного
+          цикла и при его существовании вывести вершины любого цикла в порядке обхода.</p>
+        <p>Начальная вершина повторно в конце не выводится. Петля <span class="math-inline">\((v,v)\)</span>
+          считается циклом из одной вершины.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="constraints-title">
+        <p class="section-kicker">Ограничения</p>
+        <h2 id="constraints-title">Почему нужен один полный обход</h2>
+        <p>Отдельный поиск из каждой вершины может потребовать</p>
+        <div class="math-display">\[
+O\bigl(n(n+m)\bigr),
+\]</div>
+        <p>поэтому нужен алгоритм, обрабатывающий каждую вершину и каждое ребро постоянное число раз. DFS даёт
+          <span class="math-inline">\(O(n+m)\)</span>, но одного флага <code>visited</code> недостаточно:
+          ребро в уже полностью обработанную вершину не обязательно образует цикл.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Наблюдение</p>
+        <h2 id="observation-title">Ребро в текущий стек DFS</h2>
+        <p>Серые вершины образуют текущий путь рекурсивного DFS:</p>
+        <div class="math-display">\[
+v_0\to v_1\to\cdots\to v_t.
+\]</div>
+        <p>Если из <span class="math-inline">\(v_t\)</span> существует ребро в серую вершину <span
+            class="math-inline">\(v_i\)</span>, то древесный путь</p>
+        <div class="math-display">\[
+v_i\to v_{i+1}\to\cdots\to v_t
+\]</div>
+        <p>вместе с ребром <span class="math-inline">\(v_t\to v_i\)</span> образует ориентированный цикл.</p>
+        <blockquote>
+          <p>Цикл обнаруживается ровно в момент рассмотрения ребра в вершину, которая всё ещё находится в
+            текущем стеке DFS.</p>
+        </blockquote>
+      </section>
+
+      <section class="entry-section" aria-labelledby="colors-title">
+        <p class="section-kicker">Состояния</p>
+        <h2 id="colors-title">Три цвета вершин</h2>
+        <ul>
+          <li><code>0</code>, белая — DFS ещё не входил в вершину;</li>
+          <li><code>1</code>, серая — вершина находится в текущем стеке;</li>
+          <li><code>2</code>, чёрная — вершина и все её исходящие рёбра полностью обработаны.</li>
+        </ul>
+        <div class="math-display">\[
+0\longrightarrow1\longrightarrow2.
+\]</div>
+        <p>Каждая вершина запускает рекурсивную обработку не более одного раза.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="invariant-title">
+        <p class="section-kicker">Инвариант</p>
+        <h2 id="invariant-title">Что поддерживает DFS</h2>
+        <ol>
+          <li>серые вершины — в точности текущий стек вызовов;</li>
+          <li>они лежат на одном пути дерева DFS;</li>
+          <li><code>parent[x]</code> хранит предыдущую вершину этого пути;</li>
+          <li>у чёрных вершин просмотрены все исходящие рёбра;</li>
+          <li>при ребре <span class="math-inline">\(v\to u\)</span> в серую вершину цепочка родителей ведёт от
+            <span class="math-inline">\(v\)</span> к <span class="math-inline">\(u\)</span>.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="algorithm-title">
+        <p class="section-kicker">Алгоритм</p>
+        <h2 id="algorithm-title">Обработка вершины</h2>
+        <ol>
+          <li>Покрасить <span class="math-inline">\(v\)</span> в серый.</li>
+          <li>Для каждого ребра <span class="math-inline">\(v\to u\)</span>:
+            <ul>
+              <li>если <span class="math-inline">\(u\)</span> белая, записать <code>parent[u] = v</code> и
+                запустить DFS;</li>
+              <li>если <span class="math-inline">\(u\)</span> серая, сохранить начало и конец цикла;</li>
+              <li>если <span class="math-inline">\(u\)</span> чёрная, пропустить ребро.</li>
+            </ul>
+          </li>
+          <li>Если цикл не найден, покрасить <span class="math-inline">\(v\)</span> в чёрный.</li>
+        </ol>
+        <p>Внешний цикл запускает DFS из каждой белой вершины, чтобы охватить все компоненты. После первого
+          найденного цикла поиск немедленно завершается.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="black-title">
+        <p class="section-kicker">Важное различие</p>
+        <h2 id="black-title">Ребро в чёрную вершину не доказывает цикл</h2>
+        <p>В графе</p>
+        <div class="math-display">\[
+1\to2,
+\qquad
+1\to3,
+\qquad
+3\to2
+\]</div>
+        <p>вершина <span class="math-inline">\(2\)</span> может быть полностью обработана до ребра <span
+            class="math-inline">\(3\to2\)</span>, хотя цикла нет. Поэтому проверка любого посещённого соседа
+          ошибочна; нужен именно цвет <code>1</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="reconstruction-title">
+        <p class="section-kicker">Восстановление</p>
+        <h2 id="reconstruction-title">Цепочка родителей</h2>
+        <p>Пусть найдено ребро</p>
+        <div class="math-display">\[
+\texttt{cycle\_end}\to\texttt{cycle\_start},
+\]</div>
+        <p>где <code>cycle_start</code> — серая вершина. По указателям родителей строится цепочка</p>
+        <div class="math-display">\[
+\texttt{cycle\_end}
+\to
+\operatorname{parent}[\texttt{cycle\_end}]
+\to\cdots\to
+\texttt{cycle\_start}.
+\]</div>
+        <p>Она записана от потомка к предку, поэтому после <code>reverse</code> получаем вершины от начала к концу
+          древесного пути. Найденное обратное ребро замыкает этот список. Начальную вершину второй раз добавлять
+          не нужно.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="example-title">
+        <p class="section-kicker">Пример</p>
+        <h2 id="example-title">Цикл внутри пути DFS</h2>
+        <p>Для рёбер</p>
+        <div class="math-display">\[
+1\to2,
+\qquad
+2\to3,
+\qquad
+3\to4,
+\qquad
+4\to2
+\]</div>
+        <p>DFS строит путь <span class="math-inline">\(1\to2\to3\to4\)</span>. Ребро <span
+            class="math-inline">\(4\to2\)</span> ведёт в серую вершину, поэтому после разворота цепочки
+          родителей выводится цикл</p>
+        <div class="math-display">\[
+2, 3, 4.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="correctness-title">Корректность алгоритма</h2>
+        <h3>Если найдено ребро в серую вершину</h3>
+        <p>Серая вершина является предком текущей в дереве DFS. Древесный путь от неё до текущей вершины вместе
+          с найденным ребром образует ориентированный цикл. Массив родителей перечисляет этот путь в правильном
+          порядке после разворота.</p>
+        <h3>Если в графе существует цикл</h3>
+        <p>Рассмотрим первую вершину цикла, в которую входит DFS. Пока обход идёт по рёбрам цикла, вершины на
+          текущем пути остаются серыми. Рано или поздно будет рассмотрено ребро, ведущее в уже серую вершину
+          этого цикла, и алгоритм обнаружит его.</p>
+        <h3>Итог</h3>
+        <p>При выводе <code>YES</code> восстановлен корректный цикл. Если ни одного ребра в серую вершину не
+          найдено, ориентированного цикла в графе нет, и <code>NO</code> корректен.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="final-code">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="final-code">Accepted-код</h2>
+        <pre><code class="language-cpp">#include &lt;functional&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  int n;
+  int m;
+  std::cin &gt;&gt; n &gt;&gt; m;
+
+  std::vector&lt;std::vector&lt;int&gt;&gt; adj(n + 1);
+  for (int i = 0; i &lt; m; ++i) {
+    int u;
+    int v;
+    std::cin &gt;&gt; u &gt;&gt; v;
+    adj[u].push_back(v);
+  }
+
+  std::vector&lt;int&gt; color(n + 1, 0);
+  std::vector&lt;int&gt; parent(n + 1, -1);
+  int cycle_start = -1;
+  int cycle_end = -1;
+
+  std::function&lt;bool(int)&gt; dfs = [&amp;](int v) -&gt; bool {
+    color[v] = 1;
+
+    for (int u : adj[v]) {
+      if (color[u] == 0) {
+        parent[u] = v;
+        if (dfs(u)) {
+          return true;
+        }
+      }
+
+      if (color[u] == 1) {
+        cycle_start = u;
+        cycle_end = v;
+        return true;
+      }
+    }
+
+    color[v] = 2;
+    return false;
+  };
+
+  for (int v = 1; v &lt;= n &amp;&amp; cycle_start == -1; ++v) {
+    if (color[v] == 0) {
+      dfs(v);
+    }
+  }
+
+  if (cycle_start == -1) {
+    std::cout &lt;&lt; "NO";
+    return 0;
+  }
+
+  std::vector&lt;int&gt; cycle;
+  int cur = cycle_end;
+
+  while (cur != cycle_start) {
+    cycle.push_back(cur);
+    cur = parent[cur];
+  }
+
+  cycle.push_back(cycle_start);
+  reverse(cycle.begin(), cycle.end());
+
+  std::cout &lt;&lt; "YES\n";
+  for (int v : cycle) {
+    std::cout &lt;&lt; v &lt;&lt; ' ';
+  }
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Каждая вершина посещается не более одного раза, а каждый список смежности просматривается не более
+          одного раза. Восстановление проходит по циклу длины не более <span
+            class="math-inline">\(n\)</span>:</p>
+        <div class="math-display">\[
+\boxed{T(n,m)=\Theta(n+m)}.
+\]</div>
+        <p>Списки смежности, цвета, родители, найденный цикл и рекурсивный стек занимают</p>
+        <div class="math-display">\[
+\boxed{W(n,m)=\Theta(n+m)}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверки</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li>граф без рёбер приводит к ответу <code>NO</code>;</li>
+          <li>внешний цикл находит цикл в любой компоненте;</li>
+          <li>петля восстанавливается как цикл из одной вершины;</li>
+          <li>кратные рёбра не нарушают алгоритм;</li>
+          <li>ребро к чёрной вершине пропускается;</li>
+          <li>восстановление останавливается в <code>cycle_start</code>, а не в корне дерева DFS.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistakes-title">
+        <p class="section-kicker">Разбор ошибок</p>
+        <h2 id="mistakes-title">Типичные ошибки</h2>
+        <ol>
+          <li><strong>Только <code>visited</code>.</strong> Булев массив не различает текущий путь и завершённые
+            ветви.</li>
+          <li><strong>Любое ребро в посещённую вершину считается обратным.</strong> Цикл гарантирует только ребро
+            в серую вершину.</li>
+          <li><strong>Нет родителей.</strong> Три цвета обнаруживают цикл, но без <code>parent</code> не
+            восстанавливают путь.</li>
+          <li><strong>DFS продолжается после находки.</strong> Дальнейший обход может перезаписать границы цикла;
+            результат нужно немедленно передавать вверх.</li>
+          <li><strong>Путь восстанавливается до корня.</strong> Вершины выше <code>cycle_start</code> не входят в
+            найденный цикл.</li>
+          <li><strong>Запуск только из вершины 1.</strong> Цикл может лежать в другой компоненте.</li>
+          <li><strong>Правило неориентированного графа.</strong> Ребро из потомка в родителя здесь действительно
+            замыкает ориентированный цикл и не должно пропускаться.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="technical-title">
+        <p class="section-kicker">Технические детали</p>
+        <h2 id="technical-title">Переносимость и глубина рекурсии</h2>
+        <p>Принятый листинг использует <code>reverse</code> без явного подключения <code>&lt;algorithm&gt;</code>.
+          Переносимый вариант должен добавить этот заголовок и вызвать <code>std::reverse</code>.</p>
+        <p>В худшем случае глубина рекурсивного DFS равна <span class="math-inline">\(\Theta(n)\)</span>. При
+          <span class="math-inline">\(n=5\cdot10^5\)</span> это чувствительно к размеру системного стека. В
+          другом окружении надёжнее итеративный DFS с явным стеком и позицией следующего ребра.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Как распознать паттерн</h2>
+        <ul>
+          <li>дан ориентированный граф;</li>
+          <li>нужно найти и вывести конкретный цикл;</li>
+          <li>ограничения требуют линейного времени;</li>
+          <li>граф может быть несвязным.</li>
+        </ul>
+        <div class="math-display">\[
+\text{текущий стек DFS}
+\Longleftrightarrow
+\text{серые вершины},
+\]</div>
+        <div class="math-display">\[
+\text{ребро в серую вершину}
+\Longleftrightarrow
+\text{ориентированный цикл},
+\]</div>
+        <div class="math-display">\[
+\texttt{parent}
+\Longleftrightarrow
+\text{восстановление пути}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="summary-title">
+        <p class="section-kicker">Вывод</p>
+        <h2 id="summary-title">Главный итог</h2>
+        <p>Для ориентированного графа нужно знать не только факт посещения, но и завершена ли обработка вершины:
+        </p>
+        <div class="math-display">\[
+\text{белая}\to\text{серая}\to\text{чёрная}.
+\]</div>
+        <p>Серые вершины образуют текущий путь DFS. Ребро в серую вершину замыкает этот путь, а массив родителей
+          восстанавливает один цикл за линейное время.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="#final-code">Accepted-листинг на этой странице</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и
+              структуры данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL only after it is supplied. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
