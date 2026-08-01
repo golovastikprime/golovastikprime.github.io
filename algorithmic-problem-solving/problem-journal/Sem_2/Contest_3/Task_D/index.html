@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи D из контеста 3 второго семестра: компоненты сильной связности алгоритмом Косарайю и топологическая нумерация конденсации.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача D — Компоненты сильной связности — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_2/Contest_3/">← Контест 3</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 2 · Контест 3</p>
+      <h1>Задача D — Компоненты сильной связности</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-08-02">2 августа 2026</time></p>
+      <p class="study-lead">Два прохода Косарайю выделяют SCC и сразу нумеруют конденсацию в топологическом
+        порядке — без её явного построения.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_2/Contest_3/Task_D">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Использован алгоритм Косарайю: postorder исходного графа и DFS по
+          транспонированному графу в обратном порядке выхода.</p>
+        <ul>
+          <li>время: <span class="math-inline">\(\Theta(n+m)\)</span>;</li>
+          <li>память: <span class="math-inline">\(\Theta(n+m)\)</span>;</li>
+          <li>номера компонент уже задают топологический порядок конденсации.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Разбиение ориентированного графа</h2>
+        <p>Дан ориентированный мультиграф <span class="math-inline">\(G=(V,E)\)</span>, где <span
+            class="math-inline">\(V=\{1,2,\ldots,n\}\)</span>, <span
+            class="math-inline">\(1\le n,m\le5\cdot10^5\)</span>. Разрешены петли и кратные рёбра.</p>
+        <p>Нужно назначить каждой вершине номер её компоненты сильной связности так, чтобы для каждого ребра
+          <span class="math-inline">\((u,v)\in E\)</span></p>
+        <div class="math-display">\[
+\boxed{
+comp[u]=comp[v]
+\quad\text{или}\quad
+comp[u]&lt;comp[v]
+}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="definitions-title">
+        <p class="section-kicker">Определения</p>
+        <h2 id="definitions-title">Сильная связность и конденсация</h2>
+        <p>Вершины <span class="math-inline">\(u\)</span> и <span class="math-inline">\(v\)</span> сильно
+          связны, если взаимно достижимы:</p>
+        <div class="math-display">\[
+u\sim v
+\iff
+u\rightsquigarrow v
+\ \land\ 
+v\rightsquigarrow u.
+\]</div>
+        <p>Это отношение эквивалентности, а его классы называются SCC. Если сжать каждую SCC в одну вершину,
+          получится конденсация <span class="math-inline">\(G^{\mathrm{SCC}}\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="dag-title">
+        <p class="section-kicker">Свойство</p>
+        <h2 id="dag-title">Почему конденсация ациклична</h2>
+        <p>Если бы различные компоненты образовали цикл</p>
+        <div class="math-display">\[
+C_1\to C_2\to\cdots\to C_k\to C_1,
+\]</div>
+        <p>из любой из них можно было бы попасть в любую другую и вернуться обратно. Тогда все вершины цикла
+          принадлежали бы одной SCC, что противоречит их различию. Поэтому</p>
+        <div class="math-display">\[
+\boxed{G^{\mathrm{SCC}}\text{ является DAG}}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="idea-title">
+        <p class="section-kicker">Ключевая идея</p>
+        <h2 id="idea-title">Два прохода Косарайю</h2>
+        <ol>
+          <li>Выполнить DFS в исходном графе и добавлять вершины в <code>order</code> при выходе.</li>
+          <li>Просматривать вершины в обратном порядке выхода.</li>
+          <li>Из каждой ещё не размеченной вершины запускать DFS в транспонированном графе.</li>
+          <li>Все вершины одного запуска второго DFS получают общий номер.</li>
+        </ol>
+        <p>Для SCC <span class="math-inline">\(C\)</span> обозначим максимальное время выхода её вершины через
+          <span class="math-inline">\(F(C)\)</span>. Для ребра конденсации</p>
+        <div class="math-display">\[
+C\to D,
+\qquad C\ne D,
+\]</div>
+        <p>выполняется</p>
+        <div class="math-display">\[
+\boxed{F(C)&gt;F(D)}.
+\]</div>
+        <p>Значит, reverse postorder перечисляет компоненты от источников конденсации к стокам.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="transpose-title">
+        <p class="section-kicker">Транспонирование</p>
+        <h2 id="transpose-title">Зачем обращать рёбра</h2>
+        <p>В транспонированном графе</p>
+        <div class="math-display">\[
+(u,v)\in E(G)
+\iff
+(v,u)\in E(G^T).
+\]</div>
+        <p>SCC не меняются: взаимные пути просто обращаются. Межкомпонентные рёбра меняют направление. Компонента,
+          выбранная первой среди ещё не обработанных, является источником исходной конденсации; в
+          транспонированной конденсации из неё нельзя выйти в другую ещё не размеченную SCC. Поэтому один второй
+          DFS выделяет ровно одну компоненту.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="passes-title">
+        <p class="section-kicker">Реализация идеи</p>
+        <h2 id="passes-title">Первый и второй проходы</h2>
+        <h3>Postorder исходного графа</h3>
+        <p>Первый DFS использует <code>color</code> как обычный <code>visited</code> и добавляет вершину только
+          после всех исходящих рёбер. Внешний цикл посещает все компоненты, поэтому
+          <span class="math-inline">\(|\texttt{order}|=n\)</span>.</p>
+        <h3>Разметка обратного графа</h3>
+        <p><code>comp[v] == 0</code> означает, что вершина ещё не назначена компоненте. Перед новым запуском
+          счётчик увеличивается, а все достижимые по обратным рёбрам неразмеченные вершины получают этот номер.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="correctness-title">Корректность и порядок номеров</h2>
+        <p>Первой во втором проходе выбирается вершина SCC с максимальным <span
+            class="math-inline">\(F(C)\)</span> среди неразмеченных компонент. Это источник оставшейся исходной
+          конденсации и сток её транспонирования, поэтому второй DFS не покидает компоненту. Внутри SCC все вершины
+          остаются взаимно достижимыми и будут посещены.</p>
+        <p>После удаления этой компоненты рассуждение повторяется. Компоненты получают номера в порядке источников
+          исходной конденсации, следовательно для любого межкомпонентного ребра <span
+            class="math-inline">\(C\to D\)</span></p>
+        <div class="math-display">\[
+\boxed{comp(C)&lt;comp(D)}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="example-title">
+        <p class="section-kicker">Минимальная проверка</p>
+        <h2 id="example-title">Почему порядок критичен</h2>
+        <p>В графе <span class="math-inline">\(1\to2\)</span> вершины образуют разные SCC. В обратном графе есть
+          ребро <span class="math-inline">\(2\to1\)</span>. Если начать второй проход с вершины <span
+            class="math-inline">\(2\)</span>, компоненты ошибочно сольются. Reverse postorder заставляет сначала
+          обработать <span class="math-inline">\(1\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="final-code">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="final-code">Accepted-код</h2>
+        <pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  int n;
+  int m;
+  std::cin &gt;&gt; n &gt;&gt; m;
+
+  std::vector&lt;std::vector&lt;int&gt;&gt; adj(n + 1);
+  std::vector&lt;std::vector&lt;int&gt;&gt; adj_reverse(n + 1);
+  for (int i = 0; i &lt; m; ++i) {
+    int u;
+    int v;
+    std::cin &gt;&gt; u &gt;&gt; v;
+    adj[u].push_back(v);
+    adj_reverse[v].push_back(u);
+  }
+
+  std::vector&lt;int&gt; color(n + 1, 0);
+  std::vector&lt;int&gt; order;
+  order.reserve(n);
+
+  auto dfs1 = [&amp;](auto&amp;&amp; self, int v) -&gt; void {
+    color[v] = 1;
+    for (int u : adj[v]) {
+      if (color[u] == 0) {
+        self(self, u);
+      }
+    }
+    order.push_back(v);
+  };
+
+  for (int v = 1; v &lt;= n; ++v) {
+    if (color[v] == 0) {
+      dfs1(dfs1, v);
+    }
+  }
+
+  std::vector&lt;int&gt; comp(n + 1, 0);
+  int comp_cnt = 0;
+  auto dfs2 = [&amp;](auto&amp;&amp; self, int v) -&gt; void {
+    comp[v] = comp_cnt;
+    for (int u : adj_reverse[v]) {
+      if (comp[u] == 0) {
+        self(self, u);
+      }
+    }
+  };
+
+  for (int i = n - 1; i &gt;= 0; --i) {
+    int v = order[i];
+    if (comp[v] == 0) {
+      ++comp_cnt;
+      dfs2(dfs2, v);
+    }
+  }
+
+  std::cout &lt;&lt; comp_cnt &lt;&lt; '\n';
+  for (int v = 1; v &lt;= n; ++v) {
+    std::cout &lt;&lt; comp[v] &lt;&lt; ' ';
+  }
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Оба DFS посещают каждую вершину один раз и просматривают каждое ребро постоянное число раз:</p>
+        <div class="math-display">\[
+\boxed{T(n,m)=\Theta(n+m)}.
+\]</div>
+        <p>Исходный и обратный графы, служебные массивы, порядок и рекурсивные стеки занимают</p>
+        <div class="math-display">\[
+\boxed{W(n,m)=\Theta(n+m)}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="code-details-title">
+        <p class="section-kicker">Разбор кода</p>
+        <h2 id="code-details-title">Технические детали</h2>
+        <ul>
+          <li><code>order.reserve(n)</code> выделяет память, но не меняет размер вектора;</li>
+          <li><code>color</code> не сбрасывается: второй проход использует <code>comp</code> как посещённость и
+            ответ;</li>
+          <li>цикл от <span class="math-inline">\(n-1\)</span> корректен, потому что первый проход добавляет в
+            <code>order</code> все <span class="math-inline">\(n\)</span> вершин;</li>
+          <li>номер увеличивается до <code>dfs2</code>, поскольку ноль зарезервирован для неразмеченных вершин;</li>
+          <li>петли и кратные рёбра не меняют SCC и не влияют на асимптотику.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверки</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li>сильно связный граф получает один номер;</li>
+          <li>DAG разбивается на одноэлементные SCC, а номера образуют топологический порядок;</li>
+          <li>петля остаётся внутри компоненты своей вершины;</li>
+          <li>несвязанные части обрабатываются обоими внешними циклами;</li>
+          <li>кратные рёбра предъявляют то же условие порядка.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistakes-title">
+        <p class="section-kicker">Разбор ошибок</p>
+        <h2 id="mistakes-title">Типичные неверные подходы</h2>
+        <ol>
+          <li><strong>Искать обычные компоненты связности.</strong> Для SCC нужна взаимная, а не односторонняя
+            достижимость.</li>
+          <li><strong>Считать DFS-деревья SCC.</strong> Один DFS может пройти через несколько компонент по рёбрам
+            конденсации.</li>
+          <li><strong>Запускать второй проход в произвольном порядке.</strong> Это может склеить разные SCC.</li>
+          <li><strong>Во втором проходе использовать исходный граф.</strong> DFS из источника сможет уйти по
+            конденсации.</li>
+          <li><strong>Просматривать <code>order</code> прямо.</strong> Нужен порядок убывания времени выхода.</li>
+          <li><strong>Использовать ноль как номер первой SCC.</strong> Тогда он перестаёт обозначать непосещённую
+            вершину.</li>
+          <li><strong>Забыть внешние циклы.</strong> Часть графа останется необработанной.</li>
+          <li><strong>Строить и сортировать конденсацию без необходимости.</strong> Порядок второго прохода уже
+            даёт нужную нумерацию.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="technical-title">
+        <p class="section-kicker">Надёжность</p>
+        <h2 id="technical-title">Глубина рекурсии</h2>
+        <p>В худшем случае глубина каждого DFS равна <span class="math-inline">\(\Theta(n)\)</span>. При <span
+            class="math-inline">\(n=5\cdot10^5\)</span> это чувствительно к размеру системного стека. Принятое
+          решение прошло тесты контеста, но переносимый вариант может использовать явные стеки для обоих проходов.
+        </p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="comparison-title">
+        <p class="section-kicker">Сравнение</p>
+        <h2 id="comparison-title">Косарайю и Тарьян</h2>
+        <p>Оба алгоритма работают за <span class="math-inline">\(\Theta(n+m)\)</span>. Косарайю выполняет два
+          обхода и хранит транспонированный граф; Тарьян использует один проход, времена входа, <code>low</code> и
+          стек активных вершин. Здесь Косарайю удобен тем, что порядок второго прохода сразу даёт требуемые номера
+          компонент.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Как распознать паттерн</h2>
+        <ul>
+          <li>дан ориентированный граф;</li>
+          <li>важна взаимная достижимость;</li>
+          <li>вершины нужно объединить в максимальные группы;</li>
+          <li>после объединения анализируются зависимости между группами;</li>
+          <li>ограничения требуют линейного алгоритма.</li>
+        </ul>
+        <div class="math-display">\[
+\text{SCC}
+\ +\ 
+\text{исходный и обратный графы}
+\Longrightarrow
+\text{два DFS по reverse postorder}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="summary-title">
+        <p class="section-kicker">Вывод</p>
+        <h2 id="summary-title">Главный итог</h2>
+        <p>Первый проход выбирает источник среди ещё не обработанных компонент. После транспонирования из него
+          нельзя выйти в другую неразмеченную SCC, поэтому второй DFS выделяет ровно одну компоненту. Порядок
+          последовательного удаления источников автоматически обеспечивает</p>
+        <div class="math-display">\[
+\boxed{
+(u,v)\in E
+\implies
+comp[u]=comp[v]
+\ \text{или}\ 
+comp[u]&lt;comp[v]
+}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="#final-code">Accepted-листинг на этой странице</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и
+              структуры данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL only after it is supplied. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
