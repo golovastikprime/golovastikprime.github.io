@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи C из контеста 3 второго семестра: топологическая сортировка ориентированного графа через DFS и времена выхода.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача C — Топологическая сортировка — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_2/Contest_3/">← Контест 3</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 2 · Контест 3</p>
+      <h1>Задача C — Топологическая сортировка</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-08-02">2 августа 2026</time></p>
+      <p class="study-lead">Трёхцветный DFS одновременно обнаруживает цикл и строит времена выхода: в DAG
+        порядок их убывания является топологическим.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_2/Contest_3/Task_C">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> DFS с тремя цветами проверяет ацикличность и назначает вершинам времена
+          выхода.</p>
+        <ul>
+          <li>DFS: <span class="math-inline">\(\Theta(n+m)\)</span>;</li>
+          <li>явная сортировка: <span class="math-inline">\(O(n\log n)\)</span>;</li>
+          <li>память: <span class="math-inline">\(\Theta(n+m)\)</span>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Линейный порядок зависимостей</h2>
+        <p>Дан ориентированный граф <span class="math-inline">\(G=(V,E)\)</span>, где <span
+            class="math-inline">\(V=\{1,2,\ldots,n\}\)</span>, <span
+            class="math-inline">\(1\le n\le10^5\)</span> и <span
+            class="math-inline">\(0\le m\le10^5\)</span>.</p>
+        <p>Нужно найти перестановку всех вершин <span class="math-inline">\(p_1,\ldots,p_n\)</span>, в которой
+          для каждого ребра <span class="math-inline">\((u,v)\in E\)</span></p>
+        <div class="math-display">\[
+pos(u)&lt;pos(v),
+\]</div>
+        <p>либо установить, что такого порядка нет. Топологический порядок существует тогда и только тогда,
+          когда граф является DAG.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Наблюдение</p>
+        <h2 id="observation-title">Цикл и времена выхода</h2>
+        <p>Если при обработке ребра <span class="math-inline">\(v\to u\)</span> вершина <span
+            class="math-inline">\(u\)</span> находится в текущем стеке DFS, древесный путь <span
+            class="math-inline">\(u\leadsto v\)</span> вместе с этим ребром образует цикл.</p>
+        <p>Если циклов нет, для каждого ребра <span class="math-inline">\(u\to v\)</span> конец ребра завершает
+          работу раньше начала:</p>
+        <div class="math-display">\[
+\boxed{t_{out}(u)&gt;t_{out}(v)}.
+\]</div>
+        <p>Следовательно, вершины по убыванию времени выхода образуют топологический порядок.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="colors-title">
+        <p class="section-kicker">Состояния</p>
+        <h2 id="colors-title">Зачем нужны три цвета</h2>
+        <ul>
+          <li><code>0</code>, белая — DFS ещё не входил в вершину;</li>
+          <li><code>1</code>, серая — вершина находится в активном стеке;</li>
+          <li><code>2</code>, чёрная — вершина и исходящие рёбра полностью обработаны.</li>
+        </ul>
+        <p>Ребро в серую вершину доказывает цикл. Ребро в чёрную вершину этого не доказывает: например, граф</p>
+        <div class="math-display">\[
+1\to2,
+\qquad
+1\to3,
+\qquad
+3\to2
+\]</div>
+        <p>ацикличен, хотя вершина <span class="math-inline">\(2\)</span> может быть посещена до обработки
+          ребра <span class="math-inline">\(3\to2\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="time-title">
+        <p class="section-kicker">Постпорядок</p>
+        <h2 id="time-title">Время выхода</h2>
+        <p>Время назначается только после обработки всех исходящих рёбер:</p>
+        <pre><code class="language-cpp">color[v] = 2;
+tout[v] = timer++;</code></pre>
+        <p>Для минимального графа <span class="math-inline">\(1\to2\)</span> сначала завершается вершина <span
+            class="math-inline">\(2\)</span>, затем <span class="math-inline">\(1\)</span>:</p>
+        <div class="math-display">\[
+t_{out}(2)&lt;t_{out}(1).
+\]</div>
+        <p>Поэтому сортировать нужно именно по убыванию времени выхода.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="algorithm-title">
+        <p class="section-kicker">Алгоритм</p>
+        <h2 id="algorithm-title">DFS по всем компонентам</h2>
+        <ol>
+          <li>Построить списки исходящих рёбер.</li>
+          <li>Запустить DFS из каждой белой вершины.</li>
+          <li>При входе покрасить вершину в серый.</li>
+          <li>Для белого соседа продолжить DFS, для серого сообщить о цикле, чёрного пропустить.</li>
+          <li>После всех рёбер покрасить вершину в чёрный и назначить время выхода.</li>
+          <li>При цикле вывести <code>-1</code>.</li>
+          <li>Иначе вывести вершины по убыванию <code>tout</code>.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="invariants-title">
+        <p class="section-kicker">Инварианты</p>
+        <h2 id="invariants-title">Что поддерживает обход</h2>
+        <ul>
+          <li>серые вершины — текущий активный путь DFS;</li>
+          <li>у чёрной вершины просмотрены все исходящие рёбра и назначено время выхода;</li>
+          <li>до очередного выхода <code>timer</code> равен числу завершённых вершин;</li>
+          <li>каждая вершина обрабатывается ровно один раз благодаря запуску только из белых вершин.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="correctness-title">Корректность</h2>
+        <h3>Обнаружение цикла</h3>
+        <p>Серая вершина является предком текущей, поэтому ребро к ней замыкает ориентированный путь. Обратно,
+          если в графе есть цикл, рассмотрим первую его вершину, которую DFS собирается покрасить в чёрный. Её
+          следующий сосед на цикле не может быть ни белым, ни чёрным, значит он серый и цикл будет найден.</p>
+        <h3>Свойство времени выхода</h3>
+        <p>Для ребра <span class="math-inline">\(u\to v\)</span> в DAG вершина <span
+            class="math-inline">\(v\)</span> либо рекурсивно завершается до <span
+            class="math-inline">\(u\)</span>, либо уже была чёрной. Серый случай означал бы цикл. Поэтому всегда
+          <span class="math-inline">\(t_{out}(u)&gt;t_{out}(v)\)</span>.</p>
+        <h3>Топологический порядок</h3>
+        <p>При сортировке по убыванию <code>tout</code> начало каждого ребра оказывается раньше его конца. Если же
+          найден цикл, потребовалась бы невозможная цепочка строгих неравенств позиций, замыкающаяся сама в себя.
+        </p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="example-title">
+        <p class="section-kicker">Пример</p>
+        <h2 id="example-title">Один допустимый порядок</h2>
+        <p>Для рёбер</p>
+        <div class="math-display">\[
+1\to3,
+\quad2\to3,
+\quad3\to4,
+\quad2\to5,
+\quad5\to6
+\]</div>
+        <p>одним из возможных топологических порядков является</p>
+        <div class="math-display">\[
+2, 5, 6, 1, 3, 4.
+\]</div>
+        <p>Для цикла <span class="math-inline">\(1\to2\to3\to1\)</span> ребро <span
+            class="math-inline">\(3\to1\)</span> ведёт в серую вершину, поэтому ответ равен <code>-1</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="final-code">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="final-code">Финальный Accepted-подход</h2>
+        <pre><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;functional&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+struct VertexTime {
+  int vertex;
+  int tout;
+};
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  int n;
+  int m;
+  std::cin &gt;&gt; n &gt;&gt; m;
+
+  std::vector&lt;std::vector&lt;int&gt;&gt; adj(n + 1);
+  for (int i = 0; i &lt; m; ++i) {
+    int u;
+    int v;
+    std::cin &gt;&gt; u &gt;&gt; v;
+    adj[u].push_back(v);
+  }
+
+  std::vector&lt;int&gt; color(n + 1, 0);
+  std::vector&lt;int&gt; tout(n + 1, -1);
+  int timer = 0;
+
+  std::function&lt;bool(int)&gt; dfs = [&amp;](int v) -&gt; bool {
+    color[v] = 1;
+
+    for (int u : adj[v]) {
+      if (color[u] == 0) {
+        if (dfs(u)) {
+          return true;
+        }
+      } else if (color[u] == 1) {
+        return true;
+      }
+    }
+
+    color[v] = 2;
+    tout[v] = timer++;
+    return false;
+  };
+
+  for (int v = 1; v &lt;= n; ++v) {
+    if (color[v] == 0 &amp;&amp; dfs(v)) {
+      std::cout &lt;&lt; -1;
+      return 0;
+    }
+  }
+
+  std::vector&lt;VertexTime&gt; order;
+  order.reserve(n);
+  for (int v = 1; v &lt;= n; ++v) {
+    order.push_back({v, tout[v]});
+  }
+
+  std::sort(order.begin(), order.end(),
+            [](const VertexTime&amp; lhs, const VertexTime&amp; rhs) {
+              return lhs.tout &gt; rhs.tout;
+            });
+
+  for (const auto&amp; [vertex, exit_time] : order) {
+    std::cout &lt;&lt; vertex &lt;&lt; ' ';
+  }
+}</code></pre>
+        <p><code>exit_time</code> в последнем цикле нужен только для structured binding; ответ использует поле
+          <code>vertex</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>DFS обрабатывает каждую вершину и ребро постоянное число раз:</p>
+        <div class="math-display">\[
+\Theta(n+m).
+\]</div>
+        <p>В принятом подходе времена выхода затем сортируются:</p>
+        <div class="math-display">\[
+\boxed{T(n,m)=\Theta(n+m+n\log n)}.
+\]</div>
+        <p>Если добавлять вершины в массив при выходе и затем развернуть его, сортировка не нужна и время
+          становится <span class="math-inline">\(\Theta(n+m)\)</span>. Память в обоих случаях:</p>
+        <div class="math-display">\[
+\boxed{W(n,m)=\Theta(n+m)}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="code-analysis-title">
+        <p class="section-kicker">Разбор кода</p>
+        <h2 id="code-analysis-title">Неявное распространение результата</h2>
+        <p>В исходном принятом фрагменте результат <code>dfs(u)</code> явно не проверялся. При раннем возврате
+          вершина <span class="math-inline">\(u\)</span> оставалась серой, и родитель замечал
+          <code>color[u] == 1</code>, тем самым неявно передавая сигнал вверх. Это корректно, но скрывает важный
+          инвариант.</p>
+        <p>Финальный листинг выражает смысл напрямую:</p>
+        <pre><code class="language-cpp">if (color[u] == 0) {
+  if (dfs(u)) {
+    return true;
+  }
+} else if (color[u] == 1) {
+  return true;
+}</code></pre>
+        <p>Также явно подключён <code>&lt;algorithm&gt;</code>, удалён неиспользуемый
+          <code>&lt;unordered_set&gt;</code> и не хранится фиктивная вершина.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверки</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li>одна изолированная вершина выводится как единственный элемент порядка;</li>
+          <li>несколько изолированных вершин допускают любую перестановку;</li>
+          <li>петля немедленно обнаруживается как ребро в серую вершину;</li>
+          <li>разные компоненты могут перемешиваться в ответе произвольным образом;</li>
+          <li>ребро в чёрную вершину не является циклом;</li>
+          <li>параллельные рёбра не нарушают алгоритм.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistakes-title">
+        <p class="section-kicker">Разбор ошибок</p>
+        <h2 id="mistakes-title">Типичные неверные подходы</h2>
+        <ol>
+          <li><strong>Считать циклом любое ребро в посещённую вершину.</strong> Посещённая вершина может быть уже
+            чёрной; нужны три состояния.</li>
+          <li><strong>Пропускать ребро в родителя.</strong> Это правило относится к неориентированному графу; здесь
+            ребро в предка замыкает цикл.</li>
+          <li><strong>Сортировать времена по возрастанию.</strong> Это поставит конец ребра раньше начала.</li>
+          <li><strong>Запустить DFS только из вершины 1.</strong> Часть вершин и цикл в другой компоненте могут
+            остаться незамеченными.</li>
+          <li><strong>Записать время до обработки детей.</strong> Время входа не обладает нужным свойством по всем
+            рёбрам DAG.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="methods-title">
+        <p class="section-kicker">Альтернатива</p>
+        <h2 id="methods-title">DFS и алгоритм Кана</h2>
+        <p>DFS хранит цвета, обнаруживает цикл по ребру в серую вершину и строит reverse postorder. Алгоритм Кана
+          хранит входные степени, обнаруживает цикл, если обработано меньше <span
+            class="math-inline">\(n\)</span> вершин, и формирует порядок удаления вершин нулевой степени.</p>
+        <p>Оба метода работают за <span class="math-inline">\(\Theta(n+m)\)</span> без дополнительной сортировки.
+          Алгоритм Кана с min-priority queue удобнее, если нужен лексикографически минимальный порядок.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Как распознать паттерн</h2>
+        <ul>
+          <li>объекты связаны направленными зависимостями;</li>
+          <li>для зависимости <span class="math-inline">\(u\to v\)</span> объект <span
+              class="math-inline">\(u\)</span> должен стоять раньше;</li>
+          <li>цикл делает порядок невозможным;</li>
+          <li>нужен любой допустимый порядок.</li>
+        </ul>
+        <div class="math-display">\[
+\text{направленные зависимости}
+\Longrightarrow
+\text{линейный порядок}
+\Longrightarrow
+\text{цикл означает невозможность}
+\Longrightarrow
+\text{DFS + reverse postorder}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="summary-title">
+        <p class="section-kicker">Вывод</p>
+        <h2 id="summary-title">Главный итог</h2>
+        <p>DFS хранит обе необходимые части информации: серый цвет обнаруживает цикл, а момент выхода фиксирует
+          завершение всех зависимостей из вершины. Поэтому в DAG</p>
+        <div class="math-display">\[
+\boxed{u\to v\implies t_{out}(u)&gt;t_{out}(v)},
+\]</div>
+        <p>и порядок убывания времён выхода является топологическим.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="#final-code">финальный листинг на этой странице</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и
+              структуры данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL only after it is supplied. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
