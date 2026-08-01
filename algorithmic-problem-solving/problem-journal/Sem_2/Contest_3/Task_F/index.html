@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи F из контеста 3 второго семестра: поиск точек сочленения через DFS, времена входа и low-link values.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача F — Точки сочленения — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_2/Contest_3/">← Контест 3</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 2 · Контест 3</p>
+      <h1>Задача F — Точки сочленения</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-08-02">2 августа 2026</time></p>
+      <p class="study-lead">Low-link value определяет, какие дочерние поддеревья потеряют связь с верхней
+        частью DFS-дерева после удаления вершины.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_2/Contest_3/Task_F">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Использован DFS-лес с временами входа, low-link values и отдельными
+          критериями для корня и некорневой вершины.</p>
+        <ul>
+          <li>время: <span class="math-inline">\(\Theta(n+m)\)</span>;</li>
+          <li>память: <span class="math-inline">\(\Theta(n+m)\)</span>;</li>
+          <li>петли и кратные рёбра поддерживаются через <code>edge_id</code>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Разделяющие вершины</h2>
+        <p>Дан неориентированный граф <span class="math-inline">\(G=(V,E)\)</span>, где <span
+            class="math-inline">\(V=\{1,2,\ldots,n\}\)</span>,</p>
+        <div class="math-display">\[
+1\le n\le2\cdot10^4,
+\qquad
+1\le m\le2\cdot10^5.
+\]</div>
+        <p>Разрешены петли и кратные рёбра. Нужно вывести в возрастающем порядке все вершины, удаление которых
+          вместе с инцидентными рёбрами увеличивает число компонент связности:</p>
+        <div class="math-display">\[
+c(G-v)&gt;c(G).
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="slow-title">
+        <p class="section-kicker">Неудачный подход</p>
+        <h2 id="slow-title">Почему нельзя проверять вершины по одной</h2>
+        <p>Удаление каждой вершины с отдельным DFS или BFS требует</p>
+        <div class="math-display">\[
+\Theta\bigl(n(n+m)\bigr)
+\]</div>
+        <p>времени. Вместо этого один DFS должен определить, какие поддеревья способны связаться с верхней частью
+          дерева без своего родителя.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="tree-title">
+        <p class="section-kicker">Структура DFS</p>
+        <h2 id="tree-title">Дочерние поддеревья</h2>
+        <p>Белый сосед становится ребёнком в DFS-дереве. Ребро в уже посещённую вершину, отличное от конкретного
+          родительского ребра, создаёт дополнительную связь с предком.</p>
+        <p>Между поддеревьями разных детей одной вершины нет рёбер: если бы такое ребро существовало, DFS из
+          первого поддерева перешёл бы в ещё белую вершину второго и объединил их в одно поддерево.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="values-title">
+        <p class="section-kicker">Состояние DFS</p>
+        <h2 id="values-title"><code>enter</code> и <code>ret</code></h2>
+        <p>При входе в вершину:</p>
+        <pre><code class="language-cpp">enter[v] = ret[v] = timer++;</code></pre>
+        <p><code>ret[v]</code> — минимальное время входа вершины, достижимой после спуска внутри поддерева <span
+            class="math-inline">\(v\)</span> и не более одного недревесного ребра вверх.</p>
+        <p>После обработки ребёнка информация поднимается:</p>
+        <pre><code class="language-cpp">ret[v] = std::min(ret[v], ret[to]);</code></pre>
+        <p>Недревесное ребро непосредственно ведёт в <code>to</code>:</p>
+        <pre><code class="language-cpp">ret[v] = std::min(ret[v], enter[to]);</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="nonroot-title">
+        <p class="section-kicker">Критерий</p>
+        <h2 id="nonroot-title">Некорневая вершина</h2>
+        <p>Пусть <span class="math-inline">\(v\)</span> не является корнем DFS-дерева. Тогда</p>
+        <div class="math-display">\[
+\boxed{
+v\text{ — точка сочленения}
+\iff
+\exists\text{ ребёнок }to:
+ret[to]\ge enter[v]
+}.
+\]</div>
+        <p>Такое поддерево не достигает строгого предка <span class="math-inline">\(v\)</span> без самой вершины
+          <span class="math-inline">\(v\)</span>, поэтому после её удаления отделяется от верхней части.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="root-title">
+        <p class="section-kicker">Особый случай</p>
+        <h2 id="root-title">Корень DFS-дерева</h2>
+        <p>У корня нет верхней части, поэтому low-link критерий к нему неприменим:</p>
+        <div class="math-display">\[
+\boxed{
+r\text{ — точка сочленения}
+\iff
+children(r)\ge2
+}.
+\]</div>
+        <p><code>children</code> — число рёбер DFS-дерева из корня, а не его степень в исходном графе. После
+          удаления корня разные дочерние поддеревья не могут связаться между собой.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="sign-title">
+        <p class="section-kicker">Важное различие</p>
+        <h2 id="sign-title">Почему знак нестрогий</h2>
+        <p>При <span class="math-inline">\(ret[to]=enter[v]\)</span> поддерево возвращается только в саму <span
+            class="math-inline">\(v\)</span>, но не в её строгого предка. После удаления <span
+            class="math-inline">\(v\)</span> эта связь исчезнет, поэтому вершина остаётся точкой сочленения.</p>
+        <ul>
+          <li>мост <span class="math-inline">\(\{v,to\}\)</span>: <code>ret[to] &gt; enter[v]</code>;</li>
+          <li>точка сочленения <span class="math-inline">\(v\)</span>: <code>ret[to] &gt;= enter[v]</code>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="ids-title">
+        <p class="section-kicker">Кратные рёбра</p>
+        <h2 id="ids-title">Пропуск конкретного ребра</h2>
+        <p>DFS получает номер родительского ребра и пропускает только его:</p>
+        <pre><code class="language-cpp">if (id == edge_id) {
+  continue;
+}</code></pre>
+        <p>Параллельное ребро в ту же родительскую вершину должно остаться альтернативной связью и повлиять на
+          <code>ret</code>. Поэтому сравнения только с вершиной-родителем недостаточно.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="correctness-title">Корректность критериев</h2>
+        <p>Для некорневой вершины ребёнок с <span class="math-inline">\(ret[to]&lt;enter[v]\)</span> имеет путь в
+          строгого предка, поэтому после удаления <span class="math-inline">\(v\)</span> остаётся связан с верхней
+          частью. При <span class="math-inline">\(ret[to]\ge enter[v]\)</span> такого пути нет, и поддерево
+          отделяется.</p>
+        <p>Для корня разные дети DFS образуют разные поддеревья без рёбер между ними. При двух детях удаление корня
+          разделяет компоненту, при одном — все остальные вершины остаются в одном поддереве.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="final-code">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="final-code">Accepted-код</h2>
+        <pre><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;functional&gt;
+#include &lt;iostream&gt;
+#include &lt;utility&gt;
+#include &lt;vector&gt;
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  int n;
+  int m;
+  std::cin &gt;&gt; n &gt;&gt; m;
+
+  std::vector&lt;std::vector&lt;std::pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+  for (int i = 0; i &lt; m; ++i) {
+    int u;
+    int v;
+    std::cin &gt;&gt; u &gt;&gt; v;
+    adj[u].push_back({v, i});
+    adj[v].push_back({u, i});
+  }
+
+  std::vector&lt;int&gt; enter(n + 1, -1);
+  std::vector&lt;int&gt; ret(n + 1, 0);
+  std::vector&lt;bool&gt; is_cut_point(n + 1, false);
+
+  int timer = 0;
+  int cut_points = 0;
+  std::function&lt;void(int, int)&gt; dfs = [&amp;](int v, int edge_id) {
+    enter[v] = ret[v] = timer++;
+    int children = 0;
+
+    for (auto [to, id] : adj[v]) {
+      if (id == edge_id) {
+        continue;
+      }
+
+      if (enter[to] == -1) {
+        ++children;
+        dfs(to, id);
+        ret[v] = std::min(ret[v], ret[to]);
+
+        if (edge_id != -1 &amp;&amp; ret[to] &gt;= enter[v]) {
+          is_cut_point[v] = true;
+        }
+
+        if (edge_id == -1 &amp;&amp; children &gt;= 2) {
+          is_cut_point[v] = true;
+        }
+      } else {
+        ret[v] = std::min(ret[v], enter[to]);
+      }
+    }
+  };
+
+  for (int v = 1; v &lt;= n; ++v) {
+    if (enter[v] == -1) {
+      dfs(v, -1);
+    }
+  }
+
+  for (int i = 1; i &lt;= n; ++i) {
+    if (is_cut_point[i]) {
+      ++cut_points;
+    }
+  }
+
+  std::cout &lt;&lt; cut_points &lt;&lt; '\n';
+  for (int i = 1; i &lt;= n; ++i) {
+    if (is_cut_point[i]) {
+      std::cout &lt;&lt; i &lt;&lt; ' ';
+    }
+  }
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Каждая вершина открывается один раз, каждое неориентированное ребро рассматривается с обоих концов, а
+          работа при просмотре ребра постоянна:</p>
+        <div class="math-display">\[
+\boxed{T(n,m)=\Theta(n+m)}.
+\]</div>
+        <p>Граф, массивы и рекурсивный стек занимают</p>
+        <div class="math-display">\[
+\boxed{W(n,m)=\Theta(n+m)}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверки</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li>изолированная вершина не является точкой сочленения;</li>
+          <li>корень с одним ребёнком не является точкой сочленения;</li>
+          <li>корень с двумя детьми является точкой сочленения;</li>
+          <li>внутренняя вершина пути является точкой сочленения;</li>
+          <li>вершины простого цикла не являются точками сочленения;</li>
+          <li>петли не увеличивают число детей и не меняют ответ;</li>
+          <li>кратные рёбра корректно учитываются по номеру ребра.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistakes-title">
+        <p class="section-kicker">Разбор ошибок</p>
+        <h2 id="mistakes-title">Типичные ошибки</h2>
+        <ol>
+          <li><strong>Применить критерий некорневой вершины к корню.</strong> Корень проверяется только по числу
+            детей DFS.</li>
+          <li><strong>Считать соседей вместо детей.</strong> <code>children</code> увеличивается лишь перед
+            рекурсией в белую вершину.</li>
+          <li><strong>Использовать строгий знак.</strong> Равенство тоже отделяет поддерево после удаления
+            вершины; нужен <code>&gt;=</code>.</li>
+          <li><strong>Проверять до завершения ребёнка.</strong> <code>ret[to]</code> ещё не учитывает всё
+            поддерево.</li>
+          <li><strong>Не поднять <code>ret[to]</code>.</strong> Связь из глубины не достигнет предка.</li>
+          <li><strong>Использовать <code>ret[to]</code> для посещённого соседа.</strong> Нужно
+            <code>enter[to]</code>.</li>
+          <li><strong>Запустить DFS только из вершины 1.</strong> Остальные компоненты будут пропущены.</li>
+          <li><strong>Несколько раз посчитать одну вершину.</strong> Булев массив и финальный подсчёт устраняют
+            дублирование.</li>
+          <li><strong>Пропускать родительскую вершину.</strong> При кратных рёбрах нужно пропускать конкретный
+            <code>edge_id</code>.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="technical-title">
+        <p class="section-kicker">Надёжность</p>
+        <h2 id="technical-title">Глубина рекурсии</h2>
+        <p>На графе-пути глубина равна <span class="math-inline">\(\Theta(n)\)</span>. Принятое решение прошло
+          проверку при <span class="math-inline">\(n\le2\cdot10^4\)</span>, но в среде с малым стеком можно
+          использовать итеративный DFS с позицией следующего ребра и отдельной фазой выхода.</p>
+        <p>В финальном коде явно подключены <code>&lt;algorithm&gt;</code> и <code>&lt;utility&gt;</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Как распознать low-link</h2>
+        <ul>
+          <li>дан неориентированный граф;</li>
+          <li>удаление вершины может разрушить связность;</li>
+          <li>важно понять, какие DFS-поддеревья отделятся;</li>
+          <li>достаточно знать самого раннего достижимого предка;</li>
+          <li>ограничения требуют линейного алгоритма.</li>
+        </ul>
+        <div class="math-display">\[
+\text{удаление вершины}
+\Longrightarrow
+\text{отделившиеся поддеревья}
+\Longrightarrow
+\text{связь со строгим предком}
+\Longrightarrow
+\min enter
+\Longrightarrow
+\text{low-link}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="summary-title">
+        <p class="section-kicker">Вывод</p>
+        <h2 id="summary-title">Главный итог</h2>
+        <p>Для некорневой вершины:</p>
+        <div class="math-display">\[
+v\text{ — точка сочленения}
+\iff
+\exists\,to:
+ret[to]\ge enter[v].
+\]</div>
+        <p>Для корня:</p>
+        <div class="math-display">\[
+v\text{ — точка сочленения}
+\iff
+children(v)\ge2.
+\]</div>
+        <p>Раздельная обработка корня и нестрогий знак — две принципиальные детали корректности.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="#final-code">Accepted-листинг на этой странице</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и
+              структуры данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL only after it is supplied. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
