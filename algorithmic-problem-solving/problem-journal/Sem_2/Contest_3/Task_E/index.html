@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Разбор задачи E из контеста 3 второго семестра: поиск мостов в неориентированном графе через DFS и low-link values.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача E — Мосты — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную">
+      <span class="brand-mark" aria-hidden="true">К</span>
+      <span>Конспекты <small>ПМФ СПбАУ</small></span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_2/Contest_3/">← Контест 3</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank"
+        rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 2 · Контест 3</p>
+      <h1>Задача E — Мосты</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-08-02">2 августа 2026</time></p>
+      <p class="study-lead">Low-link value показывает, может ли DFS-поддерево вернуться к родителю или выше
+        без родительского ребра; отсутствие такого пути точно характеризует мост.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_2/Contest_3/Task_E">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Использован DFS-лес с временами входа, low-link values и сохранением
+          исходных номеров рёбер.</p>
+        <ul>
+          <li>время: <span class="math-inline">\(\Theta(n+m)\)</span>;</li>
+          <li>память: <span class="math-inline">\(\Theta(n+m)\)</span>;</li>
+          <li>кратные рёбра корректно различаются по <code>edge_id</code>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Найти номера всех мостов</h2>
+        <p>Дан неориентированный граф</p>
+        <div class="math-display">\[
+G=(V,E),
+\qquad
+V=\{1,2,\ldots,n\},
+\qquad
+E=\{e_1,e_2,\ldots,e_m\}.
+\]</div>
+        <p>Рёбра пронумерованы в порядке ввода. Ребро <span class="math-inline">\(e\)</span> называется мостом,
+          если после его удаления число компонент связности увеличивается:</p>
+        <div class="math-display">\[
+c(G-e)&gt;c(G).
+\]</div>
+        <p>Граф может быть несвязным, поэтому DFS строит лес, а не одно дерево.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="cycle-title">
+        <p class="section-kicker">Теория</p>
+        <h2 id="cycle-title">Мост и цикл</h2>
+        <p>Для любого ребра неориентированного графа</p>
+        <div class="math-display">\[
+\boxed{e\text{ — мост}\iff e\text{ не лежит ни в одном цикле}}.
+\]</div>
+        <p>Если ребро лежит на цикле, оставшаяся часть цикла даёт обходной путь между его концами. Обратно, если
+          после удаления ребра концы остаются связаны, обходной путь вместе с удалённым ребром образует цикл.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="slow-title">
+        <p class="section-kicker">Неудачный подход</p>
+        <h2 id="slow-title">Почему нельзя удалять рёбра по одному</h2>
+        <p>Для каждого ребра можно временно удалить его и проверить связность DFS или BFS. Но один обход требует
+          <span class="math-inline">\(\Theta(n+m)\)</span>, поэтому суммарно получится</p>
+        <div class="math-display">\[
+\Theta\bigl(m(n+m)\bigr).
+\]</div>
+        <p>Нужен один DFS, который одновременно выясняет наличие альтернативного пути для каждого поддерева.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="observation-title">
+        <p class="section-kicker">Наблюдение</p>
+        <h2 id="observation-title">Альтернативный выход из поддерева</h2>
+        <p>Пусть <span class="math-inline">\(\{v,to\}\)</span> — ребро дерева DFS, где <span
+            class="math-inline">\(v\)</span> является родителем. После удаления ребра поддерево <span
+            class="math-inline">\(to\)</span> отделится тогда и только тогда, когда из него нет другого ребра в
+          <span class="math-inline">\(v\)</span> или любого строгого предка <span
+            class="math-inline">\(v\)</span>.</p>
+        <p>Поэтому достаточно хранить минимальное время входа предка, достижимого из поддерева без использования
+          родительского ребра.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="values-title">
+        <p class="section-kicker">Состояние DFS</p>
+        <h2 id="values-title"><code>enter</code> и <code>ret</code></h2>
+        <h3>Время входа</h3>
+        <p>При первом посещении вершины:</p>
+        <pre><code class="language-cpp">enter[v] = ret[v] = timer++;</code></pre>
+        <p>Для предка <span class="math-inline">\(p\)</span> и потомка <span
+            class="math-inline">\(x\)</span> выполняется <span
+            class="math-inline">\(enter[p]&lt;enter[x]\)</span>.</p>
+        <h3>Low-link value</h3>
+        <p><code>ret[v]</code> — минимальное время входа вершины, достижимой после спуска внутри DFS-поддерева
+          <span class="math-inline">\(v\)</span> и не более одного недревесного ребра вверх.</p>
+        <p>После обработки ребёнка:</p>
+        <pre><code class="language-cpp">ret[v] = std::min(ret[v], ret[to]);</code></pre>
+        <p>Для ребра в уже посещённую вершину:</p>
+        <pre><code class="language-cpp">ret[v] = std::min(ret[v], enter[to]);</code></pre>
+        <p>Здесь используется именно <code>enter[to]</code>: текущее ребро непосредственно ведёт в
+          <code>to</code>, а <code>ret[to]</code> описывает другие пути чужого поддерева.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="criterion-title">
+        <p class="section-kicker">Критерий</p>
+        <h2 id="criterion-title">Строгое неравенство</h2>
+        <p>Для ребра дерева DFS</p>
+        <div class="math-display">\[
+\boxed{
+\{v,to\}\text{ — мост}
+\iff
+ret[to]&gt;enter[v]
+}.
+\]</div>
+        <p>При равенстве из поддерева есть альтернативное ребро обратно в <span
+            class="math-inline">\(v\)</span>, значит ребро лежит на цикле. При меньшем значении достигается
+          строгий предок. Только строгое превышение означает отсутствие любого обходного пути.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="ids-title">
+        <p class="section-kicker">Кратные рёбра</p>
+        <h2 id="ids-title">Почему нужен номер ребра</h2>
+        <p>В списке смежности хранится пара <code>{to, edge_id}</code>, а DFS пропускает только конкретное
+          родительское ребро:</p>
+        <pre><code class="language-cpp">if (id == edge_id) {
+  continue;
+}</code></pre>
+        <p>Два параллельных ребра между вершинами не являются мостами: после удаления одного остаётся второе. Если
+          пропустить все рёбра по условию <code>to == parent</code>, альтернативное ребро потеряется и ответ станет
+          неверным.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="correctness-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="correctness-title">Корректность критерия</h2>
+        <p>После завершения <code>dfs(to)</code> значение <code>ret[to]</code> учитывает все обратные рёбра из
+          поддерева. Если оно не превосходит <code>enter[v]</code>, существует альтернативный путь из поддерева к
+          <span class="math-inline">\(v\)</span> или выше; вместе с древесным ребром он образует цикл.</p>
+        <p>Если <span class="math-inline">\(ret[to]&gt;enter[v]\)</span>, ни одна вершина поддерева не достигает
+          <span class="math-inline">\(v\)</span> или его предков без ребра <span
+            class="math-inline">\(\{v,to\}\)</span>. Его удаление отделяет всё поддерево, поэтому ребро является
+          мостом.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="final-code">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="final-code">Accepted-код</h2>
+        <pre><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;functional&gt;
+#include &lt;iostream&gt;
+#include &lt;utility&gt;
+#include &lt;vector&gt;
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  int n;
+  int m;
+  std::cin &gt;&gt; n &gt;&gt; m;
+
+  std::vector&lt;std::vector&lt;std::pair&lt;int, int&gt;&gt;&gt; adj(n + 1);
+  for (int i = 0; i &lt; m; ++i) {
+    int u;
+    int v;
+    std::cin &gt;&gt; u &gt;&gt; v;
+    adj[u].push_back({v, i});
+    adj[v].push_back({u, i});
+  }
+
+  std::vector&lt;int&gt; enter(n + 1, -1);
+  std::vector&lt;int&gt; ret(n + 1, 0);
+  std::vector&lt;bool&gt; is_bridge(m, false);
+
+  int timer = 0;
+  int count_bridges = 0;
+
+  std::function&lt;void(int, int)&gt; dfs = [&amp;](int v, int edge_id) {
+    enter[v] = ret[v] = timer++;
+
+    for (auto [to, id] : adj[v]) {
+      if (id == edge_id) {
+        continue;
+      }
+
+      if (enter[to] == -1) {
+        dfs(to, id);
+        ret[v] = std::min(ret[v], ret[to]);
+
+        if (ret[to] &gt; enter[v]) {
+          ++count_bridges;
+          is_bridge[id] = true;
+        }
+      } else {
+        ret[v] = std::min(ret[v], enter[to]);
+      }
+    }
+  };
+
+  for (int v = 1; v &lt;= n; ++v) {
+    if (enter[v] == -1) {
+      dfs(v, -1);
+    }
+  }
+
+  std::cout &lt;&lt; count_bridges &lt;&lt; '\n';
+  for (int i = 0; i &lt; m; ++i) {
+    if (is_bridge[i]) {
+      std::cout &lt;&lt; i + 1 &lt;&lt; '\n';
+    }
+  }
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Каждая вершина открывается один раз, каждое неориентированное ребро просматривается по одному разу с
+          каждого конца, а действия на ребре занимают <span class="math-inline">\(O(1)\)</span>:</p>
+        <div class="math-display">\[
+\boxed{T(n,m)=\Theta(n+m)}.
+\]</div>
+        <p>Списки смежности, массивы и рекурсивный стек занимают</p>
+        <div class="math-display">\[
+\boxed{W(n,m)=\Theta(n+m)}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edge-cases-title">
+        <p class="section-kicker">Проверки</p>
+        <h2 id="edge-cases-title">Граничные случаи</h2>
+        <ul>
+          <li>граф без рёбер не содержит мостов;</li>
+          <li>каждое ребро дерева-пути является мостом;</li>
+          <li>рёбра простого цикла мостами не являются;</li>
+          <li>в несвязном графе внешний цикл обрабатывает каждую компоненту;</li>
+          <li>два параллельных ребра дают альтернативный путь;</li>
+          <li>петля обновляет <code>ret[v]</code> значением <code>enter[v]</code> и мостом не является.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="mistakes-title">
+        <p class="section-kicker">Разбор ошибок</p>
+        <h2 id="mistakes-title">Типичные ошибки</h2>
+        <ol>
+          <li><strong>Пропуск родительской вершины вместо ребра.</strong> Это ломает обработку кратных рёбер.</li>
+          <li><strong>Нестрогое условие.</strong> При <span class="math-inline">\(ret[to]=enter[v]\)</span> есть
+            альтернативное ребро; нужен знак <code>&gt;</code>.</li>
+          <li><strong>Проверка до завершения ребёнка.</strong> Значение <code>ret[to]</code> ещё не учитывает всё
+            поддерево.</li>
+          <li><strong>Не поднять <code>ret[to]</code>.</strong> Тогда обратное ребро из глубины не повлияет на
+            предков.</li>
+          <li><strong>Использовать <code>ret[to]</code> для посещённого соседа.</strong> Недревесное ребро ведёт
+            непосредственно в <code>to</code>, поэтому нужен <code>enter[to]</code>.</li>
+          <li><strong>Запустить DFS только из вершины 1.</strong> Мосты в других компонентах будут пропущены.</li>
+          <li><strong>Потерять номера рёбер.</strong> Ответ и различение параллельных рёбер требуют
+            <code>edge_id</code>.</li>
+          <li><strong>Перепутать нумерацию.</strong> Внутренний индекс начинается с нуля, вывод — с единицы.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="technical-title">
+        <p class="section-kicker">Надёжность</p>
+        <h2 id="technical-title">Глубина рекурсии</h2>
+        <p>На графе-пути глубина рекурсивного DFS равна <span class="math-inline">\(\Theta(n)\)</span>. При
+          больших ограничениях это может переполнить системный стек. Итеративному варианту нужен явный стек и
+          отдельная фаза выхода, в которой вычисляются <code>ret</code> и критерий моста.</p>
+        <p>В финальном коде явно подключён <code>&lt;algorithm&gt;</code> для <code>std::min</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="signals-title">
+        <p class="section-kicker">Перенос идеи</p>
+        <h2 id="signals-title">Как распознать low-link</h2>
+        <ul>
+          <li>дан неориентированный граф;</li>
+          <li>удаление ребра может разрушить связность;</li>
+          <li>ответ зависит от существования обходного пути;</li>
+          <li>для DFS-поддерева важно достижение предка без родительского ребра;</li>
+          <li>ограничения требуют линейного алгоритма.</li>
+        </ul>
+        <div class="math-display">\[
+\text{удаление ребра}
+\Longrightarrow
+\text{обходной путь}
+\Longrightarrow
+\text{обратное ребро из поддерева}
+\Longrightarrow
+\min enter
+\Longrightarrow
+\text{low-link}.
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="summary-title">
+        <p class="section-kicker">Вывод</p>
+        <h2 id="summary-title">Главный итог</h2>
+        <p>Один DFS вычисляет для каждого поддерева минимальное время входа, достижимое через альтернативное
+          ребро. Для древесного ребра</p>
+        <div class="math-display">\[
+\boxed{ret[to]&gt;enter[v]}
+\]</div>
+        <p>ровно тогда, когда поддерево <span class="math-inline">\(to\)</span> не имеет другого выхода к <span
+            class="math-inline">\(v\)</span> или выше. Сохранение <code>edge_id</code> является частью
+          корректности, а не только технической деталью.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="links-title">
+        <p class="section-kicker">Источники</p>
+        <h2 id="links-title">Ссылки</h2>
+        <ul>
+          <li>Код: <a href="#final-code">Accepted-листинг на этой странице</a>.</li>
+          <li>Теория: <a href="/conspecta/2/pdfs/algosi-2.pdf" target="_blank" rel="noreferrer">Алгоритмы и
+              структуры данных II (PDF) ↗</a>.</li>
+        </ul>
+      </section>
+      <!-- Internal TODO: add the problem URL only after it is supplied. -->
+      <!-- Internal TODO: add the canonical solution-repository URL after its base URL is supplied. -->
+      <!-- Internal TODO: add a pattern link only after a real published pattern page exists. -->
+      <!-- Internal TODO: add a mistake-log link only after a real published mistake entry exists. -->
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
