@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Разбор задачи A из контеста 4 второго семестра: кратчайшие пути алгоритмом Дейкстры с индексируемой min-heap.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача A — Кратчайшие пути в графе — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты <small>ПМФ СПбАУ</small></span></a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_2/Contest_4/">← Контест 4</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 2 · Контест 4</p>
+      <h1>Задача A — Кратчайшие пути в графе</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-08-02">2 августа 2026</time></p>
+      <p class="study-lead">Алгоритм Дейкстры с индексируемой двоичной кучей: одна запись на вершину и обновление оценки через <code>DecreaseKey</code>.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_2/Contest_4/Task_A">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Для разреженного неориентированного графа использована Дейкстра с собственной индексируемой min-heap.</p>
+        <ul>
+          <li>время: <span class="math-inline">\(O((n+m)\log n)\)</span> на тест;</li>
+          <li>память: <span class="math-inline">\(O(n+m)\)</span>;</li>
+          <li>операция обновления оценки: <code>DecreaseKey</code>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Расстояния от одной вершины</h2>
+        <p>Дан взвешенный неориентированный граф с неотрицательными весами и стартовая вершина <span class="math-inline">\(s\)</span>. Для каждой вершины <span class="math-inline">\(v\)</span> нужно найти длину кратчайшего пути из <span class="math-inline">\(s\)</span>. Для недостижимых вершин выводится предусмотренное условием значение бесконечности.</p>
+        <p>Каждое ребро <span class="math-inline">\(\{u,v\}\)</span> хранится в списках смежности дважды: как <span class="math-inline">\(u\to v\)</span> и <span class="math-inline">\(v\to u\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="idea-title">
+        <p class="section-kicker">Ключевая идея</p>
+        <h2 id="idea-title">Почему работает Дейкстра</h2>
+        <p><code>d[v]</code> — длина лучшего уже найденного пути. На каждом шаге извлекается нераскрытая вершина с минимальным <code>d[v]</code>. Из-за неотрицательности весов путь через остальные нераскрытые вершины уже не сможет улучшить это расстояние, поэтому оно становится окончательным.</p>
+        <p>Условие <span class="math-inline">\(w(e)\ge 0\)</span> существенно: при отрицательных рёбрах более короткий путь к раскрытой вершине мог бы обнаружиться позднее.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="heap-title">
+        <p class="section-kicker">Структура данных</p>
+        <h2 id="heap-title">Индексируемая min-heap</h2>
+        <p>Для каждой ещё не раскрытой вершины куча хранит пару <span class="math-inline">\((d[v],v)\)</span>.</p>
+        <ul>
+          <li><code>HeapItem::value</code> — текущая оценка <code>d[v]</code>;</li>
+          <li><code>HeapItem::query_id</code> — номер вершины;</li>
+          <li><code>position_[v]</code> — позиция её единственного элемента в массиве кучи.</li>
+        </ul>
+        <p><code>position_</code> находит элемент за <span class="math-inline">\(O(1)\)</span>, после чего <code>DecreaseKey</code> восстанавливает порядок за <span class="math-inline">\(O(\log n)\)</span>. Повторный <code>Insert</code> при релаксации здесь недопустим.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="invariants-title">
+        <p class="section-kicker">Корректность состояния</p>
+        <h2 id="invariants-title">Два инварианта кучи</h2>
+        <p>Перед каждой итерацией:</p>
+        <div class="math-display">\[
+\neg expanded[v]\quad\Longleftrightarrow\quad v\text{ находится в куче}.
+\]</div>
+        <p>Поэтому проверка <code>!expanded[to]</code> гарантирует, что перед <code>DecreaseKey</code> значение <code>position_[to]</code> не равно <code>-1</code>.</p>
+        <p>Кроме того, ключ каждой находящейся в куче вершины равен её текущему <code>d[v]</code>. При улучшении вычисляется</p>
+        <div class="math-display">\[
+\Delta=d_{old}[v]-d_{new}[v]&gt;0,
+\qquad d_{old}[v]-\Delta=d_{new}[v].
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="relax-title">
+        <p class="section-kicker">Основная операция</p>
+        <h2 id="relax-title">Релаксация</h2>
+        <pre><code class="language-cpp">long long new_dist = d[v] + e.c;
+if (!expanded[e.to] &amp;&amp; new_dist &lt; d[e.to]) {
+  long long delta = d[e.to] - new_dist;
+  d[e.to] = new_dist;
+  heap.DecreaseKey(e.to, delta);
+}</code></pre>
+        <p><code>delta</code> нужно вычислить до присваивания нового расстояния. Все вершины заранее добавляются в кучу, иначе первая попытка улучшить отсутствующую вершину обратилась бы к <code>position_[v] == -1</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="proof-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="proof-title">Окончательность извлечённой оценки</h2>
+        <p>Каждое конечное <code>d[v]</code> является длиной конкретного пути: начальное <code>d[s] = 0</code> соответствует пустому пути, а релаксация лишь добавляет одно ребро.</p>
+        <p>Предположим, что вершина <span class="math-inline">\(v\)</span> извлечена с оценкой больше истинного расстояния. На кратчайшем пути к ней возьмём первую нераскрытую вершину <span class="math-inline">\(x\)</span>. Её предшественник уже раскрыт, значит ребро к <span class="math-inline">\(x\)</span> было релаксировано и <span class="math-inline">\(d[x]=\delta(s,x)\le\delta(s,v)&lt;d[v]\)</span>. Это противоречит минимальности извлечённого ключа.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="code-title">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="code-title">Принятый код</h2>
+        <pre><code class="language-cpp">#include &lt;cstdint&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+namespace Detail {
+struct HeapItem { std::int64_t value; int query_id; };
+
+class MinHeap {
+ public:
+  explicit MinHeap(int n) : position_(n, -1) {}
+  int Size() const { return static_cast&lt;int&gt;(buffer_.size()); }
+  void Insert(std::int64_t value, int id) {
+    int pos = Size();
+    buffer_.push_back({value, id});
+    position_[id] = pos;
+    SiftUp(pos);
+  }
+  HeapItem ExtractMin() {
+    HeapItem result = buffer_[0];
+    int last = Size() - 1;
+    if (last == 0) {
+      buffer_.pop_back();
+      position_[result.query_id] = -1;
+      return result;
+    }
+    SwapItems(0, last);
+    buffer_.pop_back();
+    position_[result.query_id] = -1;
+    SiftDown(0);
+    return result;
+  }
+  void DecreaseKey(int id, std::int64_t delta) {
+    int pos = position_[id];
+    buffer_[pos].value -= delta;
+    SiftUp(pos);
+  }
+
+ private:
+  static int Parent(int v) { return (v - 1) / 2; }
+  static int Left(int v) { return 2 * v + 1; }
+  static int Right(int v) { return 2 * v + 2; }
+  static bool Less(const HeapItem&amp; a, const HeapItem&amp; b) {
+    return a.value != b.value ? a.value &lt; b.value : a.query_id &lt; b.query_id;
+  }
+  void SwapItems(int a, int b) {
+    HeapItem tmp = buffer_[a]; buffer_[a] = buffer_[b]; buffer_[b] = tmp;
+    position_[buffer_[a].query_id] = a;
+    position_[buffer_[b].query_id] = b;
+  }
+  void SiftUp(int v) {
+    while (v &gt; 0 &amp;&amp; Less(buffer_[v], buffer_[Parent(v)])) {
+      int p = Parent(v); SwapItems(v, p); v = p;
+    }
+  }
+  void SiftDown(int v) {
+    while (true) {
+      int best = v, left = Left(v), right = Right(v);
+      if (left &lt; Size() &amp;&amp; Less(buffer_[left], buffer_[best])) best = left;
+      if (right &lt; Size() &amp;&amp; Less(buffer_[right], buffer_[best])) best = right;
+      if (best == v) return;
+      SwapItems(v, best); v = best;
+    }
+  }
+  std::vector&lt;HeapItem&gt; buffer_;
+  std::vector&lt;int&gt; position_;
+};
+}  // namespace Detail
+
+struct Edge { int to; long long cost; };
+const long long cInfinity = 2009000999;
+
+void Solution() {
+  int n, m;
+  std::cin &gt;&gt; n &gt;&gt; m;
+  std::vector&lt;std::vector&lt;Edge&gt;&gt; graph(n);
+  for (int i = 0; i &lt; m; ++i) {
+    int u, v, c;
+    std::cin &gt;&gt; u &gt;&gt; v &gt;&gt; c;
+    graph[u].push_back({v, c});
+    graph[v].push_back({u, c});
+  }
+  int s;
+  std::cin &gt;&gt; s;
+  std::vector&lt;bool&gt; expanded(n, false);
+  std::vector&lt;long long&gt; d(n, cInfinity);
+  d[s] = 0;
+  Detail::MinHeap heap(n);
+  for (int v = 0; v &lt; n; ++v) heap.Insert(d[v], v);
+  for (int i = 0; i &lt; n; ++i) {
+    auto [dist, v] = heap.ExtractMin();
+    expanded[v] = true;
+    for (const Edge&amp; e : graph[v]) {
+      long long new_dist = d[v] + e.cost;
+      if (!expanded[e.to] &amp;&amp; new_dist &lt; d[e.to]) {
+        long long delta = d[e.to] - new_dist;
+        d[e.to] = new_dist;
+        heap.DecreaseKey(e.to, delta);
+      }
+    }
+  }
+  for (long long dist : d) std::cout &lt;&lt; dist &lt;&lt; ' ';
+  std::cout &lt;&lt; '\n';
+}
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+  int t;
+  std::cin &gt;&gt; t;
+  while (t-- &gt; 0) Solution();
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность</h2>
+        <p>Последовательная вставка и извлечение <span class="math-inline">\(n\)</span> вершин требуют <span class="math-inline">\(O(n\log n)\)</span>. Все списки смежности просматриваются за <span class="math-inline">\(O(m)\)</span>, а успешные релаксации дают не более <span class="math-inline">\(O(m\log n)\)</span>.</p>
+        <div class="math-display">\[
+T=O((n+m)\log n),\qquad M=O(n+m).
+\]</div>
+      </section>
+
+      <section class="entry-section" aria-labelledby="errors-title">
+        <p class="section-kicker">Отладка</p>
+        <h2 id="errors-title">Типичные ошибки</h2>
+        <ul>
+          <li>перепутать ключ и идентификатор в <code>Insert</code>;</li>
+          <li>добавить только стартовую вершину, хотя <code>DecreaseKey</code> требует существующий элемент;</li>
+          <li>уменьшать ключ уже раскрытой вершины с позицией <code>-1</code>;</li>
+          <li>не обновить обе записи <code>position_</code> после обмена;</li>
+          <li>использовать Дейкстру при отрицательных весах;</li>
+          <li>выбрать слишком маленький <code>INF</code> или узкий тип расстояния.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="pattern-title">
+        <p class="section-kicker">Паттерн</p>
+        <h2 id="pattern-title">Как распознать метод</h2>
+        <p>Одна стартовая вершина, взвешенный граф и неотрицательные веса ведут к Дейкстре. Для одинаковых весов достаточно BFS, для весов 0 и 1 — 0-1 BFS, а отрицательные рёбра требуют другого алгоритма, например Bellman–Ford.</p>
+        <blockquote>В индексируемой куче <code>value = d[v]</code>, <code>query_id = v</code>, а <code>position_[v]</code> указывает на единственный элемент вершины.</blockquote>
+      </section>
+
+      <section class="entry-section" aria-labelledby="sources-title">
+        <p class="section-kicker">Связанные материалы</p>
+        <h2 id="sources-title">Источники</h2>
+        <ul>
+          <li><a href="/conspecta/2/algosi/">Алгоритмы, семестр 2</a></li>
+        </ul>
+        <!-- TODO: добавить ссылку на отдельный репозиторий решений, когда станет известен его базовый URL. -->
+      </section>
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
