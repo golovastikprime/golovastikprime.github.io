@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Разбор задачи D из контеста 3 первого семестра: поиск первого элемента на суффиксе спуском по Segment Tree максимумов.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача D — Ближайший больший — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты <small>ПМФ СПбАУ</small></span></a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_3/">← Контест 3</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 3</p>
+      <h1>Задача D — Ближайший больший</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-08-02">2 августа 2026</time></p>
+      <p class="study-lead">Максимум сегмента отвечает, может ли внутри существовать кандидат, а обход слева направо находит первый допустимый индекс.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_3/Task_D">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Использован Segment Tree по максимуму с точечным присваиванием и поиском первого подходящего листа.</p>
+        <ul>
+          <li>построение: <span class="math-inline">\(O(n)\)</span>;</li>
+          <li>присваивание и поиск: <span class="math-inline">\(O(\log n)\)</span>;</li>
+          <li>память: <span class="math-inline">\(O(n)\)</span>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Первый элемент не меньше порога</h2>
+        <p>Для массива <span class="math-inline">\(a_1,\ldots,a_n\)</span> нужно онлайн выполнять:</p>
+        <ul>
+          <li><code>0 i x</code> — присвоить <span class="math-inline">\(a_i=x\)</span>;</li>
+          <li><code>1 i x</code> — найти минимальный <span class="math-inline">\(j\ge i\)</span>, для которого <span class="math-inline">\(a_j\ge x\)</span>.</li>
+        </ul>
+        <p>Если ответа нет, выводится <code>-1</code>. Ограничения: <span class="math-inline">\(n,q\le2\cdot10^5\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="idea-title">
+        <p class="section-kicker">Ключевое наблюдение</p>
+        <h2 id="idea-title">Максимум как проверка существования</h2>
+        <p>Для сегмента <span class="math-inline">\([l,r)\)</span> храним</p>
+        <div class="math-display">\[
+M([l,r))=\max_{l\le k&lt;r}a_k.
+\]</div>
+        <p>Если <span class="math-inline">\(M&lt;x\)</span>, кандидата внутри нет и весь сегмент можно отбросить. Если <span class="math-inline">\(M\ge x\)</span>, хотя бы один кандидат существует, и поиск продолжает спуск.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="monoid-title">
+        <p class="section-kicker">Моноид</p>
+        <h2 id="monoid-title">Максимум и нейтральный элемент</h2>
+        <p>Операция объединения — <span class="math-inline">\(u*v=\max(u,v)\)</span>. Она ассоциативна, а нейтральным элементом служит <span class="math-inline">\(-\infty\)</span>, представленный как <code>INT_MIN</code>.</p>
+        <p>Дополнительные листья получают <code>INT_MIN</code>, поэтому не меняют максимум и не могут стать ответом при допустимом <span class="math-inline">\(x\ge0\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="invariant-title">
+        <p class="section-kicker">Состояние дерева</p>
+        <h2 id="invariant-title">Инвариант</h2>
+        <div class="math-display">\[
+\texttt{tree[v]}=\max_{l\le k&lt;r}a_k
+\]</div>
+        <p>для каждой вершины, соответствующей <span class="math-inline">\([l,r)\)</span>. Листья корректны по определению, внутренние вершины берут максимум детей. После присваивания пересчитывается только путь изменённого листа к корню.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="search-title">
+        <p class="section-kicker">Спуск</p>
+        <h2 id="search-title">Три случая поиска</h2>
+        <p><code>FindFirstImpl(v, left, right, i, x)</code> ищет первый ответ в пересечении <span class="math-inline">\([left,right)\cap[i,n)\)</span>.</p>
+        <ol>
+          <li>Если <code>right &lt;= i</code>, сегмент целиком левее начала поиска.</li>
+          <li>Если <code>tree_[v] &lt; x</code>, ни один элемент сегмента не достигает порога.</li>
+          <li>Если неотброшенный сегмент является листом, его левый конец — допустимый ответ.</li>
+        </ol>
+        <pre><code class="language-cpp">if (right &lt;= index || tree_[v] &lt; value) return -1;
+if (right - left == 1) return left;</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="order-title">
+        <p class="section-kicker">Минимальный индекс</p>
+        <h2 id="order-title">Почему сначала левый ребёнок</h2>
+        <p>Все индексы левого ребёнка меньше индексов правого. Поэтому алгоритм сначала ищет слева и переходит направо, только если слева ответа нет:</p>
+        <pre><code class="language-cpp">int answer = FindFirstImpl(2 * v, left, middle, index, value);
+if (answer != -1) return answer;
+return FindFirstImpl(2 * v + 1, middle, right, index, value);</code></pre>
+        <p>Так первый найденный лист имеет минимальный допустимый индекс.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="proof-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="proof-title">Корректность поиска</h2>
+        <p>Сегмент левее <span class="math-inline">\(i\)</span> не содержит допустимых индексов. Сегмент с максимумом меньше <span class="math-inline">\(x\)</span> не содержит подходящих значений. Неотброшенный лист удовлетворяет обоим требованиям. Для внутреннего узла рекурсия возвращает минимальный ответ левого ребёнка, а при его отсутствии — минимальный ответ правого. По индукции это даёт минимальный ответ всего дерева либо <code>-1</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Почему поиск логарифмический</h2>
+        <p>Поиск не обходит дерево целиком: сегменты без кандидата отбрасываются по максимуму, а сегменты левее начала — по границе. Суффикс можно представить как <span class="math-inline">\(O(\log n)\)</span> канонических сегментов, после чего выполняется один спуск к листу. Итого обработка всех запросов занимает <span class="math-inline">\(O(n+q\log n)\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="code-title">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="code-title">Принятый код</h2>
+        <pre><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;climits&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+template &lt;typename Monoid&gt;
+class SegmentTree {
+ public:
+  explicit SegmentTree(const std::vector&lt;Monoid&gt;&amp; nums) {
+    while (N_ &lt; nums.size()) N_ *= 2;
+    tree_.assign(2 * N_, Monoid::Identity());
+    for (int i = 0; i &lt; static_cast&lt;int&gt;(nums.size()); ++i) {
+      tree_[N_ + i] = nums[i];
+    }
+    for (int v = static_cast&lt;int&gt;(N_) - 1; v &gt;= 1; --v) {
+      tree_[v] = tree_[2 * v] * tree_[2 * v + 1];
+    }
+  }
+
+  int FindFirst(int index, int value) const {
+    return FindFirstImpl(1, 0, static_cast&lt;int&gt;(N_), index, value);
+  }
+
+  void Assign(int index, Monoid value) {
+    int v = index + static_cast&lt;int&gt;(N_);
+    tree_[v] = value;
+    while (v &gt; 1) {
+      v &gt;&gt;= 1;
+      tree_[v] = tree_[2 * v] * tree_[2 * v + 1];
+    }
+  }
+
+ private:
+  int FindFirstImpl(int v, int left, int right,
+                    int index, int value) const {
+    if (right &lt;= index || tree_[v] &lt; value) return -1;
+    if (right - left == 1) return left;
+    int middle = left + (right - left) / 2;
+    int answer = FindFirstImpl(2 * v, left, middle, index, value);
+    if (answer != -1) return answer;
+    return FindFirstImpl(2 * v + 1, middle, right, index, value);
+  }
+
+  std::vector&lt;Monoid&gt; tree_;
+  std::size_t N_{1};
+};
+
+struct Monoid {
+  int value{INT_MIN};
+  Monoid() = default;
+  Monoid(int value) : value(value) {}
+  static Monoid Identity() { return Monoid(INT_MIN); }
+  Monoid operator*(const Monoid&amp; rhs) const {
+    return Monoid(std::max(value, rhs.value));
+  }
+  bool operator&lt;(int rhs) const { return value &lt; rhs; }
+};
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+  int n, q;
+  std::cin &gt;&gt; n &gt;&gt; q;
+  std::vector&lt;Monoid&gt; array(n);
+  for (Monoid&amp; item : array) std::cin &gt;&gt; item.value;
+  SegmentTree&lt;Monoid&gt; segment_tree(array);
+  while (q-- &gt; 0) {
+    int command, index, value;
+    std::cin &gt;&gt; command &gt;&gt; index &gt;&gt; value;
+    --index;
+    if (command == 0) {
+      segment_tree.Assign(index, value);
+    } else {
+      int answer = segment_tree.FindFirst(index, value);
+      std::cout &lt;&lt; (answer == -1 ? -1 : answer + 1) &lt;&lt; '\n';
+    }
+  }
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edges-title">
+        <p class="section-kicker">Самопроверка</p>
+        <h2 id="edges-title">Граничные случаи</h2>
+        <ul>
+          <li>сама позиция <span class="math-inline">\(i\)</span> входит в область поиска;</li>
+          <li>при отсутствии ответа возвращается <code>-1</code>;</li>
+          <li>условие допускает равенство, поэтому сегмент отбрасывается при <code>maximum &lt; x</code>, не при <code>&lt;=</code>;</li>
+          <li>после присваивания пересчитываются все предки до корня;</li>
+          <li>входной индекс уменьшается на один, найденный при выводе увеличивается.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="pattern-title">
+        <p class="section-kicker">Обобщение</p>
+        <h2 id="pattern-title">Segment Tree как поисковая структура</h2>
+        <p>Если агрегат узла отвечает на вопрос «может ли здесь быть ответ?», дерево может не только вычислять значение диапазона, но и искать позицию. Для условия <code>&gt;= x</code> подходит максимум, для <code>&lt;= x</code> — минимум, для заданной префиксной суммы при неотрицательных элементах — сумма.</p>
+        <blockquote>Отбрасываем сегменты без кандидата и всегда проверяем левую часть раньше правой, чтобы получить первый индекс.</blockquote>
+      </section>
+
+      <section class="entry-section" aria-labelledby="sources-title">
+        <p class="section-kicker">Связанные материалы</p>
+        <h2 id="sources-title">Источники</h2>
+        <ul><li><a href="/conspecta/">Архив теоретических материалов</a></li></ul>
+        <!-- TODO: добавить ссылку на отдельный репозиторий решений, когда станет известен его базовый URL. -->
+      </section>
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
