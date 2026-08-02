@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Разбор задачи C из контеста 3 первого семестра: знакочередующаяся сумма и Segment Tree над некоммутативным моноидом.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача C — Знакочередующаяся сумма — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты <small>ПМФ СПбАУ</small></span></a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_3/">← Контест 3</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 3</p>
+      <h1>Задача C — Знакочередующаяся сумма</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-08-02">2 августа 2026</time></p>
+      <p class="study-lead">Ответ отрезка дополняется чётностью его длины, чтобы соседние части можно было склеивать в правильном порядке.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_3/Task_C">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Segment Tree построен над ассоциативной, но некоммутативной операцией.</p>
+        <ul>
+          <li>построение: <span class="math-inline">\(O(n)\)</span>;</li>
+          <li>присваивание и запрос: <span class="math-inline">\(O(\log n)\)</span>;</li>
+          <li>память: <span class="math-inline">\(O(n)\)</span>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Два типа запросов</h2>
+        <p>Для массива <span class="math-inline">\(a_1,a_2,\ldots,a_n\)</span> нужно онлайн выполнять:</p>
+        <ul>
+          <li><code>0 i x</code> — присвоить <span class="math-inline">\(a_i=x\)</span>;</li>
+          <li><code>1 l r</code> — вычислить <span class="math-inline">\(a_l-a_{l+1}+a_{l+2}-\cdots+(-1)^{r-l}a_r\)</span>.</li>
+        </ul>
+        <p>Первый элемент каждого запрошенного диапазона всегда берётся со знаком «плюс» независимо от его глобального индекса.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="state-title">
+        <p class="section-kicker">Ключевое наблюдение</p>
+        <h2 id="state-title">Сумма и чётность длины</h2>
+        <p>Для последовательности <span class="math-inline">\(X=(x_1,\ldots,x_k)\)</span> определим</p>
+        <div class="math-display">\[
+S(X)=x_1-x_2+x_3-\cdots+(-1)^{k-1}x_k.
+\]</div>
+        <p>Одной суммы недостаточно: знак первой позиции следующей части зависит от длины левой. Поэтому состояние равно</p>
+        <div class="math-display">\[
+M(X)=\bigl(S(X),|X|\bmod2\bigr).
+\]</div>
+        <p>В коде <code>value</code> хранит сумму, а <code>is_even</code> — чётность длины.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="merge-title">
+        <p class="section-kicker">Операция</p>
+        <h2 id="merge-title">Конкатенация состояний</h2>
+        <p>Если <span class="math-inline">\(X\)</span> расположен перед <span class="math-inline">\(Y\)</span>, то</p>
+        <div class="math-display">\[
+S(X\|Y)=S(X)+(-1)^{|X|}S(Y).
+\]</div>
+        <p>При чётной длине левой части правая сумма прибавляется, при нечётной — вычитается. Суммарная длина чётна тогда и только тогда, когда чётности частей совпадают.</p>
+        <pre><code class="language-cpp">AlternatingSum operator*(const AlternatingSum&amp; rhs) const {
+  bool new_is_even = (is_even == rhs.is_even);
+  if (is_even) return {value + rhs.value, new_is_even};
+  return {value - rhs.value, new_is_even};
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="order-title">
+        <p class="section-kicker">Порядок важен</p>
+        <h2 id="order-title">Операция некоммутативна</h2>
+        <p>Для одноэлементных частей <span class="math-inline">\((5)*(2)=3\)</span>, но <span class="math-inline">\((2)*(5)=-3\)</span>. Поэтому внутренний узел всегда строится как левый сын, затем правый:</p>
+        <pre><code class="language-cpp">tree_[v] = tree_[2 * v] * tree_[2 * v + 1];</code></pre>
+        <p>Перестановка сыновей меняет ответ.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="identity-title">
+        <p class="section-kicker">Нейтральный элемент</p>
+        <h2 id="identity-title">Пустая последовательность</h2>
+        <p>Пустая последовательность имеет сумму ноль и чётную длину:</p>
+        <pre><code class="language-cpp">static AlternatingSum Identity() { return {0, true}; }
+static AlternatingSum Leaf(long long value) { return {value, false}; }</code></pre>
+        <p>Дополнительные листья также нейтральны и семантически представляют пустые последовательности.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="associativity-title">
+        <p class="section-kicker">Моноид</p>
+        <h2 id="associativity-title">Почему операция ассоциативна</h2>
+        <p>Для состояний <span class="math-inline">\(A=(s,p),B=(t,q),C=(u,r)\)</span> обе расстановки скобок дают значение</p>
+        <div class="math-display">\[
+s+(-1)^p t+(-1)^{p\oplus q}u
+\]</div>
+        <p>и чётность <span class="math-inline">\(p\oplus q\oplus r\)</span>, поскольку</p>
+        <div class="math-display">\[
+(-1)^{p\oplus q}=(-1)^p(-1)^q.
+\]</div>
+        <p>Вместе с нейтральным элементом это образует моноид, пригодный для Segment Tree.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="query-title">
+        <p class="section-kicker">Запрос</p>
+        <h2 id="query-title">Два аккумулятора</h2>
+        <p>Один аккумулятор безопасен только для коммутативной операции. Здесь левая и правая части собираются отдельно:</p>
+        <pre><code class="language-cpp">Monoid left_answer = Monoid::Identity();
+Monoid right_answer = Monoid::Identity();
+
+if ((left &amp; 1) != 0) {
+  left_answer = left_answer * tree_[left++];
+}
+if ((right &amp; 1) == 0) {
+  right_answer = tree_[right--] * right_answer;
+}
+
+return left_answer * right_answer;</code></pre>
+        <p>Новый правый узел ставится <em>перед</em> уже собранной правой частью. Обратный порядок дал бы неверную последовательность.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="proof-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="proof-title">Корректность дерева</h2>
+        <p><strong>Слияние.</strong> Если левая длина чётна, знаки правой части сохраняются; если нечётна — меняются на противоположные. Это в точности реализует <code>operator*</code>.</p>
+        <p><strong>Узлы.</strong> Листья корректны, а внутренний узел описывает конкатенацию левого и правого диапазонов.</p>
+        <p><strong>Присваивание.</strong> Меняется один лист и его предки, поэтому все остальные диапазоны остаются корректными.</p>
+        <p><strong>Запрос.</strong> Два аккумулятора сохраняют геометрический порядок канонических отрезков. После их объединения поле <code>value</code> равно требуемой сумме.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="code-title">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="code-title">Итоговый код</h2>
+        <pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+template &lt;typename Monoid&gt;
+class SegmentTree {
+ public:
+  explicit SegmentTree(const std::vector&lt;Monoid&gt;&amp; nums) {
+    while (N_ &lt; static_cast&lt;int&gt;(nums.size())) N_ *= 2;
+    tree_.assign(2 * N_, Monoid::Identity());
+    for (int i = 0; i &lt; static_cast&lt;int&gt;(nums.size()); ++i) {
+      tree_[N_ + i] = nums[i];
+    }
+    for (int v = N_ - 1; v &gt;= 1; --v) {
+      tree_[v] = tree_[2 * v] * tree_[2 * v + 1];
+    }
+  }
+
+  Monoid RangeOperation(int left, int right) const {
+    left += N_;
+    right += N_;
+    Monoid left_answer = Monoid::Identity();
+    Monoid right_answer = Monoid::Identity();
+    while (left &lt;= right) {
+      if ((left &amp; 1) != 0) left_answer = left_answer * tree_[left++];
+      if ((right &amp; 1) == 0) right_answer = tree_[right--] * right_answer;
+      left &gt;&gt;= 1;
+      right &gt;&gt;= 1;
+    }
+    return left_answer * right_answer;
+  }
+
+  void Assign(int index, const Monoid&amp; value) {
+    int v = index + N_;
+    tree_[v] = value;
+    while (v &gt; 1) {
+      v &gt;&gt;= 1;
+      tree_[v] = tree_[2 * v] * tree_[2 * v + 1];
+    }
+  }
+
+ private:
+  std::vector&lt;Monoid&gt; tree_;
+  int N_{1};
+};
+
+struct AlternatingSum {
+  long long value{0};
+  bool is_even{true};
+
+  static AlternatingSum Leaf(long long value) { return {value, false}; }
+  static AlternatingSum Identity() { return {0, true}; }
+
+  AlternatingSum operator*(const AlternatingSum&amp; rhs) const {
+    bool new_is_even = (is_even == rhs.is_even);
+    return is_even ? AlternatingSum{value + rhs.value, new_is_even}
+                   : AlternatingSum{value - rhs.value, new_is_even};
+  }
+};
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+  int n;
+  std::cin &gt;&gt; n;
+  std::vector&lt;AlternatingSum&gt; arr(n);
+  for (int i = 0; i &lt; n; ++i) {
+    long long value;
+    std::cin &gt;&gt; value;
+    arr[i] = AlternatingSum::Leaf(value);
+  }
+  SegmentTree&lt;AlternatingSum&gt; segment_tree(arr);
+  int query_count;
+  std::cin &gt;&gt; query_count;
+  while (query_count-- &gt; 0) {
+    int command, first;
+    long long second;
+    std::cin &gt;&gt; command &gt;&gt; first &gt;&gt; second;
+    --first;
+    if (command == 0) {
+      segment_tree.Assign(first, AlternatingSum::Leaf(second));
+    } else {
+      std::cout &lt;&lt; segment_tree.RangeOperation(
+          first, static_cast&lt;int&gt;(second) - 1).value &lt;&lt; '\n';
+    }
+  }
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edges-title">
+        <p class="section-kicker">Самопроверка</p>
+        <h2 id="edges-title">Ошибки и граничные случаи</h2>
+        <ul>
+          <li><code>is_even</code> описывает длину отрезка, а не его левую границу;</li>
+          <li>лист нечётный, нейтральный пустой отрезок чётный;</li>
+          <li>правый аккумулятор собирается выражением <code>tree_[right] * right_answer</code>;</li>
+          <li>запрос из одного элемента возвращает сам элемент;</li>
+          <li>дополнительные листья нейтральны;</li>
+          <li><code>long long</code> защищает сумму от переполнения.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="alternative-title">
+        <p class="section-kicker">Альтернатива</p>
+        <h2 id="alternative-title">Глобальные знаки и обычная сумма</h2>
+        <p>Можно определить <span class="math-inline">\(b_i=(-1)^{i-1}a_i\)</span> и хранить обычные суммы в Fenwick Tree или Segment Tree. Сумма <span class="math-inline">\([l,r]\)</span> меняет знак, если <span class="math-inline">\(l\)</span> чётно. Моноидный вариант ценен тем, что состояние отрезка не зависит от абсолютной позиции и демонстрирует общий шаблон некоммутативных запросов.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="pattern-title">
+        <p class="section-kicker">Обобщение</p>
+        <h2 id="pattern-title">Как распознать паттерн</h2>
+        <p>Если ответ объединения зависит от длины, чётности или граничного состояния части, следует дополнить значение минимальной метаинформацией, достаточной для склейки, а затем доказать ассоциативность и найти нейтральный элемент.</p>
+        <blockquote>Знак правой суммы определяется чётностью левой части. Операция ассоциативна, но порядок частей менять нельзя.</blockquote>
+      </section>
+
+      <section class="entry-section" aria-labelledby="sources-title">
+        <p class="section-kicker">Связанные материалы</p>
+        <h2 id="sources-title">Источники</h2>
+        <ul><li><a href="/conspecta/">Архив теоретических материалов</a></li></ul>
+        <!-- TODO: добавить ссылку на отдельный репозиторий решений, когда станет известен его базовый URL. -->
+      </section>
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
