@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Разбор задачи B из контеста 3 первого семестра: Марафон, пороговые счётчики и Segment Tree с lazy propagation.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача B — Марафон — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты <small>ПМФ СПбАУ</small></span></a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_3/">← Контест 3</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 3</p>
+      <h1>Задача B — Марафон</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-08-02">2 августа 2026</time></p>
+      <p class="study-lead">Монотонное продвижение бегуна превращается в прибавление на диапазоне порогов, а его ранг — в один точечный запрос.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_3/Task_B">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Использован Segment Tree с lazy propagation для операций range add и point query.</p>
+        <ul>
+          <li>один запрос: <span class="math-inline">\(O(\log D)\)</span>;</li>
+          <li>все запросы: <span class="math-inline">\(O(D+q\log D)\)</span>;</li>
+          <li>память: <span class="math-inline">\(O(D+R)\)</span>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Онлайн-запросы о бегунах</h2>
+        <p>Дистанция содержит точки <span class="math-inline">\(1,2,\ldots,D\)</span>, где <span class="math-inline">\(D=42195\)</span>, а спортсменов не более <span class="math-inline">\(R=10^5\)</span>.</p>
+        <ul>
+          <li><code>RUN i p</code> — спортсмен <span class="math-inline">\(i\)</span> достиг позиции <span class="math-inline">\(p\)</span>; его позиции строго возрастают;</li>
+          <li><code>CHEER i</code> — доля остальных активных спортсменов, пробежавших строго меньше.</li>
+        </ul>
+        <p>До первого <code>RUN</code> ответ равен <code>0</code>. Если активен только запрошенный спортсмен, ответ равен <code>1</code>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="slow-title">
+        <p class="section-kicker">Медленный подход</p>
+        <h2 id="slow-title">Почему нельзя перебирать спортсменов</h2>
+        <p>Хранить текущую позицию легко, но каждый <code>CHEER</code> потребовал бы просмотра всех активных участников. В худшем случае это <span class="math-inline">\(O(qR)\)</span>, то есть до <span class="math-inline">\(10^{10}\)</span> операций.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="threshold-title">
+        <p class="section-kicker">Ключевое наблюдение</p>
+        <h2 id="threshold-title">Счётчики выполненных порогов</h2>
+        <p>Для каждой точки определим</p>
+        <div class="math-display">\[
+C[x]=\#\{j:\operatorname{pos}_j\ge x\}.
+\]</div>
+        <p>Если бегун переместился из <code>old</code> в <code>new</code>, он уже учтён в <span class="math-inline">\(C[1],\ldots,C[old]\)</span> и должен дополнительно попасть ровно в</p>
+        <div class="math-display">\[
+C[old+1],C[old+2],\ldots,C[new].
+\]</div>
+        <p>Поэтому <code>RUN</code> — это прибавление единицы на <span class="math-inline">\([old+1,new]\)</span>. Последовательные диапазоны одного бегуна не пересекаются и вместе образуют <span class="math-inline">\([1,p]\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="answer-title">
+        <p class="section-kicker">Формула</p>
+        <h2 id="answer-title">Ответ на <code>CHEER</code></h2>
+        <p>Пусть активны <span class="math-inline">\(A\)</span> спортсменов, а позиция запрошенного бегуна равна <span class="math-inline">\(p&gt;0\)</span>. Значение <span class="math-inline">\(C[p]\)</span> считает самого бегуна, участников на той же позиции и всех впереди. Поэтому строго более медленных:</p>
+        <div class="math-display">\[
+slower=A-C[p].
+\]</div>
+        <p>Всего остальных активных участников <span class="math-inline">\(A-1\)</span>, значит при <span class="math-inline">\(A&gt;1\)</span></p>
+        <div class="math-display">\[
+\boxed{answer=\frac{A-C[p]}{A-1}}.
+\]</div>
+        <p>Равная позиция не считается меньшей; дополнительно вычитать самого бегуна из числителя не нужно.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="tree-title">
+        <p class="section-kicker">Lazy propagation</p>
+        <h2 id="tree-title">Что хранит дерево</h2>
+        <p>Дерево построено над координатами от <span class="math-inline">\(0\)</span> до <span class="math-inline">\(D\)</span>. Для узла на <span class="math-inline">\([l,r]\)</span> значение <code>tree[v]</code> равно сумме <span class="math-inline">\(C[x]\)</span> на отрезке, а <code>lazy[v]</code> — отложенной прибавке ко всем его точкам.</p>
+        <pre><code class="language-cpp">tree_[v] += static_cast&lt;long long&gt;(right - left + 1) * value;
+lazy_[v] += value;</code></pre>
+        <p><code>Push</code> передаёт прибавку сыновьям, <code>Pull</code> восстанавливает сумму родителя, а <code>GetPoint(p)</code> выполняется как запрос суммы на <span class="math-inline">\([p,p]\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="invariants-title">
+        <p class="section-kicker">Состояние</p>
+        <h2 id="invariants-title">Инварианты алгоритма</h2>
+        <ol>
+          <li><code>runs[i]</code> — последняя позиция бегуна или ноль до первого <code>RUN</code>.</li>
+          <li><code>active_runners</code> — число бегунов с положительной позицией.</li>
+          <li>Каждый лист <span class="math-inline">\(x\ge1\)</span> хранит <span class="math-inline">\(C[x]=\#\{j:\texttt{runs[j]}\ge x\}\)</span>.</li>
+          <li>Внутренний узел хранит сумму своих листьев с учётом отложенного обновления.</li>
+        </ol>
+      </section>
+
+      <section class="entry-section" aria-labelledby="proof-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="proof-title">Корректность обновлений и ответа</h2>
+        <p>При первом <code>RUN</code> счётчик активных увеличивается ровно один раз. При переходе <span class="math-inline">\(old\to new\)</span> предикат <span class="math-inline">\(pos_i\ge x\)</span> меняется с ложного на истинный только для <span class="math-inline">\(old&lt;x\le new\)</span>, поэтому обновление диапазона сохраняет точный смысл всех <span class="math-inline">\(C[x]\)</span>.</p>
+        <p>Операции <code>Apply</code>, <code>Push</code> и <code>Pull</code> сохраняют суммы узлов, следовательно, точечный запрос возвращает точное <span class="math-inline">\(C[p]\)</span>. После обработки особых случаев формула <span class="math-inline">\((A-C[p])/(A-1)\)</span> даёт требуемую долю.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="overflow-title">
+        <p class="section-kicker">Важное исправление</p>
+        <h2 id="overflow-title">Почему <code>tree_</code> требует <code>long long</code></h2>
+        <p>Лист не превосходит <span class="math-inline">\(10^5\)</span>, но корень хранит сумму всех пороговых счётчиков:</p>
+        <div class="math-display">\[
+\sum_{x=1}^{D}C[x]=\sum_i pos_i.
+\]</div>
+        <p>Если все <span class="math-inline">\(10^5\)</span> бегунов на финише, сумма равна <span class="math-inline">\(42195\cdot10^5=4\,219\,500\,000&gt;\texttt{INT\_MAX}\)</span>. Принятый вариант с <code>int</code> прошёл тесты, но строгая реализация должна хранить <code>tree_</code> в <code>long long</code>; ниже тип исправлен.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="code-title">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="code-title">Код с усиленным типом</h2>
+        <pre><code class="language-cpp">#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+
+constexpr int cDistance = 42'195;
+constexpr int cRunners = 100'000;
+constexpr int cPrecision = 8;
+
+class SegmentTree {
+ public:
+  explicit SegmentTree(int n) {
+    while (N_ &lt; n) N_ *= 2;
+    tree_.assign(N_ * 2, 0);
+    lazy_.assign(N_ * 2, 0);
+  }
+
+  void AddRange(int left, int right) {
+    AddRange(1, 0, N_ - 1, left, right, 1LL);
+  }
+  long long GetPoint(int position) {
+    return RangeSum(1, 0, N_ - 1, position, position);
+  }
+
+ private:
+  long long RangeSum(int v, int left, int right, int ql, int qr) {
+    if (qr &lt; left || right &lt; ql) return 0;
+    if (ql &lt;= left &amp;&amp; right &lt;= qr) return tree_[v];
+    Push(v, left, right);
+    int middle = left + (right - left) / 2;
+    return RangeSum(v * 2, left, middle, ql, qr) +
+           RangeSum(v * 2 + 1, middle + 1, right, ql, qr);
+  }
+
+  void AddRange(int v, int left, int right, int ql, int qr,
+                long long value) {
+    if (qr &lt; left || right &lt; ql) return;
+    if (ql &lt;= left &amp;&amp; right &lt;= qr) {
+      Apply(v, left, right, value);
+      return;
+    }
+    Push(v, left, right);
+    int middle = left + (right - left) / 2;
+    AddRange(v * 2, left, middle, ql, qr, value);
+    AddRange(v * 2 + 1, middle + 1, right, ql, qr, value);
+    tree_[v] = tree_[v * 2] + tree_[v * 2 + 1];
+  }
+
+  void Apply(int v, int left, int right, long long value) {
+    tree_[v] += static_cast&lt;long long&gt;(right - left + 1) * value;
+    lazy_[v] += value;
+  }
+  void Push(int v, int left, int right) {
+    if (lazy_[v] == 0 || left == right) return;
+    int middle = left + (right - left) / 2;
+    Apply(v * 2, left, middle, lazy_[v]);
+    Apply(v * 2 + 1, middle + 1, right, lazy_[v]);
+    lazy_[v] = 0;
+  }
+
+  int N_{1};
+  std::vector&lt;long long&gt; tree_;
+  std::vector&lt;long long&gt; lazy_;
+};
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+  std::cout.precision(cPrecision);
+  int query_count;
+  std::cin &gt;&gt; query_count;
+  SegmentTree segment_tree(cDistance + 1);
+  std::vector&lt;int&gt; runs(cRunners, 0);
+  int active_runners = 0;
+
+  while (query_count-- &gt; 0) {
+    std::string command;
+    std::cin &gt;&gt; command;
+    if (command == "RUN") {
+      int runner, new_position;
+      std::cin &gt;&gt; runner &gt;&gt; new_position;
+      --runner;
+      int old_position = runs[runner];
+      if (old_position == 0) ++active_runners;
+      segment_tree.AddRange(old_position + 1, new_position);
+      runs[runner] = new_position;
+    } else {
+      int runner;
+      std::cin &gt;&gt; runner;
+      --runner;
+      int position = runs[runner];
+      if (position == 0) {
+        std::cout &lt;&lt; 0 &lt;&lt; '\n';
+      } else if (active_runners == 1) {
+        std::cout &lt;&lt; 1 &lt;&lt; '\n';
+      } else {
+        long long not_slower = segment_tree.GetPoint(position);
+        long long slower = active_runners - not_slower;
+        std::cout &lt;&lt; static_cast&lt;double&gt;(slower) /
+                         static_cast&lt;double&gt;(active_runners - 1) &lt;&lt; '\n';
+      }
+    }
+  }
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edges-title">
+        <p class="section-kicker">Самопроверка</p>
+        <h2 id="edges-title">Граничные случаи</h2>
+        <ul>
+          <li>до первого <code>RUN</code> дерево не запрашивается и выводится <code>0</code>;</li>
+          <li>при одном активном бегуне выводится <code>1</code> без деления на ноль;</li>
+          <li>равные позиции не входят в число строго более медленных;</li>
+          <li>первый <code>RUN</code> обновляет <span class="math-inline">\([1,new]\)</span> и увеличивает число активных;</li>
+          <li>последующие <code>RUN</code> обновляют только <span class="math-inline">\([old+1,new]\)</span>;</li>
+          <li>правый конец <span class="math-inline">\(42195\)</span> входит в дерево.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="pattern-title">
+        <p class="section-kicker">Обобщение</p>
+        <h2 id="pattern-title">Как распознать паттерн</h2>
+        <p>Полезно перейти к порогам, когда запросы идут онлайн, значение объекта меняется монотонно, а ответ связан с рангом. Переход <span class="math-inline">\(old\to new\)</span> меняет предикат <code>value &gt;= x</code> на непрерывном диапазоне <span class="math-inline">\((old,new]\)</span>.</p>
+        <blockquote>Храним число объектов, выполнивших каждый порог. Монотонное изменение становится обновлением диапазона, а ранговый запрос — чтением одного порогового счётчика.</blockquote>
+      </section>
+
+      <section class="entry-section" aria-labelledby="sources-title">
+        <p class="section-kicker">Связанные материалы</p>
+        <h2 id="sources-title">Источники</h2>
+        <ul><li><a href="/conspecta/">Архив теоретических материалов</a></li></ul>
+        <!-- TODO: добавить ссылку на отдельный репозиторий решений, когда станет известен его базовый URL. -->
+      </section>
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
