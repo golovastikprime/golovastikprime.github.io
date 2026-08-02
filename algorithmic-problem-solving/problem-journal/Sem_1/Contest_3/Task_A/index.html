@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Разбор задачи A из контеста 3 первого семестра: вторая порядковая статистика на отрезке с помощью Segment Tree.">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Задача A — Вторая статистика — Решения задач</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/math.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.2/tex-chtml.js"></script>
+</head>
+
+<body class="study-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="На главную"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты <small>ПМФ СПбАУ</small></span></a>
+    <nav aria-label="Основная навигация">
+      <a href="/algorithmic-problem-solving/problem-journal/Sem_1/Contest_3/">← Контест 3</a>
+      <a class="learning-nav-link" href="/algorithmic-problem-solving/" aria-current="location">Решения задач</a>
+      <a class="github-link" href="https://github.com/golovastikprime/golovastikprime.github.io" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="study-main content-page">
+    <header class="page-intro">
+      <p class="eyebrow"><span></span> Семестр 1 · Контест 3</p>
+      <h1>Задача A — Вторая статистика</h1>
+      <p class="task-meta">Accepted · C++ · <time datetime="2026-08-02">2 августа 2026</time></p>
+      <p class="study-lead">В каждом узле Segment Tree достаточно хранить два минимальных элемента — с учётом повторений.</p>
+    </header>
+
+    <article class="entry-main task-entry" data-entry-id="Sem_1/Contest_3/Task_A">
+      <section class="entry-section" aria-labelledby="result-title">
+        <p class="section-kicker">Результат</p>
+        <h2 id="result-title">Статус</h2>
+        <p><strong>Accepted.</strong> Неизменяемый массив обрабатывается деревом отрезков с компактным состоянием из двух минимумов.</p>
+        <ul>
+          <li>построение: <span class="math-inline">\(O(n)\)</span>;</li>
+          <li>один запрос: <span class="math-inline">\(O(\log n)\)</span>;</li>
+          <li>память: <span class="math-inline">\(O(n)\)</span>.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="statement-title">
+        <p class="section-kicker">Условие</p>
+        <h2 id="statement-title">Второй элемент после сортировки</h2>
+        <p>Дан неизменяемый массив <span class="math-inline">\(a_1,a_2,\ldots,a_n\)</span>. Для каждого включительного отрезка <span class="math-inline">\([l,r]\)</span> нужно найти второй элемент мультимножества</p>
+        <div class="math-display">\[
+\{a_l,a_{l+1},\ldots,a_r\}
+\]</div>
+        <p>после сортировки по неубыванию. Повторения учитываются: для <code>[1, 1, 5]</code> ответ равен <code>1</code>, а не <code>5</code>. По условию <span class="math-inline">\(l&lt;r\)</span>, поэтому элементов всегда хотя бы два.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="state-title">
+        <p class="section-kicker">Ключевое наблюдение</p>
+        <h2 id="state-title">Два минимума на узел</h2>
+        <p>Чтобы найти два наименьших элемента объединения, достаточно знать два наименьших элемента каждой части. Узел хранит пару</p>
+        <div class="math-display">\[
+(m_1,m_2),
+\qquad m_1\le m_2,
+\]</div>
+        <p>где <span class="math-inline">\(m_1\)</span> — минимум, а <span class="math-inline">\(m_2\)</span> — второй минимум с учётом повторений. Одного минимума недостаточно: отрезки <code>[1, 1]</code> и <code>[1, 100]</code> имели бы одинаковое состояние.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="merge-title">
+        <p class="section-kicker">Моноид</p>
+        <h2 id="merge-title">Слияние двух пар</h2>
+        <p>Пусть <span class="math-inline">\(L=(l_1,l_2)\)</span> и <span class="math-inline">\(R=(r_1,r_2)\)</span>. Если <span class="math-inline">\(l_1\le r_1\)</span>, общий минимум равен <span class="math-inline">\(l_1\)</span>, а вторым может быть только <span class="math-inline">\(l_2\)</span> или <span class="math-inline">\(r_1\)</span>:</p>
+        <div class="math-display">\[
+\operatorname{Merge}(L,R)=\bigl(l_1,\min(l_2,r_1)\bigr).
+\]</div>
+        <p>В противоположном случае формула симметрична.</p>
+        <pre><code class="language-cpp">static Item Merge(const Item&amp; first, const Item&amp; second) {
+  if (first.first &lt;= second.first) {
+    return {first.first, std::min(first.second, second.first)};
+  }
+  return {second.first, std::min(first.first, second.second)};
+}</code></pre>
+        <p>Знак равенства важен: <span class="math-inline">\(\operatorname{Merge}((1,\infty),(1,\infty))=(1,1)\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="identity-title">
+        <p class="section-kicker">Нейтральный элемент</p>
+        <h2 id="identity-title">Пустой отрезок</h2>
+        <p>Пустой диапазон описывается парой <span class="math-inline">\(e=(+\infty,+\infty)\)</span>, поэтому</p>
+        <div class="math-display">\[
+\operatorname{Merge}(X,e)=\operatorname{Merge}(e,X)=X.
+\]</div>
+        <p>В коде используется <code>INT_MAX</code>. Это безопасно при <span class="math-inline">\(|a_i|\le10^9&lt;\texttt{INT\_MAX}\)</span>.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="build-title">
+        <p class="section-kicker">Построение</p>
+        <h2 id="build-title">Листья и внутренние узлы</h2>
+        <p>Основание <code>N_</code> — ближайшая степень двойки, не меньшая <span class="math-inline">\(n\)</span>. Настоящий лист хранит <span class="math-inline">\((a_i,+\infty)\)</span>, дополнительный лист — нейтральную пару, а внутренний узел получается слиянием сыновей.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="query-title">
+        <p class="section-kicker">Запрос</p>
+        <h2 id="query-title">Итеративное разбиение диапазона</h2>
+        <p>После перехода к листьям поддерживаются включительные границы <code>l</code> и <code>r</code>. Правый сын на левой границе и левый сын на правой границе целиком добавляются в аккумулятор, после чего указатели поднимаются к родителям.</p>
+        <pre><code class="language-cpp">Item ans = {INT_MAX, INT_MAX};
+while (l &lt;= r) {
+  if ((l &amp; 1) != 0) ans = Merge(ans, tree_[l++]);
+  if ((r &amp; 1) == 0) ans = Merge(ans, tree_[r--]);
+  l &gt;&gt;= 1;
+  r &gt;&gt;= 1;
+}
+return ans.second;</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="proof-title">
+        <p class="section-kicker">Доказательство</p>
+        <h2 id="proof-title">Почему ответ корректен</h2>
+        <p><strong>Слияние.</strong> Если минимум объединения пришёл из левой части, после удаления одного его экземпляра минимальными кандидатами остаются второй элемент слева и первый справа. Симметрично для правой части.</p>
+        <p><strong>Дерево.</strong> Листья корректны по определению. Если оба сына хранят два минимума своих отрезков, <code>Merge</code> даёт два минимума их непересекающегося объединения.</p>
+        <p><strong>Запрос.</strong> Выбранные канонические узлы попарно не пересекаются и точно покрывают исходный диапазон. Аккумулятор после каждого шага содержит два минимума их объединения, поэтому в конце <code>ans.second</code> — требуемая статистика.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="associativity-title">
+        <p class="section-kicker">Порядок вычислений</p>
+        <h2 id="associativity-title">Ассоциативность</h2>
+        <p><code>Merge</code> семантически берёт два минимума объединения мультимножеств, поэтому операция ассоциативна. В этой задаче она также коммутативна, и канонические отрезки можно объединять в любом порядке.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="complexity-title">
+        <p class="section-kicker">Оценка</p>
+        <h2 id="complexity-title">Сложность и ограничение подхода</h2>
+        <p>Для ближайшей степени двойки <span class="math-inline">\(N&lt;2n\)</span>. Построение занимает <span class="math-inline">\(O(n)\)</span>, запрос — <span class="math-inline">\(O(\log n)\)</span>, все запросы — <span class="math-inline">\(O(n+q\log n)\)</span>, память — <span class="math-inline">\(O(n)\)</span>.</p>
+        <p>В условии рекомендована Sparse Table с ответом за <span class="math-inline">\(O(1)\)</span>. Принятая реализация прошла тесты, но её честная оценка остаётся <span class="math-inline">\(O(\log n)\)</span>. Для строгого <span class="math-inline">\(O(1)\)</span> подходит, например, Disjoint Sparse Table; обычные перекрывающиеся блоки могут дважды учесть одну позицию.</p>
+      </section>
+
+      <section class="entry-section" aria-labelledby="code-title">
+        <p class="section-kicker">Реализация</p>
+        <h2 id="code-title">Принятый код</h2>
+        <pre><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;climits&gt;
+#include &lt;iostream&gt;
+#include &lt;utility&gt;
+#include &lt;vector&gt;
+
+class SegmentTree {
+  using Item = std::pair&lt;int, int&gt;;
+
+  static Item Merge(const Item&amp; first, const Item&amp; second) {
+    if (first.first &lt;= second.first) {
+      return {first.first, std::min(first.second, second.first)};
+    }
+    return {second.first, std::min(first.first, second.second)};
+  }
+
+ public:
+  explicit SegmentTree(const std::vector&lt;int&gt;&amp; nums) {
+    std::size_t size = 1;
+    while (size &lt; nums.size()) size *= 2;
+    N_ = size;
+    tree_.assign(2 * N_, {INT_MAX, INT_MAX});
+    for (int i = 0; i &lt; static_cast&lt;int&gt;(nums.size()); ++i) {
+      tree_[N_ + i] = {nums[i], INT_MAX};
+    }
+    for (int v = static_cast&lt;int&gt;(N_) - 1; v &gt;= 1; --v) {
+      tree_[v] = Merge(tree_[2 * v], tree_[2 * v + 1]);
+    }
+  }
+
+  int Range2Stat(int l, int r) const {
+    l += static_cast&lt;int&gt;(N_);
+    r += static_cast&lt;int&gt;(N_);
+    Item ans = {INT_MAX, INT_MAX};
+    while (l &lt;= r) {
+      if ((l &amp; 1) != 0) ans = Merge(ans, tree_[l++]);
+      if ((r &amp; 1) == 0) ans = Merge(ans, tree_[r--]);
+      l &gt;&gt;= 1;
+      r &gt;&gt;= 1;
+    }
+    return ans.second;
+  }
+
+ private:
+  std::vector&lt;Item&gt; tree_;
+  std::size_t N_;
+};
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+  int n, q;
+  std::cin &gt;&gt; n &gt;&gt; q;
+  std::vector&lt;int&gt; nums(n);
+  for (int&amp; value : nums) std::cin &gt;&gt; value;
+  SegmentTree st(nums);
+  while (q-- &gt; 0) {
+    int l, r;
+    std::cin &gt;&gt; l &gt;&gt; r;
+    std::cout &lt;&lt; st.Range2Stat(l - 1, r - 1) &lt;&lt; '\n';
+  }
+}</code></pre>
+      </section>
+
+      <section class="entry-section" aria-labelledby="edges-title">
+        <p class="section-kicker">Самопроверка</p>
+        <h2 id="edges-title">Граничные случаи и ошибки</h2>
+        <ul>
+          <li><code>[5, 5]</code> даёт <code>5</code>: ищется не второй различный элемент;</li>
+          <li>для листа второй минимум равен бесконечности;</li>
+          <li>диапазон в <code>Range2Stat</code> включительный с обеих сторон;</li>
+          <li>входные индексы переводятся из нумерации с единицы в нумерацию с нуля;</li>
+          <li>дополнительные листья нейтральны, если размер массива не является степенью двойки;</li>
+          <li><code>&lt;algorithm&gt;</code> и <code>&lt;utility&gt;</code> подключаются явно.</li>
+        </ul>
+      </section>
+
+      <section class="entry-section" aria-labelledby="pattern-title">
+        <p class="section-kicker">Обобщение</p>
+        <h2 id="pattern-title">Как распознать паттерн</h2>
+        <p>Segment Tree подходит, когда много запросов на отрезках, ответ объединения вычисляется из компактных ответов частей, а операция слияния ассоциативна. Для малого фиксированного <span class="math-inline">\(k\)</span> можно хранить в каждом узле <span class="math-inline">\(k\)</span> минимумов и сливать два отсортированных списка за <span class="math-inline">\(O(k)\)</span>.</p>
+        <blockquote>Храним два минимума. Меньший из первых становится общим минимумом, а второй выбирается между следующим элементом той же части и минимумом другой части.</blockquote>
+      </section>
+
+      <section class="entry-section" aria-labelledby="sources-title">
+        <p class="section-kicker">Связанные материалы</p>
+        <h2 id="sources-title">Источники</h2>
+        <ul><li><a href="/conspecta/">Архив теоретических материалов</a></li></ul>
+        <!-- TODO: добавить ссылку на отдельный репозиторий решений, когда станет известен его базовый URL. -->
+      </section>
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">К</span><span>Конспекты</span></a>
+    <p>Собрано студентами для студентов.</p>
+    <p>2025—2026</p>
+  </footer>
+</body>
+
+</html>
